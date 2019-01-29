@@ -1,0 +1,10 @@
+#screen {
+    width: 640px;
+    height: 480px;
+    background-color: black;
+    color: white;
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 20px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif
+}
