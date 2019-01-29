@@ -35,6 +35,7 @@ const inputProcessing = (input) => {
             output.action = "Скажите мне, что делать";
             break;
         case "с":
+        case "иди на север":
             if (locations[currentLoc].isN !== -1) {
                 currentLoc = locations[currentLoc].isN;
                 output.location = locationNumToText(currentLoc);
@@ -43,6 +44,7 @@ const inputProcessing = (input) => {
             }
             break;
         case "ю":
+        case "иди на юг":
             if (locations[currentLoc].isS !== -1) {
                 currentLoc = locations[currentLoc].isS;
                 output.location = locationNumToText(currentLoc);
@@ -51,6 +53,7 @@ const inputProcessing = (input) => {
             }
             break;
         case "в":
+        case "иди на восток":
             if (locations[currentLoc].isE !== -1) {
                 currentLoc = locations[currentLoc].isE;
                 output.location = locationNumToText(currentLoc);
@@ -59,8 +62,25 @@ const inputProcessing = (input) => {
             }
             break;
         case "з":
+        case "иди на запад":
             if (locations[currentLoc].isW !== -1) {
                 currentLoc = locations[currentLoc].isW;
+                output.location = locationNumToText(currentLoc);
+            } else {
+                output.action = "Я не могу туда пройти";
+            }
+            break;
+        case "вверх":
+            if (locations[currentLoc].isU !== -1) {
+                currentLoc = locations[currentLoc].isU;
+                output.location = locationNumToText(currentLoc);
+            } else {
+                output.action = "Я не могу туда пройти";
+            }
+            break;
+        case "вниз":
+            if (locations[currentLoc].isD !== -1) {
+                currentLoc = locations[currentLoc].isD;
                 output.location = locationNumToText(currentLoc);
             } else {
                 output.action = "Я не могу туда пройти";
@@ -79,7 +99,13 @@ const inputProcessing = (input) => {
             } else {
                 output.action += `- пусто<br>`;
             }
-            output.action += "<br>Что дальше?"
+            output.action += "<br>Что дальше?";
+            break;
+        case "иди на хуй":
+        case "иди нахуй":
+        case "иди в жопу":
+        case "иди в пизду":
+            output.action = "Конечно, персонажа текстовой игры легко куда-нибудь послать. Правда, и он может вас послать, что сейчас и сделает, а вы ему ничего за это не сделаете. Иди-ка ты туда же, мой дорогой игрок!";
             break;
         default:
             // далее - две функции
@@ -128,6 +154,16 @@ const inputProcessing = (input) => {
                 } else {
                     output.action = `Не могу выбросить, потому что у меня этого нет.`;
                 }
+            } else if (phrase.verb === "осмотри" || phrase.verb === "изучи") {
+                // осматриваем предмет
+                const examItem = items.find(e => e.case === phrase.obj);
+                if (examItem === undefined) {
+                    output.action = `Ничего необычного.`;
+                } else if (examItem.place === 999) {
+                    output.action = examItem.desc;
+                } else {
+                    output.action = `У меня нет этого, так что и осматривать нечего.`;
+                }
             } else {
                 // если вообще ничего не сработало
                 output.action = "Я не могу этого сделать";
@@ -174,25 +210,21 @@ const uldProcessing = (inputPhrase) => {
 // функция locationNumToText получает номер локации и выдаёт текст этой локации
 const locationNumToText = num => {
     let description = "";
-    switch (num) {
-        case 0:
-            {
-                description += "Вы находитесь в огромном зале в локации №0. Единственный выход ведёт на север.";
-                break;
-            }
-        case 1:
-            {
-                description += "Вы находитесь в маленьком алькове в локации №1. Выход - на юге.";
-                break;
-            }
-        default:
-            description += "Вы находитесь там, где не должны находиться!!!";
-    }
-    description += "<br><br>";
+    locations.forEach(e => {
+        if (e.index === currentLoc) {
+            description += e.desc;
+        }
+    })
+    
+    ////////////////////////////////////////////////////////
+    // СЮДА НАДО ВСТАВИТЬ ПРОВЕРКИ ДЛЯ УНИКАЛЬНЫХ ЛОКАЦИЙ
+    ////////////////////////////////////////////////////////
+
+    description += "<br>";
     if (items.some(e => {
             return e.place === currentLoc;
         })) {
-        description += "Здесь также есть:<br>";
+        description += "<br>Здесь также есть:<br>";
         items.forEach(e => {
             if (e.place === currentLoc) {
                 description += `- ${e.name}<br>`;
@@ -218,7 +250,7 @@ const actionNumToText = num => {
 // 1. Описание локации
 // 2. Описание действия (если в локации впервые, то фразу "Что будете делать?")
 const makeScreen = (locationText, actionText) => {
-    document.getElementById("screen").innerHTML = locationText + "<br><br>" + actionText;
+    document.getElementById("screen").innerHTML = locationText + "<br>" + actionText;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -228,32 +260,123 @@ const makeScreen = (locationText, actionText) => {
 // Локации
 // Мы имеем массив локаций. Каждая локация - это объект. Номер локации в массиве - это номер локации.
 const locations = [{
+    index: 0,
+    desc: "Вы находитесь в ветхой хижине. Сквозь открытую дверь на севере струится солнечный свет.",
     isN: 1,
     isE: -1,
     isS: -1,
-    isW: -1
+    isW: -1,
+    isU: -1,
+    isD: -1
 }, {
-    isN: -1,
+    index: 1,
+    desc: "Вы стоите на просёлочной дороге с поросшими травой обочинами. Дорога ведёт на север, а на юге виднеется хижина.",
+    isN: 2,
     isE: -1,
     isS: 0,
-    isW: -1
+    isW: -1,
+    isU: -1,
+    isD: -1
+}, {
+    index: 2,
+    desc: "Здесь дорога поворачивает с юга на восток. Небольшие холмы окружают дорогу.",
+    isN: -1,
+    isE: 3,
+    isS: 1,
+    isW: -1,
+    isU: -1,
+    isD: -1
+}, {
+    index: 3,
+    desc: "Вы на заезженной песчаной просёлочной дороге, которая граничит с зелёным пастбищем. Дорога ведёт с запада на восток.",
+    isN: -1,
+    isE: 4,
+    isS: -1,
+    isW: 2,
+    isU: -1,
+    isD: -1
+}, {
+    index: 4,
+    desc: "Вы на пыльной тропе, огибающей край Бирвудского леса. Издалека доносится слабый шелест листвы. Отсюда можно пойти на север, на запад и на юг.",
+    isN: 8,
+    isE: -1,
+    isS: 5, 
+    isW: 3,
+    isU: -1,
+    isD: -1
+}, {
+    index: 5,
+    desc: "В этом месте дорога поворачивает с севера на восток. Небольшая, еле заметная тропинка ответвляется от дороги на юг.<br>У дороги стоит старушка, продающая лампы.",
+    isN: 4,
+    isE: 7,
+    isS: 6,
+    isW: -1,
+    isU: -1,
+    isD: -1
+}, {
+    index: 6,
+    desc: "Вы стоите на краю страшной, бездонной пропасти. Туго натянутая верёвка пересекает расщелину, но она выглядит опасной. На север от пропасти ведёт тропинка.",
+    isN: 5,
+    isE: -1,
+    isS: -1,
+    isW: -1,
+    isU: -1,
+    isD: -1
+}, {
+    index: 7,
+    desc: "Вы на дороге, ведущей с запада на восток через тёмный Бирвудский лес. Сверху доносятся вороньи крики.",
+    isN: -1,
+    isE: 10,
+    isS: -1,
+    isW: 5,
+    isU: -1,
+    isD: -1
+}, {
+    index: 8,
+    desc: "Вы стоите около огромного каменного дерева, совершенно лишённого веток. Дорога здесь кончается, выход только на юг.",
+    isN: -1,
+    isE: -1,
+    isS: 4,
+    isW: -1,
+    isU: -1,
+    isD: -1
+}, {
+    index: 9,
+    desc: "Вы в каменной комнате, вырубленной в гигантском окаменевшем дереве. Толстый слой пыли покрывает пол.",
+    isN: -1,
+    isE: -1,
+    isS: -1,
+    isW: -1,
+    isU: -1,
+    isD: 8
+}, {
+    index: 10,
+    desc: "Вы на восточной опушке Бирвудского леса. Жители окрестных деревень не смеют даже приближаться сюда. Далеко на востоке вы можете разглядеть замок. Вы можете пройти на запад или на восток по заросшей травой дороге.",
+    isN: -1,
+    isE: -1,
+    isS: -1,
+    isW: 7,
+    isU: -1,
+    isD: -1    
 }];
 
 // Предметы
 // Мы имеем массив предметов. Каждый предмет - это объект, он содержит своё название в инвентаре, своё описание и своё местоположение - либо номер локации, либо 999, если у игрока, либо -1 если не существует.
 const items = [{
     index: 0,
-    name: "лампа",
-    case: "лампу",
-    desc: "Жестяная масляная лампа",
+    name: "лестница",
+    case: "лестницу",
+    desc: "Это деревянная приставная лестница в полтора метра высотой. Достаточно лёгкая, чтобы носить её с собой.",
     place: 0
 }, {
     index: 1,
-    name: "ключ",
-    case: "ключ",
-    desc: "Старинный медный ключ",
-    place: 1
+    name: "рыба",
+    case: "рыбу",
+    desc: "Это красная рыба, уже подгнившая и довольно вонючая. Такую в руках держать неприятно, а с собой таскать - так вообще мерзко.",
+    place: 3
 }]
+
+// 
 
 // Инициализация
 
