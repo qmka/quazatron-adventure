@@ -15,7 +15,7 @@ const gameController = (function () {
         ////////////////////////////////////////////////////////
 
         // Если лестница прислонена к дереву
-        if (gamedata.flags.isLadderLeanToTree && gamedata.currentLoc === 8) description += "<br>К дереву приставлена лестница, по которой я могу залезть наверх.";
+        if (gamedata.flags.isLadderLeanToTree && gamedata.currentLoc === 8) description += "<br>К дереву приставлена лестница.";
 
         ////////////////////////////////////////////////////////
         // КОНЕЦ ПРОВЕРКИ УНИКАЛЬНЫХ ЛОКАЦИЙ
@@ -35,10 +35,28 @@ const gameController = (function () {
         return description;
     }
 
+    const makeInventory = (gamedata) => {
+        let inventory = "Инвентарь:<br><br>";
+        if (gamedata.items.some(e => {
+                return e.place === 999;
+            })) {
+            gamedata.items.forEach(e => {
+                if (e.place === 999) {
+                    inventory += `${e.name}<br>`;
+                }
+            })
+        } else {
+            inventory += `пусто<br>`;
+        }
+        return inventory;
+    }
+
     return {
         // makeScreen
         makeScreen: function (gamedata, actionText) {
-            document.getElementById("screen").innerHTML = makeLocation(gamedata) + "<br>" + actionText;
+            document.getElementById("screen").innerHTML = makeLocation(gamedata);
+            document.getElementById("sidebar").innerHTML = makeInventory(gamedata);
+            document.getElementById("action").innerHTML = actionText;
         }
     };
 })();
@@ -60,22 +78,24 @@ const wordController = (function () {
     // public
     return {
         inputProcessing: function (gamedata, input) {
-            const output = {};
             input = input.toLowerCase();
-            output.action = "Что будете делать?";
+            let answer = "Что будете делать?";
             // здесь мы проводим поверхностный анализ фразы
             // в свич идут все ситуации, для которых не надо анализировать фразу
             // в дефолт идёт новый свич, в котором уже анализируем фразу
             switch (input) {
                 case "":
-                    output.action = "Скажите мне, что делать";
+                    answer = "Скажите мне, что делать";
+                    break;
+                case "помоги":
+                    answer = "Я понимаю команды в формате ГЛАГОЛ + ОБЪЕКТ (+ ОБЪЕКТ), например, ВОЗЬМИ ЛЕСТНИЦУ или НАБЕРИ ВОДЫ В КУВШИН.<br>Используйте команды С Ю З В ВВЕРХ ВНИЗ для передвижения.";
                     break;
                 case "с":
                 case "иди на север":
                     if (gamedata.locations[gamedata.currentLoc].isN !== -1) {
                         gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isN;
                     } else {
-                        output.action = "Я не могу туда пройти";
+                        answer = "Я не могу туда пройти";
                     }
                     break;
                 case "ю":
@@ -83,7 +103,7 @@ const wordController = (function () {
                     if (gamedata.locations[gamedata.currentLoc].isS !== -1) {
                         gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isS;
                     } else {
-                        output.action = "Я не могу туда пройти";
+                        answer = "Я не могу туда пройти";
                     }
                     break;
                 case "в":
@@ -91,7 +111,7 @@ const wordController = (function () {
                     if (gamedata.locations[gamedata.currentLoc].isE !== -1) {
                         gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isE;
                     } else {
-                        output.action = "Я не могу туда пройти";
+                        answer = "Я не могу туда пройти";
                     }
                     break;
                 case "з":
@@ -99,7 +119,7 @@ const wordController = (function () {
                     if (gamedata.locations[gamedata.currentLoc].isW !== -1) {
                         gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isW;
                     } else {
-                        output.action = "Я не могу туда пройти";
+                        answer = "Я не могу туда пройти";
                     }
                     break;
                 case "вверх":
@@ -107,36 +127,36 @@ const wordController = (function () {
                     if (gamedata.locations[gamedata.currentLoc].isU !== -1) {
                         gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isU;
                     } else {
-                        output.action = "Я не могу туда пройти";
+                        answer = "Я не могу туда пройти";
                     }
                     break;
                 case "вниз":
                     if (gamedata.locations[gamedata.currentLoc].isD !== -1) {
                         gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isD;
                     } else {
-                        output.action = "Я не могу туда пройти";
+                        answer = "Я не могу туда пройти";
                     }
                     break;
                 case "и":
-                    output.action = "У меня в инвентаре: <br>";
+                    answer = "У меня в инвентаре: <br>";
                     if (gamedata.items.some(e => {
                             return e.place === 999;
                         })) {
                         gamedata.items.forEach(e => {
                             if (e.place === 999) {
-                                output.action += `- ${e.name}<br>`;
+                                answer += `- ${e.name}<br>`;
                             }
                         })
                     } else {
-                        output.action += `- пусто<br>`;
+                        answer += `- пусто<br>`;
                     }
-                    output.action += "<br>Что дальше?";
+                    answer += "<br>Что дальше?";
                     break;
                 case "иди на хуй":
                 case "иди нахуй":
                 case "иди в жопу":
                 case "иди в пизду":
-                    output.action = "Конечно, персонажа текстовой игры легко куда-нибудь послать. Правда, и он может вас послать, что сейчас и сделает, а вы ему ничего за это не сделаете. Иди-ка ты туда же, мой дорогой игрок!";
+                    answer = "Иди-ка ты туда же, мой дорогой игрок!";
                     break;
                 default:
                     // обрабатываем ввод игрока и производим соответствующее действие
@@ -160,20 +180,20 @@ const wordController = (function () {
                                 gamedata.flags.isLadderLeanToTree = false;
                                 // закрываем проход вверх
                                 gamedata.locations[8].isU = -1;
-                                output.action = `Я забрал лестницу.`;
+                                answer = `Я забрал лестницу.`;
                                 break;
                             }
 
                             // конец обработки уникальных для игры событий
                             if (thisItem === undefined) {
-                                output.action = `Что взять? Уточните.`;
+                                answer = `Что взять? Уточните.`;
                             } else if (thisItem.place === gamedata.currentLoc) {
                                 gamedata.items[thisItem.index].place = 999;
-                                output.action = `Я взял ${thisItem.case}.`;
+                                answer = `Я взял ${thisItem.case}.`;
                             } else if (thisItem.place === 999) {
-                                output.action = `У меня это уже есть!`;
+                                answer = `У меня это уже есть!`;
                             } else {
-                                output.action = `Здесь этого нет, не могу взять.`;
+                                answer = `Здесь этого нет, не могу взять.`;
                             }
                             break;
                         case "положи":
@@ -181,14 +201,14 @@ const wordController = (function () {
                         case "выбрось":
                             // кладём предмет
                             if (thisItem === undefined) {
-                                output.action = `Что положить? Уточните.`;
+                                answer = `Что положить? Уточните.`;
                             } else if (thisItem.place === 999) {
                                 gamedata.items[thisItem.index].place = gamedata.currentLoc;
-                                output.action = `Я положил ${thisItem.case}.`;
+                                answer = `Я положил ${thisItem.case}.`;
                             } else if (thisItem.place === gamedata.currentLoc) {
-                                output.action = `Это и так здесь уже лежит!`;
+                                answer = `Это и так здесь уже лежит!`;
                             } else {
-                                output.action = `Не могу выбросить, потому что у меня этого нет.`;
+                                answer = `Не могу выбросить, потому что у меня этого нет.`;
                             }
                             break;
                         case "осмотри":
@@ -197,16 +217,16 @@ const wordController = (function () {
 
                             // уникальные ситуации
                             if (phrase.obj === "пропасть" && gamedata.currentLoc === 6) {
-                                output.action = `Узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие.`;
+                                answer = `Узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие.`;
                                 break;
                             }
                             // общие ситуации
                             if (thisItem === undefined) {
-                                output.action = `Ничего необычного.`;
+                                answer = `Ничего необычного.`;
                             } else if (thisItem.place === 999) {
-                                output.action = thisItem.desc;
+                                answer = thisItem.desc;
                             } else {
-                                output.action = `У меня нет этого, так что и осматривать нечего.`;
+                                answer = `У меня нет этого, так что и осматривать нечего.`;
                             }
                             break;
 
@@ -221,11 +241,11 @@ const wordController = (function () {
                                 gamedata.flags.isLadderLeanToTree = true;
                                 // открываем проход наверх
                                 gamedata.locations[8].isU = 9;
-                                output.action = `Я прислонил лестницу к дереву.`;
+                                answer = `Я прислонил лестницу к дереву.`;
                             } else if (thisItem.place === 999) {
-                                output.action = `Хм, это делу не поможет.`;
+                                answer = `Хм, это делу не поможет.`;
                             } else {
-                                output.action = `Я могу прислонить только то, что у меня есть.`;
+                                answer = `Я могу прислонить только то, что у меня есть.`;
                             }
                             break;
                         case "сломай":
@@ -237,11 +257,11 @@ const wordController = (function () {
                                 gamedata.items[thisItem.index].place = -1;
                                 // добавляем в инвентарь шест
                                 gamedata.items[3].place = 999;
-                                output.action = `Я разломал лестницу, так что теперь у меня есть шест.`;
+                                answer = `Я разломал лестницу, так что теперь у меня есть шест.`;
                             } else if (thisItem.place === 999) {
-                                output.action = `Не буду ломать. Вдруг мне это ещё пригодится?`;
+                                answer = `Не буду ломать. Вдруг мне это ещё пригодится?`;
                             } else {
-                                output.action = `Я не могу это сломать.`;
+                                answer = `Я не могу это сломать.`;
                             }
                             break;
                         case "перейди":
@@ -249,31 +269,43 @@ const wordController = (function () {
                             // если у тебя есть шест, ты можешь пересечь пропасть
                             if (phrase.obj === "пропасть" && gamedata.currentLoc === 6) {
                                 if (gamedata.items[3].place === 999) {
-                                    output.action = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
+                                    answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
                                     gamedata.currentLoc = 12;
                                 } else {
-                                    output.action = "Я упаду с верёвки, мне нужно что-то для балланса.";
+                                    answer = "Я упаду с верёвки, мне нужно что-то для балланса.";
                                 }
-                            }
-                            else if (phrase.obj === "пропасть" && gamedata.currentLoc === 12) {
+                            } else if (phrase.obj === "пропасть" && gamedata.currentLoc === 12) {
                                 if (gamedata.items[3].place === 999) {
-                                    output.action = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
+                                    answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
                                     gamedata.currentLoc = 6;
                                 } else {
-                                    output.action = "Я упаду с верёвки, мне нужно что-то для балланса.";
+                                    answer = "Я упаду с верёвки, мне нужно что-то для балланса.";
                                 }
                             } else {
-                                output.action = "Я не могу это сделать."
+                                answer = "Я не могу это сделать."
                             }
                             break;
-
+                        case "залезь":
+                        case "заберись":
+                            // на дерево можно залезть, если к нему приставлена лестница
+                            if (gamedata.currentLoc = 8) {
+                                if (gamedata.flags.isLadderLeanToTree) {
+                                    gamedata.currentLoc = 9;
+                                    answer = "Я залез на дерево по лестнице."
+                                } else {
+                                    answer = "Я не могу залезть на дерево, его ствол гладкий, не за что зацепиться."
+                                }
+                            } else {
+                                answer = "Я туда не полезу."
+                            }
+                            break;
                         default:
-                            output.action = "Я не могу этого сделать";
+                            answer = "Я не могу этого сделать";
                             break;
                     }
             }
             return {
-                output: output,
+                answer: answer,
                 gameData: gamedata
             }
         }
@@ -285,7 +317,7 @@ const controller = (function (gameCtrl, wordCtrl) {
 
     const setupEventListeners = () => {
 
-        document.querySelector('.input_button').addEventListener('click', userInput);
+        // document.querySelector('.input_button').addEventListener('click', userInput);
         document.addEventListener('keypress', function (event) {
             if (event.keyCode === 13 || event.which === 13) {
                 userInput();
@@ -302,10 +334,10 @@ const controller = (function (gameCtrl, wordCtrl) {
         // 2. Выполняем действие игрока
         const processed = wordCtrl.inputProcessing(gameDataVar, inputText);
         gameDataVar = processed.gameData;
-        outputText = processed.output;
+        outputText = processed.answer;
 
         // 3. Обновляем экран
-        gameCtrl.makeScreen(gameDataVar, outputText.action);
+        gameCtrl.makeScreen(gameDataVar, outputText);
     };
 
     let gameDataVar = {
@@ -396,7 +428,7 @@ const controller = (function (gameCtrl, wordCtrl) {
             isD: -1
         }, {
             index: 9,
-            desc: "Вы в каменной комнате, вырубленной в гигантском окаменевшем дереве. Толстый слой пыли покрывает пол.",
+            desc: "Вы в каменной комнате, вырубленной в гигантском окаменевшем дереве. Толстый слой пыли покрывает пол. Путь отсюда только вниз.",
             isN: -1,
             isE: -1,
             isS: -1,

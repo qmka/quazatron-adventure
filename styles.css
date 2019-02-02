@@ -1,10 +1,53 @@
-#screen {
-    width: 640px;
-    height: 480px;
+body {
     background-color: black;
+    font-size: 16px;
+    font-family: 'Press Start 2P', cursive;
+}
+
+.ui {
     color: white;
-    margin-bottom: 20px;
     padding: 10px;
-    font-size: 20px;
-    font-family: Verdana, Geneva, Tahoma, sans-serif
+    border: 5px solid white;
+    font-size: 16px;
+    font-family: 'Press Start 2P', cursive;
+}
+
+#screen_container {
+    width: 960px;
+    margin: 0 auto;
+}
+
+#screen {
+    width: 610px;
+    height: 290px;
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+#sidebar {
+    width: 290px;
+    height: 290px;
+    position: relative;
+    top: -320px;
+    left: 640px;
+}
+
+#action {
+    height: 70px;
+    position: relative;
+    top: -320px;
+}
+
+#input_area {
+    position: relative;
+    top: -280px;
+}
+
+#input_field {
+    color: white;
+    background-color: black;
+    border: 0; 
+    font-size: 16px;
+    font-family: 'Press Start 2P', cursive;
 }
