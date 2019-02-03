@@ -75,6 +75,44 @@ const wordController = (function () {
         return result;
     };
 
+    // Передвижение игрока. На входе - фраза (направление) и gamedata. На выходе - ответ и gamedata
+    const playerMove = (gamedata, inputDir) => {
+        const gameDirections = gamedata.locations[gamedata.currentLoc].dir;
+        const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
+        // ищем inputDir в массивах directionTypes, запоминаем индекс
+        // находим число, соответствующее этому индексу, в массиве gameDirections
+        // если -1, то нельзя пройти
+        // иначе проходим
+        const index = directionTypes.indexOf(inputDir);
+        console.log(index);
+        let answer = "Что будете делать?";
+
+        if (gameDirections[index] !== -1) {
+            gamedata.currentLoc = gameDirections[index];
+            console.log(gamedata.currentLoc);
+        } else {
+            answer = "Я не могу туда пройти";
+        }
+
+        return {
+            gamedata: gamedata,
+            answer: answer
+        }
+    };
+
+    // Функция позволяет изменить в Game Data доступность одного из направлений перемещения
+    // На входе - (gamedata, номер локации, название направления, на что изменить)
+    // На выходе - gamedata
+    // gamedata.locations[8].isU = -1;
+    const changeDir = (gamedata, location, direction, value) => {
+        const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
+        const index = directionTypes.indexOf(direction);
+        if (index !== -1) {
+            gamedata.locations[location].dir[index] = value;
+        }
+        return gamedata;
+    }
+
     // public
     return {
         inputProcessing: function (gamedata, input) {
@@ -85,72 +123,23 @@ const wordController = (function () {
             // в дефолт идёт новый свич, в котором уже анализируем фразу
             switch (input) {
                 case "":
-                    answer = "Скажите мне, что делать";
+                    answer = "Скажите мне, что делать.";
                     break;
                 case "помоги":
-                    answer = "Я понимаю команды в формате ГЛАГОЛ + ОБЪЕКТ (+ ОБЪЕКТ), например, ВОЗЬМИ ЛЕСТНИЦУ или НАБЕРИ ВОДЫ В КУВШИН.<br>Используйте команды С Ю З В ВВЕРХ ВНИЗ для передвижения.";
+                    answer = "Я понимаю команды в формате ГЛАГОЛ + ОБЪЕКТ (+ ОБЪЕКТ), например, ВОЗЬМИ ЛЕСТНИЦУ или НАБЕРИ ВОДЫ В КУВШИН.<br>Используйте команды С Ю З В ВВЕРХ ВНИЗ для передвижения.<br>Команда ОСМОТРИ позволяет получить больше информации о различных объектах.";
                     break;
                 case "с":
-                case "иди на север":
-                    if (gamedata.locations[gamedata.currentLoc].isN !== -1) {
-                        gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isN;
-                    } else {
-                        answer = "Я не могу туда пройти";
-                    }
-                    break;
                 case "ю":
-                case "иди на юг":
-                    if (gamedata.locations[gamedata.currentLoc].isS !== -1) {
-                        gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isS;
-                    } else {
-                        answer = "Я не могу туда пройти";
-                    }
-                    break;
                 case "в":
-                case "иди на восток":
-                    if (gamedata.locations[gamedata.currentLoc].isE !== -1) {
-                        gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isE;
-                    } else {
-                        answer = "Я не могу туда пройти";
-                    }
-                    break;
                 case "з":
-                case "иди на запад":
-                    if (gamedata.locations[gamedata.currentLoc].isW !== -1) {
-                        gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isW;
-                    } else {
-                        answer = "Я не могу туда пройти";
-                    }
-                    break;
                 case "вверх":
-                case "наверх":
-                    if (gamedata.locations[gamedata.currentLoc].isU !== -1) {
-                        gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isU;
-                    } else {
-                        answer = "Я не могу туда пройти";
-                    }
-                    break;
                 case "вниз":
-                    if (gamedata.locations[gamedata.currentLoc].isD !== -1) {
-                        gamedata.currentLoc = gamedata.locations[gamedata.currentLoc].isD;
-                    } else {
-                        answer = "Я не могу туда пройти";
-                    }
+                    const moved = playerMove(gamedata, input);
+                    gamedata = moved.gamedata;
+                    answer = moved.answer;
                     break;
                 case "и":
-                    answer = "У меня в инвентаре: <br>";
-                    if (gamedata.items.some(e => {
-                            return e.place === 999;
-                        })) {
-                        gamedata.items.forEach(e => {
-                            if (e.place === 999) {
-                                answer += `- ${e.name}<br>`;
-                            }
-                        })
-                    } else {
-                        answer += `- пусто<br>`;
-                    }
-                    answer += "<br>Что дальше?";
+                    answer = 'Что "И"? Если же вы хотите посмотреть в инвентарь по команде "И", то в этом нет необходимости: весь ваш инвентарь отображается на боковой панели.';
                     break;
                 case "иди на хуй":
                 case "иди нахуй":
@@ -165,6 +154,12 @@ const wordController = (function () {
                     const thisItem = gamedata.items.find(e => e.case === phrase.obj);
 
                     switch (phrase.verb) {
+                        case "иди":
+                        case "наверх":
+                        case "поднимись":
+                        case "спустись":
+                            answer = "Для перемещения используйте команды С (идти на север), Ю (идти на юг), В (идти на восток), З (идти на запад), ВВЕРХ (подняться наверх), ВНИЗ (спуститься вниз)";
+                            break;
                         case "возьми":
                         case "бери":
                         case "забери":
@@ -179,12 +174,14 @@ const wordController = (function () {
                                 // меняем флаг isLadderLeanToTree на false
                                 gamedata.flags.isLadderLeanToTree = false;
                                 // закрываем проход вверх
-                                gamedata.locations[8].isU = -1;
+                                // gamedata.locations[8].isU = -1;
+                                gamedata = changeDir(gamedata, 8, "вверх", -1);
                                 answer = `Я забрал лестницу.`;
                                 break;
                             }
 
                             // конец обработки уникальных для игры событий
+
                             if (thisItem === undefined) {
                                 answer = `Что взять? Уточните.`;
                             } else if (thisItem.place === gamedata.currentLoc) {
@@ -220,19 +217,38 @@ const wordController = (function () {
                                 answer = `Узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие.`;
                                 break;
                             }
+                            if (phrase.obj === "куст" && gamedata.currentLoc === 14) {
+                                answer = "Ветви этого куста похожи на щупальца осминога.";
+                                if (!gamedata.flags.isKeyRevealed) {
+                                    gamedata.flags.isKeyRevealed = true;
+                                    gamedata.items[6].place = 999;
+                                    answer += " На одном из таких щупальцев я обнаружил ключ.";
+                                }
+                                break;
+                            }
+                            if (phrase.obj === "дрова" && gamedata.items[4].place === 999) {
+                                answer = thisItem.desc;
+                                if (!gamedata.flags.isAxeRevealed) {
+                                    gamedata.flags.isAxeRevealed = true;
+                                    gamedata.items[5].place = 999;
+                                    answer += " Осматривая вязанку, я обнаружил спрятанный в ней топор.";
+                                }
+                                break;
+                            }
                             // общие ситуации
                             if (thisItem === undefined) {
                                 answer = `Ничего необычного.`;
                             } else if (thisItem.place === 999) {
                                 answer = thisItem.desc;
                             } else {
-                                answer = `У меня нет этого, так что и осматривать нечего.`;
+                                answer = `Чтобы внимательно осмотреть предмет, нужно взять его в руки.`;
                             }
                             break;
 
                             // Здесь прописываем ситуации, соответствующие конкретной игре
                         case "прислони":
                         case "приставь":
+                        case "поставь":
                             // если ты в локации с деревом, и у тебя есть лестница, то ты её можешь прислонить к дереву
                             if (thisItem.name === "лестница" && thisItem.place === 999 && gamedata.currentLoc === 8) {
                                 // удаляем лестницу из инвентаря
@@ -240,7 +256,8 @@ const wordController = (function () {
                                 // меняем флаг isLadderLeanToTree на true
                                 gamedata.flags.isLadderLeanToTree = true;
                                 // открываем проход наверх
-                                gamedata.locations[8].isU = 9;
+                                // gamedata.locations[8].isU = 9;
+                                gamedata = changeDir(gamedata, 8, "вверх", 9);
                                 answer = `Я прислонил лестницу к дереву.`;
                             } else if (thisItem.place === 999) {
                                 answer = `Хм, это делу не поможет.`;
@@ -299,6 +316,44 @@ const wordController = (function () {
                                 answer = "Я туда не полезу."
                             }
                             break;
+                        case "руби":
+                        case "сруби":
+                        case "разруби":
+                        case "поруби":
+                            // можно попытаться срубить дерево
+                            if (gamedata.currentLoc === 8 && phrase.obj === "дерево" && gamedata.items[5].place === 999) {
+                                gamedata.items[5].place = -1;
+                                answer = "Я с размаху бью топором по дереву. Лезвие со свистом врезается в каменный ствол, сыплются искры, и мой топор разлетается на куски.";
+                                break;
+                            }
+                            // можно попытаться срубить куст
+                            if (gamedata.currentLoc === 14 && phrase.obj === "куст" && gamedata.items[5].place === 999) {
+                                answer = "Я попытался срубить куст, но его ветви чудесным образом отклоняются от лезвия, и я не могу причинить им вреда."
+                                break;
+                            }
+                            if ((gamedata.items[3].place === 999 || gamedata.items[3].place === gamedata.currentLoc) && phrase.obj === "шест" && gamedata.items[5].place === 999) {
+                                gamedata.items[3].place = -1;
+                                answer = "В ярости я накинулся на шест и порубил его в труху."
+                                break;
+                            }
+                            
+                            if ((gamedata.items[4].place === 999 || gamedata.items[4].place === gamedata.currentLoc) && phrase.obj === "дрова" && gamedata.items[5].place === 999) {
+                                gamedata.items[4].place = -1;
+                                answer = "В ярости я накинулся на вязанку дров и порубил их в щепки. Эх, теперь ведь дровосек расстроится..."
+                                break;
+                            }
+
+                            if (gamedata.items[5].place !== 999 && gamedata.items[2].place !== 999) {
+                                answer = "Чем прикажете рубить?";
+                                break;
+                            }
+
+                            if (gamedata.items[5].place !== 999 && gamedata.items[2].place === 999) {
+                                answer = "Я замахиваюсь мечом, и он начинает странно неприятно вибрировать. Будто бы хочет мне сказать: не пришло ещё его время!";
+                                break;
+                            }
+                            answer = "Я могу, конечно, порубить хоть всё вокруг, но к успеху не приближусь.";
+                            break;
                         default:
                             answer = "Я не могу этого сделать";
                             break;
@@ -347,121 +402,64 @@ const controller = (function (gameCtrl, wordCtrl) {
         // Список локаций
         locations: [{
             index: 0,
-            desc: "Вы находитесь в ветхой хижине. Сквозь открытую дверь на севере струится солнечный свет.",
-            isN: 1,
-            isE: -1,
-            isS: -1,
-            isW: -1,
-            isU: -1,
-            isD: -1
+            desc: '<img src="img/location00.png"><br>Вы находитесь в ветхой хижине. Сквозь открытую дверь на севере струится солнечный свет.',
+            dir: [1, -1, -1, -1, -1, -1] // [north, east, south, west, up, down]
         }, {
             index: 1,
-            desc: "Вы стоите на просёлочной дороге с поросшими травой обочинами. Дорога ведёт на север, а на юге виднеется хижина.",
-            isN: 2,
-            isE: -1,
-            isS: 0,
-            isW: -1,
-            isU: -1,
-            isD: -1
+            desc: '<img src="img/location01.png"><br>Вы стоите на просёлочной дороге с поросшими травой обочинами. Дорога ведёт на север, а на юге виднеется хижина.',
+            dir: [2, -1, 0, -1, -1, -1]
         }, {
             index: 2,
             desc: "Здесь дорога поворачивает с юга на восток. Небольшие холмы окружают дорогу.",
-            isN: -1,
-            isE: 3,
-            isS: 1,
-            isW: -1,
-            isU: -1,
-            isD: -1
+            dir: [-1, 3, 1, -1, -1, -1]
         }, {
             index: 3,
             desc: "Вы на заезженной песчаной просёлочной дороге, которая граничит с зелёным пастбищем. Дорога ведёт с запада на восток.",
-            isN: -1,
-            isE: 4,
-            isS: -1,
-            isW: 2,
-            isU: -1,
-            isD: -1
+            dir: [-1, 4, -1, 2, -1, -1]
         }, {
             index: 4,
             desc: "Вы на пыльной тропе, огибающей край Бирвудского леса. Издалека доносится слабый шелест листвы. Отсюда можно пойти на север, на запад и на юг.",
-            isN: 8,
-            isE: -1,
-            isS: 5,
-            isW: 3,
-            isU: -1,
-            isD: -1
+            dir: [8, -1, 5, 3, -1, -1]
         }, {
             index: 5,
             desc: "В этом месте дорога поворачивает с севера на восток. Небольшая, еле заметная тропинка ответвляется от дороги на юг.<br>У дороги стоит старушка, продающая лампы.",
-            isN: 4,
-            isE: 7,
-            isS: 6,
-            isW: -1,
-            isU: -1,
-            isD: -1
+            dir: [4, 7, 6, -1, -1, -1]
         }, {
             index: 6,
             desc: "Вы стоите на краю страшной, бездонной пропасти. Туго натянутая верёвка пересекает расщелину. По ней можно перейти пропасть, но она выглядит слишком тонкой и опасной. На север от пропасти ведёт тропинка.",
-            isN: 5,
-            isE: -1,
-            isS: -1,
-            isW: -1,
-            isU: -1,
-            isD: -1
+            dir: [5, -1, -1, -1, -1, -1]
         }, {
             index: 7,
             desc: "Вы на дороге, ведущей с запада на восток через тёмный Бирвудский лес. Сверху доносятся вороньи крики.",
-            isN: -1,
-            isE: 10,
-            isS: -1,
-            isW: 5,
-            isU: -1,
-            isD: -1
+            dir: [-1, 10, -1, 5, -1, -1]
         }, {
             index: 8,
             desc: "Вы стоите около огромного каменного дерева, совершенно лишённого веток. Дорога здесь кончается, выход только на юг.",
-            isN: -1,
-            isE: -1,
-            isS: 4,
-            isW: -1,
-            isU: -1,
-            isD: -1
+            dir: [-1, -1, 4, -1, -1, -1]
         }, {
             index: 9,
             desc: "Вы в каменной комнате, вырубленной в гигантском окаменевшем дереве. Толстый слой пыли покрывает пол. Путь отсюда только вниз.",
-            isN: -1,
-            isE: -1,
-            isS: -1,
-            isW: -1,
-            isU: -1,
-            isD: 8
+            dir: [-1, -1, -1, -1, -1, 8]
         }, {
             index: 10,
             desc: "Вы на восточной опушке Бирвудского леса. Жители окрестных деревень не смеют даже приближаться сюда. Далеко на востоке вы можете разглядеть замок. Вы можете пройти на запад или на восток по заросшей травой дороге.",
-            isN: -1,
-            isE: -1,
-            isS: -1,
-            isW: 7,
-            isU: -1,
-            isD: -1
+            dir: [-1, -1, -1, 7, -1, -1]
         }, {
             index: 11,
             desc: "Вы снаружи зловеще выглядящего замка Камелот. Величественное ранее знамя теперь изорвано в клочья и истрёпано ветрами. Большая дверь из слоновой кости на востоке - единственный вход.",
-            isN: -1,
-            isE: -1,
-            isS: -1,
-            isW: 11,
-            isU: -1,
-            isD: -1
+            dir: [-1, -1, -1, 11, -1, -1]
         }, {
             index: 12,
             desc: "Вы на краю Бирвудского леса. На севере верёвка пересекает ужасное ущелье. На юг от пропасти ведёт дорога.",
-            isN: -1,
-            isE: -1,
-            isS: 13,
-            isW: -1,
-            isU: -1,
-            isD: -1
+            dir: [-1, -1, 13, -1, -1, -1]
+        }, {
+            index: 13,
+            desc: "Вы в глубине Бирвудского леса. На деревьях полно крошечных жужжащих насекомых. На севере - выход из леса, а на запад уходит узкая тропинка.",
+            dir: [12, -1, -1, 14, -1, -1]
+        }, {
+            index: 14,
+            desc: "Вы стоите на заросшей мхом земле под навесом из листьев, пропускающим слабый солнечный свет. Возможный выход только на восток. Рядом растёт странного вида куст.",
+            dir: [-1, 13, -1, -1, -1, -1]
         }],
 
         // Предметы
@@ -469,7 +467,7 @@ const controller = (function (gameCtrl, wordCtrl) {
             index: 0,
             name: "лестница",
             case: "лестницу",
-            desc: "Это деревянная приставная лестница в полтора метра высотой. Достаточно лёгкая, чтобы носить её с собой.",
+            desc: "Это деревянная приставная лестница в полтора метра высотой. Достаточно лёгкая, чтобы носить её с собой, но при этом довольно хлипкая, легко сломать.",
             place: 0
         }, {
             index: 1,
@@ -489,11 +487,31 @@ const controller = (function (gameCtrl, wordCtrl) {
             case: "шест",
             desc: "Это шест, который остался от разломанной мною лестницы.",
             place: -1
+        }, {
+            index: 4,
+            name: "дрова",
+            case: "дрова",
+            desc: "Это вязанка берёзовых дров, довольно тяжёлая.",
+            place: 13
+        }, {
+            index: 5,
+            name: "топор",
+            case: "топор",
+            desc: "Это добротный, хорошо заточенный топор.",
+            place: -1
+        }, {
+            index: 6,
+            name: "ключ",
+            case: "ключ",
+            desc: "Это толстый фигурный ключ из слоновой кости.",
+            place: -1
         }],
 
         // Флаги и триггеры (true или false, как правило)
         flags: {
-            isLadderLeanToTree: false
+            isLadderLeanToTree: false,
+            isAxeRevealed: false,
+            isKeyRevealed: false
         }
     };
 

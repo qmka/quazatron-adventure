@@ -19,29 +19,33 @@ body {
 
 #screen {
     width: 610px;
-    height: 290px;
+    height: 390px;
     position: relative;
     top: 0;
     left: 0;
 }
 
+#screen img {
+    padding-bottom: 10px;
+}
+
 #sidebar {
     width: 290px;
-    height: 290px;
+    height: 390px;
     position: relative;
-    top: -320px;
+    top: -420px;
     left: 640px;
 }
 
 #action {
-    height: 70px;
+    height: 110px;
     position: relative;
-    top: -320px;
+    top: -420px;
 }
 
 #input_area {
     position: relative;
-    top: -280px;
+    top: -400px;
 }
 
 #input_field {
