@@ -32,13 +32,13 @@ const gameController = (function () {
         ////////////////////////////////////////////////////////
 
         description += "<br>";
-        if (g.items.some(e => {
+        if (g.objects.some(e => {
                 return e.place === g.currentLoc;
             })) {
             description += "<br>Здесь также есть:<br>";
-            g.items.forEach(e => {
+            g.objects.forEach(e => {
                 if (e.place === g.currentLoc) {
-                    description += `- ${e.name}<br>`;
+                    description += `- ${e.id}<br>`;
                 }
             })
         }
@@ -47,12 +47,12 @@ const gameController = (function () {
 
     const makeInventory = (g) => {
         let inventory = "Инвентарь:<br><br>";
-        if (g.items.some(e => {
+        if (g.objects.some(e => {
                 return e.place === 999;
             })) {
-            g.items.forEach(e => {
+            g.objects.forEach(e => {
                 if (e.place === 999) {
-                    inventory += `${e.name}<br>`;
+                    inventory += `${e.id}<br>`;
                 }
             })
         } else {
@@ -76,14 +76,6 @@ const gameController = (function () {
 
 const wordController = (function () {
     // private
-    const phraseAnalyze = (inputPhrase) => {
-        const result = {};
-        const words = inputPhrase.split(/[\s,]+/); // получили массив слов.
-        result.verb = words[0];
-        result.obj = words[1];
-        result.noun = words[words.length - 1];
-        return result;
-    };
 
     // Передвижение игрока. На входе - фраза (направление) и g. На выходе - ответ и g
     const playerMove = (g, inputDir) => {
@@ -94,12 +86,10 @@ const wordController = (function () {
         // если -1, то нельзя пройти
         // иначе проходим
         const index = directionTypes.indexOf(inputDir);
-        console.log(index);
         let answer = "Что будете делать?";
 
         if (gameDirections[index] !== -1) {
             g.currentLoc = gameDirections[index];
-            console.log(g.currentLoc);
         } else {
             answer = "Я не могу туда пройти";
         }
@@ -113,7 +103,6 @@ const wordController = (function () {
     // Функция позволяет изменить в Game Data доступность одного из направлений перемещения
     // На входе - (g, номер локации, название направления, на что изменить)
     // На выходе - g
-    // g.locations[8].isU = -1;
     const changeDir = (g, location, direction, value) => {
         const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
         const index = directionTypes.indexOf(direction);
@@ -123,18 +112,74 @@ const wordController = (function () {
         return g;
     }
 
+    // Получаем объект по его id
+    const getObjectById = (g, id) => {
+        const cur = g.objects.find(e => e.id === id);
+        return cur;
+    }
+
+    // Проверка: есть ли у героя предмет, который он назвал
+    const haveThisItem = (obj) => {
+        return obj.place === 999 ? true : false;
+    }
+
+    // Проверка: есть ли у героя нужный по условию предмет
+    const haveItem = (g, id) => {
+        const obj = getObjectById(g, id);
+        return obj.place === 999 ? true : false;
+    }
+
+    // Возвращает местоположение предмета по его id
+    const itemPlace = (g, id) => {
+        const obj = getObjectById(g, id);
+        console.log(obj);
+        return obj.place;
+    }
+
+    // Меняем место предмета, который указан игроком. Возвращает g. На входе g, предмет, место.
+    const changeUnknownItemPlace = (g, obj, plc) => {
+        const ind = g.objects.findIndex(e => e === obj);
+        g.objects[ind].place = plc;
+        return g
+    }
+
+    // Меняем место предмета, id которого известен. Возвращает g
+    const changeKnownItemPlace = (g, id, plc) => {
+        const ind = g.objects.findIndex(e => e.id === id);
+        g.objects[ind].place = plc;
+        return g
+    }
+
     // public
     return {
         inputProcessing: function (g, input) {
-            input = input.toLowerCase();
+            // Main game logic
+            if (input.message !== "Ок") {
+                return {
+                    answer: input.message,
+                    gameData: g
+                }
+            }
             let answer = "Что будете делать?";
-            // здесь мы проводим поверхностный анализ фразы
-            // в свич идут все ситуации, для которых не надо анализировать фразу
-            // в дефолт идёт новый свич, в котором уже анализируем фразу
-            switch (input) {
-                case "":
-                    answer = "Скажите мне, что делать.";
-                    break;
+
+            if (input.item1 === undefined) {
+                thisItem = getObjectById(g, "dummyItem");
+            } else {
+                thisItem = getObjectById(g, input.item1);
+            }
+            if (input.item2 === undefined) {
+                anotherItem = getObjectById(g, "dummyAltItem");
+            } else {
+                anotherItem = getObjectById(g, input.item2);
+            }
+            if (input.obj === undefined) {
+                thisObject = getObjectById(g, "dummyObject");
+            } else {
+                thisObject = getObjectById(g, input.obj);
+            }
+
+            
+            switch (input.verb) {
                 case "помоги":
                     answer = "Я понимаю команды в формате ГЛАГОЛ + ОБЪЕКТ (+ ОБЪЕКТ), например, ВОЗЬМИ ЛЕСТНИЦУ или НАБЕРИ ВОДЫ В КУВШИН.<br>Используйте команды С Ю З В ВВЕРХ ВНИЗ для передвижения.<br>Команда ОСМОТРИ позволяет получить больше информации о различных объектах.";
                     break;
@@ -144,371 +189,352 @@ const wordController = (function () {
                 case "з":
                 case "вверх":
                 case "вниз":
-                    const moved = playerMove(g, input);
+                    const moved = playerMove(g, input.verb);
                     g = moved.g;
                     answer = moved.answer;
                     break;
-                case "и":
-                    answer = 'Что "И"? Если же вы хотите посмотреть в инвентарь по команде "И", то в этом нет необходимости: весь ваш инвентарь отображается на боковой панели.';
+                case "иди":
+                    answer = "Для перемещения используйте команды С (идти на север), Ю (идти на юг), В (идти на восток), З (идти на запад), ВВЕРХ (подняться наверх), ВНИЗ (спуститься вниз)";
                     break;
-                case "иди на хуй":
-                case "иди нахуй":
-                case "иди в жопу":
-                case "иди в пизду":
-                    answer = "Иди-ка ты туда же, мой дорогой игрок!";
-                    break;
-                default:
-                    // обрабатываем ввод игрока и производим соответствующее действие
-                    // если это не прокатывает, то выводим сообщение "Я не могу этого сделать"
-                    const phrase = phraseAnalyze(input);
-                    const thisItem = g.items.find(e => e.case === phrase.obj);
+                case "положи":
+                    // обработка уникальных событий
 
-                    switch (phrase.verb) {
-                        case "иди":
-                        case "наверх":
-                        case "поднимись":
-                        case "спустись":
-                            answer = "Для перемещения используйте команды С (идти на север), Ю (идти на юг), В (идти на восток), З (идти на запад), ВВЕРХ (подняться наверх), ВНИЗ (спуститься вниз)";
-                            break;
-                        case "возьми":
-                        case "бери":
-                        case "забери":
-                            // берём предмет
+                    // конец обработки уникальных событий
 
-                            // обработка уникальных для игры событий
-
-                            // если ты в локации с деревом, и к дереву прислонена лестница, то её можешь забрать
-                            if (thisItem.name === "лестница" && g.currentLoc === 8 && g.flags.isLadderLeanToTree) {
-                                // добавляем лестницу в инвентарь
-                                g.items[thisItem.index].place = 999;
-                                // меняем флаг isLadderLeanToTree на false
-                                g.flags.isLadderLeanToTree = false;
-                                // закрываем проход вверх
-                                // g.locations[8].isU = -1;
-                                g = changeDir(g, 8, "вверх", -1);
-                                answer = `Я забрал лестницу.`;
-                                break;
-                            }
-
-                            // конец обработки уникальных для игры событий
-
-                            if (thisItem === undefined) {
-                                answer = `Что взять? Уточните.`;
-                            } else if (thisItem.place === g.currentLoc) {
-                                g.items[thisItem.index].place = 999;
-                                answer = `Я взял ${thisItem.case}.`;
-                            } else if (thisItem.place === 999) {
-                                answer = `У меня это уже есть!`;
-                            } else {
-                                answer = `Здесь этого нет, не могу взять.`;
-                            }
-                            break;
-                        case "положи":
-                        case "оставь":
-                        case "выбрось":
-                            // кладём предмет
-                            if (thisItem === undefined) {
-                                answer = `Что положить? Уточните.`;
-                            } else if (thisItem.place === 999) {
-                                g.items[thisItem.index].place = g.currentLoc;
-                                answer = `Я положил ${thisItem.case}.`;
-                            } else if (thisItem.place === g.currentLoc) {
-                                answer = `Это и так здесь уже лежит!`;
-                            } else {
-                                answer = `Не могу выбросить, потому что у меня этого нет.`;
-                            }
-                            break;
-                        case "осмотри":
-                        case "изучи":
-                            // осматриваем
-
-                            // уникальные ситуации
-                            if (phrase.obj === "пропасть" && g.currentLoc === 6) {
-                                answer = `Узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие.`;
-                                break;
-                            }
-                            if (phrase.obj === "куст" && g.currentLoc === 14) {
-                                answer = "Ветви этого куста похожи на щупальца осминога.";
-                                if (!g.flags.isKeyRevealed) {
-                                    g.flags.isKeyRevealed = true;
-                                    g.items[6].place = 999;
-                                    answer += " На одном из таких щупальцев я обнаружил ключ.";
-                                }
-                                break;
-                            }
-                            if (phrase.obj === "дрова" && g.items[4].place === 999) {
-                                answer = thisItem.desc;
-                                if (!g.flags.isAxeRevealed) {
-                                    g.flags.isAxeRevealed = true;
-                                    g.items[5].place = 999;
-                                    answer += " Осматривая вязанку, я обнаружил спрятанный в ней топор.";
-                                }
-                                break;
-                            }
-                            if (phrase.obj === "дверь" && g.currentLoc === 11) {
-                                g.flags.isDoorOpened ? answer = "Дверь открыта." : answer = "Дверь заперта.";
-                                break;
-                            }
-                            if (phrase.obj === "тролля" && g.currentLoc === 7 && !g.flags.isTrollKilled) {
-                                answer = "Это огромный мерзкий зелёный тролль. Ничего, кроме страха и омерзения, не вызывает.";
-                                break;
-                            }
-                            if (phrase.obj === "дерево" && g.currentLoc === 8) {
-                                answer = "Это невысокое, но очень широкое в обхвате дерево, превратившееся в камень под действием какого-то неизвестного колдовства. Ствол дерева гол словно столб, а на вершине в два моих роста ветви хитро переплетаются, образуя нишу.";
-                                break;
-                            }
-                            if (phrase.obj === "решетку" && g.currentLoc === 17) {
-                                g.flags.isPortcullisOpened ? answer = "Решётка поднята к потолку - проход свободен." : answer = "Мощная железная решётка с толстыми прутьями. Своими силами такую не поднять, но, может быть, где-то я найду подъёмный механизм?";
-                                break;
-                            }
-                            if (phrase.obj === "люк" && g.currentLoc === 18) {
-                                g.flags.isTrapdoorOpened ? answer = "Люк открыт, можно спуститься вниз." : answer = "Это деревянный люк,  закрывающий путь вниз. Я не вижу никакой ручки, с помощью которой можно открыть этот люк, видимо, время её не пощадило.";
-                                break;
-                            }
-                            if (phrase.obj === "старушку" && g.currentLoc === 5) {
-                                answer = "Это старая женщина в деревенской одежде. Рядом с ней на куске ткани разложены различные масляные лампы, которые она продаёт.";
-                                break;
-                            }
-                            // общие ситуации
-                            if (thisItem === undefined) {
-                                answer = `Ничего необычного.`;
-                            } else if (thisItem.place === 999) {
-                                answer = thisItem.desc;
-                            } else {
-                                answer = `Чтобы внимательно осмотреть предмет, нужно взять его в руки.`;
-                            }
-                            break;
-
-                            // Здесь прописываем ситуации, соответствующие конкретной игре
-                        case "прислони":
-                        case "приставь":
-                        case "поставь":
-                            // если ты в локации с деревом, и у тебя есть лестница, то ты её можешь прислонить к дереву
-                            if (thisItem.name === "лестница" && thisItem.place === 999 && g.currentLoc === 8) {
-                                // удаляем лестницу из инвентаря
-                                g.items[thisItem.index].place = -1;
-                                // меняем флаг isLadderLeanToTree на true
-                                g.flags.isLadderLeanToTree = true;
-                                // открываем проход наверх
-                                // g.locations[8].isU = 9;
-                                g = changeDir(g, 8, "вверх", 9);
-                                answer = `Я прислонил лестницу к дереву.`;
-                            } else if (thisItem.place === 999) {
-                                answer = `Хм, это делу не поможет.`;
-                            } else {
-                                answer = `Я могу прислонить только то, что у меня есть.`;
-                            }
-                            break;
-                        case "сломай":
-                        case "разломай":
-                        case "ломай":
-                            // если у тебя есть лестница, то её можно разломать
-                            if (phrase.obj === "лестница" && thisItem.place === 999) {
-                                // удаляем лестницу из инвентаря
-                                g.items[thisItem.index].place = -1;
-                                // добавляем в инвентарь шест
-                                g.items[3].place = 999;
-                                answer = `Я разломал лестницу, так что теперь у меня есть шест.`;
-                                break;
-                            }
-
-                            // Люк можно разломать
-                            if (g.currentLoc === 18 && phrase.obj === "люк" && !g.flags.isTrapdoorOpened) {
-                                if (g.items[5].place === 999) {
-                                    g.flags.isTrapdoorOpened = true;
-                                    g = changeDir(g, 18, "вниз", 21);
-                                    answer = "Я разломал топором деревянный люк. Теперь путь вниз открыт.";
-                                } else {
-                                    answer = "У меня нет ничего, чем я могу сломать люк."
-                                }
-                                break;
-                            }
-
-                            // стандартные ситуации
-                            if (thisItem.place === 999) {
-                                answer = `Не буду ломать. Вдруг мне это ещё пригодится?`;
-                            } else {
-                                answer = `Я не могу это сломать.`;
-                            }
-                            break;
-                        case "перейди":
-                        case "пересеки":
-                            // если у тебя есть шест, ты можешь пересечь пропасть
-                            if (phrase.obj === "пропасть" && g.currentLoc === 6) {
-                                if (g.items[3].place === 999) {
-                                    answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
-                                    g.currentLoc = 12;
-                                } else {
-                                    answer = "Я упаду с верёвки, мне нужно что-то для балланса.";
-                                }
-                            } else if (phrase.obj === "пропасть" && g.currentLoc === 12) {
-                                if (g.items[3].place === 999) {
-                                    answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
-                                    g.currentLoc = 6;
-                                } else {
-                                    answer = "Я упаду с верёвки, мне нужно что-то для балланса.";
-                                }
-                            } else {
-                                answer = "Я не могу это сделать."
-                            }
-                            break;
-                        case "залезь":
-                        case "заберись":
-                            // на дерево можно залезть, если к нему приставлена лестница
-                            if (g.currentLoc = 8) {
-                                if (g.flags.isLadderLeanToTree) {
-                                    g.currentLoc = 9;
-                                    answer = "Я залез на дерево по лестнице."
-                                } else {
-                                    answer = "Я не могу залезть на дерево, его ствол гладкий, не за что зацепиться."
-                                }
-                            } else {
-                                answer = "Я туда не полезу."
-                            }
-                            break;
-                        case "руби":
-                        case "сруби":
-                        case "разруби":
-                        case "поруби":
-                            // люк можно разрубить
-                            if (g.currentLoc === 18 && phrase.obj === "люк" && g.items[5].place === 999) {
-                                if (!g.flags.isTrapdoorOpened) {
-                                    g.flags.isTrapdoorOpened = true;
-                                    g = changeDir(g, 18, "вниз", 21);
-                                    answer = "Я порубил топором деревянный люк. Теперь путь вниз открыт."
-                                } else {
-                                    answer = "Здесь уже нет люка."
-                                }
-                                break;
-                            }
-                            // можно попытаться убить тролля, но не получится
-                            if (g.currentLoc === 7 && phrase.obj === "тролля" && g.items[5].place === 999) {
-                                answer = "Этот топор хорош для колки дров, но в бою будет слабоват и неудобен.";
-                                break;
-                            }
-                            // можно попытаться срубить дерево
-                            if (g.currentLoc === 8 && phrase.obj === "дерево" && g.items[5].place === 999) {
-                                g.items[5].place = -1;
-                                answer = "Я с размаху бью топором по дереву. Лезвие со свистом врезается в каменный ствол, сыплются искры, и мой топор разлетается на куски.";
-                                break;
-                            }
-                            // можно попытаться срубить куст
-                            if (g.currentLoc === 14 && phrase.obj === "куст" && g.items[5].place === 999) {
-                                answer = "Я попытался срубить куст, но его ветви чудесным образом отклоняются от лезвия, и я не могу причинить им вреда."
-                                break;
-                            }
-                            if ((g.items[3].place === 999 || g.items[3].place === g.currentLoc) && phrase.obj === "шест" && g.items[5].place === 999) {
-                                g.items[3].place = -1;
-                                answer = "В ярости я накинулся на шест и порубил его в труху."
-                                break;
-                            }
-
-                            if ((g.items[4].place === 999 || g.items[4].place === g.currentLoc) && phrase.obj === "дрова" && g.items[5].place === 999) {
-                                g.items[4].place = -1;
-                                answer = "В ярости я накинулся на вязанку дров и порубил их в щепки. Эх, теперь ведь дровосек расстроится..."
-                                break;
-                            }
-
-                            if (g.currentLoc === 5 && phrase.obj === "старушку" && g.items[5].place === 999) {
-                                answer = "Вам не кажется, что эта ситуация со старушкой и топором - немного из другого произведения?";
-                                break;
-                            }
-
-                            if (g.items[5].place !== 999 && g.items[2].place !== 999) {
-                                answer = "Чем прикажете рубить?";
-                                break;
-                            }
-                            answer = "Я могу, конечно, порубить хоть всё вокруг, но к успеху не приближусь.";
-                            break;
-                        case "открой":
-                        case "отопри":
-                            // дверь в замок можно открыть с помощью ключа
-                            if (g.currentLoc === 11 && phrase.obj === "дверь") {
-                                if (g.items[6].place === 999 && !g.flags.isDoorOpened) {
-                                    g.flags.isDoorOpened = true;
-                                    g = changeDir(g, 11, "в", 15);
-                                    answer = "Вы открыли дверь ключом.";
-                                } else if (g.flags.isDoorOpened) {
-                                    answer = "Дверь уже открыта.";
-                                } else {
-                                    answer = "Не могу открыть, тут нужен ключ.";
-                                }
-                                break;
-                            }
-                            // а вот люк открыть никак нельзя
-                            if (g.currentLoc === 18 && phrase.obj === "люк" && !g.flags.isTrapdoorOpened) {
-                                answer = "Я не представляю, как его открыть. Здесь нет никакой ручки, не за что зацепиться.";
-                                break;
-                            }
-                        case "убей":
-                        case "ударь":
-                            // тролля можно убить булавой
-                            if (g.currentLoc === 7 && phrase.obj === "тролля" && !g.flags.isTrollKilled) {
-                                if (g.items[2].place === 999) {
-                                    g.flags.isTrollKilled = true;
-                                    g = changeDir(g, 7, "в", 10);
-                                    answer = "В прыжке я вломил троллю булавой прямо промеж глаз! Дико заревев, искалеченный тролль с торчащей в черепе булавой убежал в лес. Путь на восток свободен.";
-                                    break;
-                                } else if (g.items[5].place === 999) {
-                                    answer = "Не стоит с этим маленьким топориком лезть на большого тролля. Нужно что-то посерьёзнее.";
-                                    break;
-                                } else if (g.items[3].place === 999) {
-                                    answer = "Я похож на черепашку-ниндзя, чтобы нападать с деревянным шестом на толстого тролля?";
-                                    break;
-                                } else {
-                                    answer = "Нападать на тролля с голыми руками? Нет уж!";
-                                    break;
-                                }
-                            }
-                            // можно попробовать напасть на старушку
-                            if (g.currentLoc === 5 && phrase.obj === "старушку") {
-                                if (g.items[5].place === 999) {
-                                    answer = "Вам не кажется, что эта ситуация со старушкой и топором - из другого произведения?";
-                                    break;
-                                } else {
-                                    answer = "Не в моих принципах поднимать руку на женщину.";
-                                    break;
-                                }
-                            }
-                            if (g.items[5].place === 999) {
-                                answer = "Не совсем понятно, что мне нужно сделать. Если хотите что-то порубить топором, то лучше скажите мне РУБИ или РАЗРУБИ.";
-                                break;
-                            }
-                            answer = "Ничего не произошло.";
-                            break;
-                        case "говори":
-                        case "поговори":
-                            // поговорить со старушкой
-                            if (phrase.obj === "со" && phrase.noun === "старушкой" && g.currentLoc === 5) {
-                                answer = "Старушка рассказывает, что её муж делает лампы, а она их продаёт путникам - такая вещь в путешествии всегда пригодится. Если хотите купить лампу, вам придётся заплатить серебром. Ничего себе цены!";
-                                break;
-                            }
-                            if (phrase.obj === "с" && phrase.noun === "троллем" && g.currentLoc === 7 && !g.flags.isTrollKilled) {
-                                answer = "Тролль злобно рычит в ответ.";
-                                break;
-                            }
-                            answer = "Не совсем понимаю, с кем вы хотите поговорить.";
-                            break;
-                        case "купи":
-                        case "заплати":
-                            if ((phrase.obj === "лампу" || phrase.obj === "монету" || phrase.obj === "старушке") && g.currentLoc === 5) {
-                                if (g.items[11].place === 999) {
-                                    g.items[11].place = -1;
-                                    g.items[7].place = 5;
-                                    answer = "Я купил у старушки лампу за серебряную монету.";
-                                    break;
-                                } else {
-                                    answer = "У меня нет денег.";
-                                    break;
-                                }
-                            }
-                            answer = "Я не могу это купить.";
-                            break;
-                        default:
-                            answer = "Я не понимаю.";
-                            break;
+                    if (thisItem === {}) {
+                        answer = `Что положить? Уточните.`;
+                    } else if (haveThisItem(thisItem)) {
+                        g = changeUnknownItemPlace(g, thisItem, g.currentLoc);
+                        answer = `Ок, положил.`;
+                    } else if (thisItem.place === g.currentLoc) {
+                        answer = `Это и так здесь уже лежит!`;
+                    } else {
+                        answer = `Не могу выбросить, потому что у меня этого нет.`;
                     }
+                    break;
+                case "возьми":
+                    // обработка уникальных событий
+
+                    // если ты в локации с деревом, и к дереву прислонена лестница, то её можешь забрать
+                    if (thisItem.id === "лестница" && g.currentLoc === 8 && g.flags.isLadderLeanToTree) {
+                        // добавляем лестницу в инвентарь
+                        g = changeUnknownItemPlace(g, thisItem, 999);
+                        // меняем флаг isLadderLeanToTree на false
+                        g.flags.isLadderLeanToTree = false;
+                        // закрываем проход вверх
+                        g = changeDir(g, 8, "вверх", -1);
+                        answer = `Я забрал лестницу.`;
+                        break;
+                    }
+
+                    // конец обработки уникальных для игры событий
+
+                    if (thisItem === {}) {
+                        answer = `Что взять? Уточните.`;
+                    } else if (thisItem.place === g.currentLoc) {
+                        g = changeUnknownItemPlace(g, thisItem, 999);
+                        answer = `Ок, взял.`;
+                    } else if (thisItem.place === 999) {
+                        answer = `У меня это уже есть!`;
+                    } else {
+                        answer = `Здесь этого нет, не могу взять.`;
+                    }
+                    break;
+                case "осмотри":
+                    // обработка уникальных событий
+                    if (thisObject.id === "пропасть" && g.currentLoc === 6) {
+                        answer = `Передо мной узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие. Верёвка на вид крепкая.`;
+                        break;
+                    }
+                    if (thisObject.id === "куст" && g.currentLoc === 14) {
+                        answer = "Ветви этого куста похожи на щупальца осминога.";
+                        if (!g.flags.isKeyRevealed) {
+                            g.flags.isKeyRevealed = true;
+                            g = changeKnownItemPlace(g, "ключ", 14);
+                            answer += " На одном из таких щупальцев я обнаружил ключ.";
+                        }
+                        break;
+                    }
+                    if (thisItem.id === "дрова" && haveItem(g, "дрова")) {
+                        answer = thisItem.desc;
+                        if (!g.flags.isAxeRevealed) {
+                            g.flags.isAxeRevealed = true;
+                            g = changeKnownItemPlace(g, "топор", g.currentLoc);
+                            answer += " Осматривая вязанку, я обнаружил спрятанный в ней топор.";
+                        }
+                        break;
+                    }
+                    if (thisObject.id === "дверь" && g.currentLoc === 11) {
+                        g.flags.isDoorOpened ? answer = "Дверь открыта." : answer = "Дверь заперта.";
+                        break;
+                    }
+                    if (thisObject.id === "тролль" && g.currentLoc === 7 && !g.flags.isTrollKilled) {
+                        answer = "Это огромный мерзкий зелёный тролль. Ничего, кроме страха и омерзения, не вызывает.";
+                        break;
+                    }
+                    if (thisObject.id === "дерево" && g.currentLoc === 8) {
+                        answer = "Это невысокое, но очень широкое в обхвате дерево, превратившееся в камень под действием какого-то неизвестного колдовства. Ствол дерева гол словно столб, а на вершине в два моих роста ветви хитро переплетаются, образуя нишу.";
+                        break;
+                    }
+                    if (thisObject.id === "решетку" && g.currentLoc === 17) {
+                        g.flags.isPortcullisOpened ? answer = "Решётка поднята к потолку - проход свободен." : answer = "Мощная железная решётка с толстыми прутьями. Своими силами такую не поднять, но, может быть, где-то я найду подъёмный механизм?";
+                        break;
+                    }
+                    if (thisObject.id === "люк" && g.currentLoc === 18) {
+                        g.flags.isTrapdoorOpened ? answer = "Здесь уже дыра вместо люка, да щепки вокруг разбросаны." : answer = "Это деревянный люк,  закрывающий путь вниз. Я не вижу никакой ручки, с помощью которой можно открыть этот люк, видимо, время её не пощадило.";
+                        break;
+                    }
+                    if (thisObject.id === "старушку" && g.currentLoc === 5) {
+                        answer = "Это старая женщина в деревенской одежде. Рядом с ней на куске ткани разложены различные масляные лампы, которые она продаёт.";
+                        break;
+                    }
+
+                    if (thisItem.id === "лестницу" && g.flags.isLadderLeanToTree && g.currentLoc === 8) {
+                        answer = "Лестница приставлена к дереву. Я могу залезть наверх."
+                    }
+                    // конец обработки уникальных для игры событий
+
+                    if (itemPlace(g, thisItem.id) === g.currentLoc) {
+                        answer = `Чтобы внимательно осмотреть предмет, нужно взять его в руки.`;
+                        break;
+                    }
+                    if (haveThisItem(thisItem)) {
+                        answer = thisItem.desc;
+                        break;
+                    }
+                    answer = `Ничего необычного.`;
+                    break;
+                case "прислони":
+                    // если ты в локации с деревом, и у тебя есть лестница, то ты её можешь прислонить к дереву
+                    if (thisItem.id === "лестница" && haveThisItem(thisItem) && g.currentLoc === 8) {
+                        // удаляем лестницу из инвентаря
+                        g = changeKnownItemPlace(g, "лестница", -1);
+                        // меняем флаг isLadderLeanToTree на true
+                        g.flags.isLadderLeanToTree = true;
+                        // открываем проход наверх
+                        g = changeDir(g, 8, "вверх", 9);
+                        answer = `Я прислонил лестницу к дереву.`;
+                    } else if (haveThisItem(thisItem)) {
+                        answer = `Хм, это делу не поможет.`;
+                    } else {
+                        answer = `Я могу прислонить только то, что у меня есть.`;
+                    }
+                    break;
+                case "сломай":
+                    // если у тебя есть лестница, то её можно разломать
+                    if (thisItem.id === "лестница" && haveThisItem(thisItem)) {
+                        // удаляем лестницу из инвентаря
+                        g = changeKnownItemPlace(g, "лестница", -1);
+                        // показываем в локации шест
+                        g = changeKnownItemPlace(g, "шест", g.currentLoc);
+                        answer = `Я разломал лестницу, так что теперь у меня есть шест.`;
+                        break;
+                    }
+
+                    // Люк можно разломать
+                    if (thisObject.id = "люк" && g.currentLoc === 18 && !g.flags.isTrapdoorOpened) {
+                        if (haveItem(g, "топор")) {
+                            g.flags.isTrapdoorOpened = true;
+                            g = changeDir(g, 18, "вниз", 21);
+                            answer = "Я разломал топором деревянный люк. Теперь путь вниз открыт.";
+                        } else {
+                            answer = "У меня нет ничего, чем я могу сломать люк.";
+                        }
+                        break;
+                    }
+
+                    // стандартные ситуации
+                    if (haveThisItem(thisItem)) {
+                        answer = `Не буду ломать. Вдруг мне это ещё пригодится?`;
+                    } else {
+                        answer = `Я не могу это сломать.`;
+                    }
+                    break;
+                case "перейди":
+                    // если у тебя есть шест, ты можешь пересечь пропасть
+                    if (thisObject.id === "пропасть" && g.currentLoc === 6) {
+                        if (haveItem(g, "шест")) {
+                            answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
+                            g.currentLoc = 12;
+                        } else {
+                            answer = "Я упаду с верёвки, мне нужно что-то для балланса.";
+                        }
+                    } else if (thisObject.id === "пропасть" && g.currentLoc === 12) {
+                        if (haveItem(g, "шест")) {
+                            answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
+                            g.currentLoc = 6;
+                        } else {
+                            answer = "Я упаду с верёвки, мне нужно что-то для балланса.";
+                        }
+                    } else {
+                        answer = "Я не могу это сделать.";
+                    }
+                    break;
+                case "залезь":
+                    // на дерево можно залезть, если к нему приставлена лестница
+                    if (g.currentLoc === 8) {
+                        if (g.flags.isLadderLeanToTree) {
+                            g.currentLoc = 9;
+                            answer = "Я залез на дерево по лестнице.";
+                        } else {
+                            answer = "Я не могу залезть на дерево, его ствол гладкий, не за что зацепиться.";
+                        }
+                    } else {
+                        answer = "Я туда не полезу.";
+                    }
+                    break;
+                case "руби":
+                    // люк можно разрубить
+                    if (g.currentLoc === 18 && thisObject.id === "люк" && haveItem(g, "топор")) {
+                        if (!g.flags.isTrapdoorOpened) {
+                            g.flags.isTrapdoorOpened = true;
+                            g = changeDir(g, 18, "вниз", 21);
+                            answer = "Я порубил топором деревянный люк. Теперь путь вниз открыт.";
+                        } else {
+                            answer = "Здесь уже нет люка.";
+                        }
+                        break;
+                    }
+                    // можно попытаться убить тролля, но не получится
+                    if (g.currentLoc === 7 && thisObject.id === "тролль" && haveItem(g, "топор")) {
+                        answer = "Этот топор хорош для колки дров, но в бою будет слабоват и неудобен.";
+                        break;
+                    }
+                    // можно попытаться срубить дерево
+                    if (g.currentLoc === 8 && thisObject.id === "дерево" && haveItem(g, "топор")) {
+                        g = changeKnownItemPlace(g, "топор", -1);
+                        answer = "Я с размаху бью топором по дереву. Лезвие со свистом врезается в каменный ствол, сыплются искры, и мой топор разлетается на куски.";
+                        break;
+                    }
+                    // можно попытаться срубить куст
+                    if (g.currentLoc === 14 && thisObject.id === "куст" && haveItem(g, "топор")) {
+                        answer = "Я попытался срубить куст, но его ветви чудесным образом отклоняются от лезвия, и я не могу причинить им вреда.";
+                        break;
+                    }
+                    if ((haveItem(g, "шест") || itemPlace(g, "шест") === g.currentLoc) && (thisItem.id === "шест" || anotherItem.id === "шест") && haveItem(g, "топор")) {
+                        g = changeKnownItemPlace(g, "шест", -1);
+                        answer = "В ярости я накинулся на шест и порубил его в труху.";
+                        break;
+                    }
+
+                    if ((haveItem(g, "дрова") || itemPlace(g, "дрова") === g.currentLoc) && (thisItem.id === "дрова" || anotherItem.id === "дрова") && haveItem(g, "топор")) {
+                        g = changeKnownItemPlace(g, "дрова", -1);
+                        answer = "В ярости я накинулся на вязанку дров и порубил их в щепки. Эх, теперь ведь дровосек расстроится...";
+                        break;
+                    }
+
+                    if (g.currentLoc === 5 && thisObject.id === "старушка" && haveItem(g, "топор")) {
+                        answer = "Вам не кажется, что эта ситуация со старушкой и топором - немного из другого произведения?";
+                        break;
+                    }
+
+                    if (!haveItem(g, "топор") && !haveItem(g, "меч")) {
+                        answer = "Чем прикажете рубить?";
+                        break;
+                    }
+                    answer = "Я могу, конечно, порубить хоть всё вокруг, но к успеху не приближусь.";
+                    break;
+                case "открой":
+                    // дверь в замок можно открыть с помощью ключа
+                    if (g.currentLoc === 11 && thisObject.id === "дверь") {
+                        if (haveItem(g, "ключ") && !g.flags.isDoorOpened) {
+                            g.flags.isDoorOpened = true;
+                            g = changeDir(g, 11, "в", 15);
+                            answer = "Вы открыли дверь ключом.";
+                        } else if (g.flags.isDoorOpened) {
+                            answer = "Дверь уже открыта.";
+                        } else {
+                            answer = "Не могу открыть, мне нужен ключ.";
+                        }
+                        break;
+                    }
+                    // а вот люк открыть никак нельзя
+                    if (g.currentLoc === 18 && thisObject.id === "люк" && !g.flags.isTrapdoorOpened) {
+                        answer = "Я не представляю, как его открыть. Здесь нет никакой ручки, не за что зацепиться.";
+                        break;
+                    }
+                    answer = "Я не могу это открыть";
+                    break;
+                case "ударь":
+                    // тролля можно убить булавой
+                    if (g.currentLoc === 7 && thisObject.id === "тролль" && !g.flags.isTrollKilled) {
+                        if (haveItem(g, "булава")) {
+                            g.flags.isTrollKilled = true;
+                            g = changeDir(g, 7, "в", 10);
+                            answer = "В прыжке я вломил троллю булавой прямо промеж глаз! Дико заревев, искалеченный тролль с торчащей в черепе булавой убежал в лес. Путь на восток свободен.";
+                            break;
+                        } else if (haveItem(g, "топор")) {
+                            answer = "Не стоит с маленьким топориком лезть на большого тролля. Нужно что-то посерьёзнее.";
+                            break;
+                        } else if (haveItem(g, "шест")) {
+                            answer = "Я похож на черепашку-ниндзя, чтобы нападать с деревянным шестом на толстого тролля?";
+                            break;
+                        } else {
+                            answer = "Нападать на тролля с голыми руками? Нет уж!";
+                            break;
+                        }
+                    }
+                    // можно попробовать напасть на старушку
+                    if (g.currentLoc === 5 && thisObject.id === "старушка") {
+                        if (haveItem(g, "топор")) {
+                            answer = "Вам не кажется, что эта ситуация со старушкой и топором - из другого произведения?";
+                            break;
+                        } else {
+                            answer = "Не в моих принципах поднимать руку на женщину.";
+                            break;
+                        }
+                    }
+                    if (haveItem(g, "топор")) {
+                        answer = "Не совсем понятно, что мне нужно сделать. Если хотите что-то порубить топором, то лучше скажите мне РУБИ или РАЗРУБИ.";
+                        break;
+                    }
+                    answer = "Ничего не произошло.";
+                    break;
+                case "говори":
+                    // поговорить со старушкой
+                    if (thisObject.id === "старушка" && g.currentLoc === 5) {
+                        answer = "Старушка рассказывает, что её муж делает лампы, а она их продаёт путникам - такая вещь в путешествии всегда пригодится. Если хотите купить лампу, вам придётся заплатить серебром. Ничего себе цены!";
+                        break;
+                    }
+                    if (thisObject.id === "тролль" && g.currentLoc === 7 && !g.flags.isTrollKilled) {
+                        answer = "Тролль злобно рычит в ответ.";
+                        break;
+                    }
+                    answer = "Не совсем понимаю, с кем вы хотите поговорить.";
+                    break;
+                case "съешь":
+                    // можно попробовать съесть рыбу
+                    if (thisItem.id === "рыба") {
+                        if (haveThisItem(thisItem)) {
+                            answer = "Я эту тухлятину есть не буду.";
+                        } else {
+                            answer = "У меня нет рыбы."
+                        }
+                        break;
+                    }
+                    answer = "Я не могу это съесть";
+                    break;
+                case "купи":
+                case "заплати":
+                    if ((thisItem.id === "лампа" || thisItem.id === "монета" || thisObject.id === "старушка") && g.currentLoc === 5) {
+                        if (haveItem(g, "монета")) {
+                            g = changeKnownItemPlace(g, "монета", -1);
+                            g = changeKnownItemPlace(g, "лампа", 5);
+                            answer = "Я купил у старушки лампу за серебряную монету.";
+                            break;
+                        } else {
+                            answer = "У меня нет денег.";
+                            break;
+                        }
+                    }
+                    answer = "Я не могу это купить.";
+                    break;
+
+                default:
+                    answer = "Я не понимаю.";
+                    break;
             }
+
             return {
                 answer: answer,
                 gameData: g
@@ -517,8 +543,107 @@ const wordController = (function () {
     }
 })();
 
+const inputAnalyzeController = (function () {
+    // private
+
+    // public
+    return {
+        result: function (data, input) {
+            const verbs = data.verbs;
+            const objects = data.objects;
+            const adjectives = data.adjectives;
+            let isSecondItem = false;
+            let verb, item1, item2, nonitem, object;
+            let message = "Ок";
+
+            const isItem = (ob) => {
+                if (ob !== undefined) {
+                    const current = objects.find(e => e.id === ob);
+                    return current.item;
+                }
+                return undefined;
+            }
+
+            const seekWord = (type, word) => {
+                for (let j = 0; j < type.length; j += 1) {
+                    const currentForms = type[j].forms;
+                    for (let k = 0; k < currentForms.length; k += 1) {
+                        if (currentForms[k] === word) {
+                            return type[j].id;
+                        }
+                    }
+                }
+            }
+
+            const seekAdjId = (type, id) => {
+                for (let n = 0; n < type.length; n += 1) {
+                    const adjId = type[n].adjective;
+                    if (id === adjId) {
+                        return type[n].id;
+                    }
+                }
+            }
+
+            const isAdjective = (word) => {
+                const result = seekWord(adjectives, word);
+                return result !== undefined ? true : false;
+            }
+            input = input.toLowerCase(); // словарь к игре - только строчными буквами
+            const words = input.split(/[\s,]+/);
+
+            for (let i = 0; i < words.length; i += 1) {
+                // Первым идёт глагол
+                if (i === 0) {
+                    const pVerb = seekWord(verbs, words[i]);
+                    if (pVerb !== undefined) verb = pVerb;
+                } else {
+                    const pObject = seekWord(objects, words[i]);
+                    // проверяем, предыдущее слово - прилагательное?
+                    if (isAdjective(words[i - 1])) {
+                        const pAdjective = seekWord(adjectives, words[i - 1]);
+                        if (pObject !== undefined) {
+                            const verifObj = seekAdjId(objects, pAdjective);
+                            object = verifObj !== undefined ? verifObj : pObject;
+                        }
+                    } else {
+                        // если у слова есть свойство adjective, а игрок не указал это, нужно вернуть ему служебное сообщение
+                        const thisObject = objects.find(e => e.id === pObject);
+                        if (pObject !== undefined) {
+                            if ("adjective" in thisObject) message = `Уточните прилагательное для слова "${words[i]}".`;
+                            else object = pObject;
+                        }
+                    }
+                    // здесь мы проверяем, объект - предмет или не предмет
+                    if (object !== undefined) {
+                        if (isItem(object)) {
+                            if (!isSecondItem) {
+                                isSecondItem = true;
+                                item1 = object;
+                                object = undefined;
+                            } else {
+                                item2 = object;
+                            }
+                        } else {
+                            nonitem = object;
+                        }
+                    }
+                }
+            }
+            console.log(verb);
+
+            return {
+                verb: verb,
+                obj: nonitem,
+                item1: item1,
+                item2: item2,
+                message: message
+            }
+        }
+    }
+})();
+
 // GLOBAL APP CONTROLLER
-const controller = (function (gameCtrl, wordCtrl) {
+const controller = (function (gameCtrl, wordCtrl, inputAnalyzeCtrl) {
 
     const setupEventListeners = () => {
 
@@ -536,12 +661,15 @@ const controller = (function (gameCtrl, wordCtrl) {
         const inputText = document.getElementById("input_field").value;
         document.getElementById("input_field").value = "";
 
-        // 2. Выполняем действие игрока
-        const processed = wordCtrl.inputProcessing(gameDataVar, inputText);
+        // 2. Обрабатываем фразу через анализатор
+        const words = inputAnalyzeCtrl.result(gameDataVar, inputText);
+
+        // 3. Выполняем действие игрока
+        const processed = wordCtrl.inputProcessing(gameDataVar, words);
         gameDataVar = processed.gameData;
         outputText = processed.answer;
 
-        // 3. Обновляем экран
+        // 4. Обновляем экран
         gameCtrl.makeScreen(gameDataVar, outputText);
     };
 
@@ -549,7 +677,7 @@ const controller = (function (gameCtrl, wordCtrl) {
         // Текущая локация
         currentLoc: 0,
 
-        // Список локаций
+        // Локации
         locations: [{
             index: 0,
             desc: '<img src="img/location00.png"><br>Вы находитесь в ветхой хижине. Сквозь открытую дверь на севере струится солнечный свет.',
@@ -560,7 +688,7 @@ const controller = (function (gameCtrl, wordCtrl) {
             dir: [2, -1, 0, -1, -1, -1]
         }, {
             index: 2,
-            desc: "Здесь дорога поворачивает с юга на восток. Небольшие холмы окружают дорогу.",
+            desc: '<img src="img/location02.png"><br>Здесь дорога поворачивает с юга на восток. Небольшие холмы окружают дорогу.',
             dir: [-1, 3, 1, -1, -1, -1]
         }, {
             index: 3,
@@ -668,79 +796,210 @@ const controller = (function (gameCtrl, wordCtrl) {
             dir: [-1, 27, -1, -1, -1, -1]
         }],
 
-        // Предметы
-        items: [{
-            index: 0,
-            name: "лестница",
-            case: "лестницу",
+        // Словарь глаголов !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!111111111
+        verbs: [{
+            id: "с",
+            forms: ["с"]
+        }, {
+            id: "в",
+            forms: ["в"]
+        }, {
+            id: "з",
+            forms: ["з"]
+        }, {
+            id: "ю",
+            forms: ["ю"]
+        }, {
+            id: "вверх",
+            forms: ["вверх", "наверх", "поднимись"]
+        }, {
+            id: "вниз",
+            forms: ["вниз", "спустись"]
+        }, {
+            id: "помоги",
+            forms: ["помоги", "помощь", "хелп", "команды", "help", "инфо", "и"]
+        }, {
+            id: "возьми",
+            forms: ["возьми", "подними", "бери", "забери"]
+        }, {
+            id: "положи",
+            forms: ["положи", "выбрось", "оставь"]
+        }, {
+            id: "иди",
+            forms: ["иди", "пойди", "топай", "отправляйся"]
+        }, {
+            id: "брось",
+            forms: ["брось", "кидай", "метни"]
+        }, {
+            id: "говори",
+            forms: ["говори", "поговори", "скажи"]
+        }, {
+            id: "купи",
+            forms: ["купи", "приобрети", "покупай"]
+        }, {
+            id: "заплати",
+            forms: ["заплати"]
+        }, {
+            id: "ударь",
+            forms: ["ударь", "убей", "атакуй"]
+        }, {
+            id: "руби",
+            forms: ["руби", "поруби", "разруби", "заруби", "переруби", "сруби"]
+        }, {
+            id: "открой",
+            forms: ["открой", "отопри"]
+        }, {
+            id: "залезь",
+            forms: ["залезь", "заберись", "лезь", "карабкайся", "вскарабкайся"]
+        }, {
+            id: "перейди",
+            forms: ["перейди", "пересеки"]
+        }, {
+            id: "сломай",
+            forms: ["ломай", "сломай", "разломай", "поломай"]
+        }, {
+            id: "прислони",
+            forms: ["прислони", "приставь", "поставь"]
+        }, {
+            id: "осмотри",
+            forms: ["осмотри", "изучи", "исследуй"]
+        }, {
+            id: "съешь",
+            forms: ["съешь", "ешь", "попробуй", "откуси"]
+        }],
+
+        // Словарь объектов !!!!!!!!!!!!!!!!!!!!!!!!!!!!111111111!!!!!!!!!!!!!!!!!!!!!!!!!!
+        objects: [{
+            id: "лестница",
+            forms: ["лестница", "лестницу", "лестницой", "лестнице"],
+            item: true,
             desc: "Это деревянная приставная лестница в полтора метра высотой. Достаточно лёгкая, чтобы носить её с собой, но при этом довольно хлипкая, легко сломать.",
             place: 0
         }, {
-            index: 1,
-            name: "рыба",
-            case: "рыбу",
+            id: "рыба",
+            forms: ["рыба", "рыбу", "рыбе", "рыбой"],
+            item: true,
             desc: "Это красная рыба, уже подгнившая и довольно вонючая. Такую в руках держать неприятно, а с собой таскать - так вообще мерзко.",
             place: 3
         }, {
-            index: 2,
-            name: "булава",
-            case: "булаву",
+            id: "булава",
+            forms: ["булава", "булавой", "булаве", "булаву"],
+            item: true,
             desc: "Это короткая булава с шипами. На её рукояти выгравированы слова: СМЕРТЬ ТРОЛЛЯМ.",
             place: 9,
         }, {
-            index: 3,
-            name: "шест",
-            case: "шест",
+            id: "шест",
+            forms: ["шест", "шеста", "шестом", "шесту"],
+            item: true,
             desc: "Это шест, который остался от разломанной мною лестницы.",
             place: -1
         }, {
-            index: 4,
-            name: "дрова",
-            case: "дрова",
+            id: "дрова",
+            forms: ["дрова", "дровам", "дров"],
+            item: true,
             desc: "Это вязанка берёзовых дров, довольно тяжёлая.",
             place: 13
         }, {
-            index: 5,
-            name: "топор",
-            case: "топор",
+            id: "топор",
+            forms: ["топор", "топору", "топора", "топором"],
+            item: true,
             desc: "Это добротный, хорошо заточенный топор.",
             place: -1
         }, {
-            index: 6,
-            name: "ключ",
-            case: "ключ",
-            desc: "Это толстый фигурный ключ из слоновой кости.",
+            id: "ключ",
+            forms: ["ключ", "ключом", "ключа", "ключу"],
+            item: true,
+            desc: "Это тяжёлый фигурный ключ из слоновой кости.",
             place: -1
         }, {
-            index: 7,
-            name: "лампа",
-            case: "лампу",
+            id: "лампа",
+            forms: ["лампа", "лампу", "лампы", "лампе", "лампой"],
+            item: true,
             desc: "Это одноразовая лампа. По словам продавца, горит недолго, но очень ярко.",
             place: -1
         }, {
-            index: 8,
-            name: "соль",
-            case: "соль",
+            id: "соль",
+            forms: ["соль", "соли", "солью", "мешочек", "мешочком", "мешочку", "мешочка"],
+            item: true,
             desc: "Это соль, упакованная в мешочек, на вид и на вкус вполне обычная.",
             place: 24
         }, {
-            index: 9,
-            name: "масло",
-            case: "масло",
+            id: "масло",
+            forms: ["масло", "маслом", "маслу", "масленка", "маслёнка", "масленкой", "маслёнкой", "маслёнку", "масленку", "масленке", "маслёнке"],
+            item: true,
             desc: "Это маслёнка с маслом. Пригодится, если в этом разрушенном замке нужно будет что-нибудь смазать.",
             place: 22
         }, {
-            index: 10,
-            name: "меч",
-            case: "меч",
+            id: "меч",
+            forms: ["меч", "мечу", "мечом", "меча"],
+            item: true,
             desc: "Это длинный обоюдоострый меч. Его эфес украшают две химеры, а поверхность лезвия за долгие годы не утратила своего блеска: в него можно смотреться словно в зеркало.",
             place: 26
         }, {
-            index: 11,
-            name: "монета",
-            case: "монету",
+            id: "монета",
+            forms: ["монета", "монету", "монете", "монетой"],
+            item: true,
             desc: "Это старая серебряная монета.",
             place: 19
+        }, {
+            id: "пропасть",
+            forms: ["пропасть", "пропасти", "пропастью", "расщелина", "расщелиной", "расщелину", "расщелины", "верёвка", "веревка", "верёвке", "веревке", "верёвку", "веревку", "верёвки", "веревки", "ущелье", "ущелья"],
+            item: false
+        }, {
+            id: "куст",
+            forms: ["куст", "куста", "кусту", "кустом"],
+            item: false,
+        }, {
+            id: "ветви",
+            forms: ["ветви", "ветвей", "ветвям", "щупальца", "щупалец", "щупальцам"],
+            item: false
+        }, {
+            id: "дверь",
+            forms: ["дверь", "двери", "дверью"],
+            item: false
+        }, {
+            id: "тролль",
+            forms: ["тролль", "тролля", "троллю", "троллем"],
+            item: false
+        }, {
+            id: "дерево",
+            forms: ["дерево", "дереву", "деревом", "дерева"],
+            item: false
+        }, {
+            id: "решётка",
+            forms: ["решётка", "решетка", "решётку", "решетку", "решёткой", "решеткой", "решётки", "решетки"],
+            item: false
+        }, {
+            id: "люк",
+            forms: ["люк", "люку", "люка", "люком"],
+            item: false
+        }, {
+            id: "старушка",
+            forms: ["старушка", "старушку", "старушки", "старушке", "старушкой"],
+            item: false
+        }, {
+            id: "dummyItem",
+            forms: ["dummyItem"],
+            item: true,
+            desc: "Ничего особенного",
+            place: -1
+        }, {
+            id: "dummyAltItem",
+            forms: ["dummyAltItem"],
+            item: true,
+            desc: "Ничего особенного",
+            place: -1
+        }, {
+            id: "dummyObject",
+            forms: ["dummyObject"],
+            item: false
+        }],
+
+        // Словарь прилагательных
+        // В демо-игре отсутствует
+        adjectives: [{
+            id: "dummy",
+            forms: ["kWJMOgEdmy"]
         }],
 
         // Флаги и триггеры (true или false, как правило)
@@ -756,6 +1015,7 @@ const controller = (function (gameCtrl, wordCtrl) {
     };
 
     const testState = (g) => {
+        /*
         // тестовое состояние: зашёл в замок
         g.items[5].place = 999; // топор у игрока
         g.items[7].place = 999; // лампа у игрока
@@ -767,6 +1027,7 @@ const controller = (function (gameCtrl, wordCtrl) {
         g.locations[7].dir[1] = 10; // разблокировки недоступных локаций
         g.locations[11].dir[1] = 15;
         g.locations[18].dir[5] = 21;
+        */
         return g;
 
     }
@@ -779,6 +1040,6 @@ const controller = (function (gameCtrl, wordCtrl) {
             setupEventListeners();
         }
     };
-})(gameController, wordController);
+})(gameController, wordController, inputAnalyzeController);
 
 controller.init();
