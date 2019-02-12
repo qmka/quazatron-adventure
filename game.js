@@ -83,16 +83,10 @@ const gameController = (function () {
 // WORD ANALYSE CONTROLLER
 
 const wordController = (function () {
-    // private
-
     // Передвижение игрока. На входе - фраза (направление) и g. На выходе - ответ и g
     const playerMove = (g, inputDir) => {
         const gameDirections = g.locations[g.currentLoc].dir;
         const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
-        // ищем inputDir в массивах directionTypes, запоминаем индекс
-        // находим число, соответствующее этому индексу, в массиве gameDirections
-        // если -1, то нельзя пройти
-        // иначе проходим
         const index = directionTypes.indexOf(inputDir);
         let answer = "Что будете делать?";
 
@@ -162,6 +156,7 @@ const wordController = (function () {
     return {
         inputProcessing: function (g, input) {
             // Main game logic
+            let thisItem, anotherItem, thisObject;
             if (input.message !== "Ок") {
                 return {
                     answer: input.message,
@@ -271,7 +266,7 @@ const wordController = (function () {
                     break;
                 case "осмотри":
                     // обработка уникальных событий
-                    if (thisObject.id === "пропасть" && g.currentLoc === 6) {
+                    if (thisObject.id === "пропасть" && (g.currentLoc === 6 || g.currentLoc === 12)) {
                         answer = `Передо мной узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие. Верёвка на вид крепкая.`;
                         break;
                     }
@@ -381,7 +376,7 @@ const wordController = (function () {
                         g = changeKnownItemPlace(g, "лестница", -1);
                         // показываем в локации шест
                         g = changeKnownItemPlace(g, "шест", g.currentLoc);
-                        answer = `Я разломал лестницу, так что теперь у меня есть шест.`;
+                        answer = `Я разломал лестницу на куски и получил неплохой длинный шест.`;
                         break;
                     }
 
@@ -521,6 +516,7 @@ const wordController = (function () {
                         if (haveItem(g, "булава")) {
                             g.flags.isTrollKilled = true;
                             g = changeDir(g, 7, "в", 10);
+                            g = changeKnownItemPlace(g, "булава", -1);
                             answer = "В прыжке я вломил троллю булавой прямо промеж глаз! Дико заревев, искалеченный тролль с торчащей в черепе булавой убежал в лес. Путь на восток свободен.";
                             break;
                         } else if (haveItem(g, "топор")) {
@@ -587,7 +583,7 @@ const wordController = (function () {
                         answer = "Она спит, как я с ней поговорю?";
                         break;
                     }
-                    answer = "Не совсем понимаю, с кем вы хотите поговорить.";
+                    answer = "Здесь не с кем говорить.";
                     break;
                 case "съешь":
                     // можно попробовать съесть рыбу
@@ -599,7 +595,7 @@ const wordController = (function () {
                         }
                         break;
                     }
-                    answer = "Я не могу это съесть";
+                    answer = "Я не буду это есть.";
                     break;
                 case "купи":
                 case "заплати":
@@ -637,7 +633,7 @@ const wordController = (function () {
                             break;
                         }
                     }
-                    answer = "Здесь нечего включать.";
+                    answer = "У меня нет ничего такого, что включается.";
                     break;
                 case "высыпь":
                     if (thisItem.id === "соль" && haveThisItem(thisItem)) {
@@ -795,24 +791,25 @@ const inputAnalyzeController = (function () {
             }
 
             const seekWord = (type, word) => {
-                for (let j = 0; j < type.length; j += 1) {
-                    const currentForms = type[j].forms;
-                    for (let k = 0; k < currentForms.length; k += 1) {
-                        if (currentForms[k] === word) {
-                            return type[j].id;
+                for (let j of type) {
+                    const currentForms = j.forms;
+                    for (let k of currentForms) {
+                        if (k === word) {
+                            return j.id;
                         }
                     }
                 }
             }
 
             const seekAdjId = (type, id) => {
-                for (let n = 0; n < type.length; n += 1) {
-                    const adjId = type[n].adjective;
+                for (let n of type) {
+                    const adjId = n.adjective;
                     if (id === adjId) {
-                        return type[n].id;
+                        return n.id;
                     }
                 }
             }
+
 
             const isAdjective = (word) => {
                 const result = seekWord(adjectives, word);
@@ -896,12 +893,12 @@ const controller = (function (gameCtrl, wordCtrl, inputAnalyzeCtrl) {
         // 3. Выполняем действие игрока
         const processed = wordCtrl.inputProcessing(gameDataVar, words);
         gameDataVar = processed.gameData;
-        outputText = processed.answer;
+        const outputText = processed.answer;
 
         // 4. Обновляем экран
         gameCtrl.makeScreen(gameDataVar, outputText);
     };
-
+    
     let gameDataVar = {
         // Текущая локация
         currentLoc: 0,
@@ -1013,7 +1010,7 @@ const controller = (function (gameCtrl, wordCtrl, inputAnalyzeCtrl) {
             dir: [-1, 26, 20, -1, -1, -1]
         }, {
             index: 26,
-            desc: "Вы в оружейной комнате. Её стены покрыты толстым слоем паутины, а вдоль стен стоят пустые оружейные полки.",
+            desc: "Вы в оружейной комнате. Её стены покрыты толстым слоем паутины, а вдоль стен стоят пустые оружейные полки. Выход отсюда - через дверь на западе.",
             dir: [-1, -1, -1, 25, -1, -1]
         }, {
             index: 27,
@@ -1292,9 +1289,8 @@ const controller = (function (gameCtrl, wordCtrl, inputAnalyzeCtrl) {
         }
     };
 
-    const testState = (g) => {
-
-        // тестовое состояние: зашёл в замок
+    const currentState = (g) => {
+/*
         g.objects[5].place = 999; // топор у игрока
         g.objects[7].place = 999; // лампа у игрока
         g.objects[8].place = 999; // соль у игрока
@@ -1310,7 +1306,7 @@ const controller = (function (gameCtrl, wordCtrl, inputAnalyzeCtrl) {
         g.locations[11].dir[1] = 15;
         g.locations[18].dir[5] = 21;
         g.locations[17].dir[0] = 27;
-
+*/
         return g;
 
     }
@@ -1318,7 +1314,7 @@ const controller = (function (gameCtrl, wordCtrl, inputAnalyzeCtrl) {
     return {
         init: function () {
             console.log('Application has started.');
-            gameDataVar = testState(gameDataVar); // функция позволяет задать начальное значение переменных для тестирования, чтобы не тестировать каждый раз игру сначала 
+            gameDataVar = currentState(gameDataVar); // функция позволяет задать начальное значение переменных для тестирования, чтобы не тестировать каждый раз игру сначала 
             gameCtrl.makeScreen(gameDataVar, 'Что будете делать?');
             setupEventListeners();
         }
