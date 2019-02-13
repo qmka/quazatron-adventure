@@ -1,4 +1,4 @@
-import setStartParameters from 'gamedata';
+import {setStartParameters} from './gamedata.js';
 
 // GAME CONTROLLER
 
