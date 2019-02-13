@@ -445,4 +445,4 @@ const setStartParameters = () => {
     return g;
 }
 
-export {setStartParameters};
+export default setStartParameters;
