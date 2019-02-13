@@ -1,0 +1,4 @@
+const ENTER_KEY_CODE = 13;
+const USER_HAVE_ITEM = 999;
+
+export { ENTER_KEY_CODE, USER_HAVE_ITEM };
