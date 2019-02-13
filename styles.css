@@ -46,6 +46,7 @@ body {
 #input_area {
     position: relative;
     top: -400px;
+    display: block;
 }
 
 #input_field {
