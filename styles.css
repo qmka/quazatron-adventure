@@ -1,58 +1,84 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     background-color: black;
-    font-size: 20px;
-    font-family: 'Play', cursive;
+    padding: 0;
+    margin: 0;
 }
 
-.ui {
+.container {
+    max-width: 1024px;
+    min-width: 800px;
+    width: 85%;
+    margin: 15px auto 0;
+    font-size: 20px;
+    font-family: 'Play', Tahoma, Arial, sans-serif;
+}
+
+.ui-block {
     color: white;
-    padding: 10px;
+    padding: 15px 15px 20px;
     border: 5px solid white;
     font-size: 20px;
-    font-family: 'Play', cursive;
 }
 
-#screen_container {
-    width: 960px;
-    margin: 0 auto;
+.row {
+    display: flex;
 }
 
-#screen {
-    width: 610px;
-    height: 390px;
-    position: relative;
-    top: 0;
-    left: 0;
+.screen {
+    width: 67%;
+    border-bottom-width: 0;
+    min-height: 500px;
 }
 
-#screen img {
-    padding-bottom: 10px;
-}
-
-#sidebar {
-    width: 290px;
-    height: 390px;
-    position: relative;
-    top: -420px;
-    left: 640px;
-}
-
-#action {
-    height: 110px;
-    position: relative;
-    top: -420px;
-}
-
-#input_area {
-    position: relative;
-    top: -400px;
+.screen img {
+    margin-bottom: 10px;
     display: block;
+    width: 100%;
 }
 
-#input_field {
+.sidebar {
+    width: 33%;
+    border-left-width: 0;
+    border-bottom-width: 0;
+}
+
+.action-ask {
+    min-height: 110px;
+}
+
+.input-wrapper {
+    margin: 20px 0;
+    padding: 5px 30px;
+    position: relative;
+}
+
+.input-wrapper label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 10px;
+    color: #808080;
+}
+
+.input-wrapper .user-input {
     color: white;
     background-color: black;
-    border: 0; 
-    font-size: 20px;
-    font-family: 'Play', cursive;
+    border: 0;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: 1.8;
+    display: block;
+    width: 100%;
+}
+
+.input-wrapper .user-input:focus {
+    outline: none !important;
+}
+
+.input-wrapper .user-input:focus + label {
+    color: white;
 }
