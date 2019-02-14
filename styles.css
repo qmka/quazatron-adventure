@@ -1,0 +1,98 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: black;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.container {
+    max-width: 1024px;
+    min-width: 800px;
+    height: 650px;
+    width: 85%;
+    margin: 10px auto 0;
+    font-size: 20px;
+    font-family: 'Play', Tahoma, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+.ui-block {
+    color: white;
+    padding: 15px 15px 20px;
+    border: 5px solid white;
+    font-size: 20px;
+}
+
+.row {
+    display: flex;
+}
+
+.inventory {
+    flex: 1 0 180px;
+    border-left-width: 0;
+    border-bottom-width: 0;
+}
+
+.image {
+    flex: 0 1 760px;
+    border-bottom-width: 0;
+    padding: 0;
+    min-width: 620px;
+    height: 300px;
+    overflow: hidden;
+}
+
+.image img {
+    display: block;
+    width: 100%;
+}
+
+.screen {
+    border-bottom-width: 0;
+    flex-grow: 1;
+}
+
+.action-ask {
+    min-height: 110px;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    color: #f0e386;
+}
+
+.input-wrapper {
+    padding: 5px 30px;
+    position: relative;
+    margin-top: auto;
+}
+
+.input-wrapper label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 10px;
+    color: #808080;
+}
+
+.input-wrapper .user-input {
+    color: white;
+    background-color: black;
+    border: 0;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: 1.8;
+    display: block;
+    width: 100%;
+}
+
+.input-wrapper .user-input:focus {
+    outline: none !important;
+}
+
+.input-wrapper .user-input:focus + label {
+    color: white;
+}
