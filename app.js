@@ -8,8 +8,8 @@ import inputCtrl from './modules/inputctrl.js';
 const controller = () => {
     const userInput = () => {
 
-        const inputText = document.getElementById("input_field").value;
-        document.getElementById("input_field").value = "";
+        const inputText = document.getElementById("input-field").value;
+        document.getElementById("input-field").value = "";
 
         const words = inputCtrl(g, inputText);
 

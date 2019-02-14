@@ -12,7 +12,7 @@ body {
     max-width: 1024px;
     min-width: 800px;
     width: 85%;
-    margin: 15px auto 0;
+    margin: 10px auto 0;
     font-size: 20px;
     font-family: 'Play', Tahoma, Arial, sans-serif;
 }
@@ -29,21 +29,26 @@ body {
 }
 
 .screen {
-    width: 67%;
+    width: 50%;
     border-bottom-width: 0;
-    min-height: 500px;
+    min-height: 400px;
 }
 
-.screen img {
-    margin-bottom: 10px;
-    display: block;
-    width: 100%;
-}
-
-.sidebar {
-    width: 33%;
+.right-sidebar {
+    width: 25%;
     border-left-width: 0;
     border-bottom-width: 0;
+}
+
+.left-sidebar {
+    width: 25%;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    padding: 0;
+}
+
+.left-sidebar img {
+    display: block;
 }
 
 .action-ask {
@@ -51,7 +56,7 @@ body {
 }
 
 .input-wrapper {
-    margin: 20px 0;
+    margin: 20px 0 0;
     padding: 5px 30px;
     position: relative;
 }

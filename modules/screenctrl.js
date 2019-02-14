@@ -52,16 +52,17 @@ const makeInventory = (g) => {
 
 const makeScreen = (g, actionText) => {
     document.getElementById("screen").innerHTML = makeLocation(g);
-    document.getElementById("sidebar").innerHTML = makeInventory(g);
+    document.getElementById("right-sidebar").innerHTML = makeInventory(g);
+    document.getElementById("left-sidebar").innerHTML = `<img src="img/${g.locations[g.currentLoc].img}">`
     document.getElementById("action").innerHTML = actionText;
-    document.getElementById("input_area").style.display = "block";
+    document.getElementById("input-area").style.display = "block";
 };
 
 const makeStaticScreen = (text, sidebar, action) => {
     document.getElementById("screen").innerHTML = text;
-    document.getElementById("sidebar").innerHTML = sidebar;
+    document.getElementById("right-sidebar").innerHTML = sidebar;
     document.getElementById("action").innerHTML = action;
-    document.getElementById("input_area").style.display = "none";
+    document.getElementById("input-area").style.display = "none";
 }
 
 export { makeScreen, makeStaticScreen };
