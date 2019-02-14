@@ -1,5 +1,5 @@
 import { ENTER_KEY_CODE } from './modules/constants.js';
-import setStartParameters from './modules/gamedata.js';
+import { flags } from './modules/gamedata.js';
 import * as screenCtrl from './modules/screenctrl.js';
 import outputCtrl from './modules/outputctrl.js';
 import inputCtrl from './modules/inputctrl.js';
@@ -11,7 +11,7 @@ const controller = () => {
         const inputText = document.getElementById("input-field").value;
         document.getElementById("input-field").value = "";
 
-        const words = inputCtrl(g, inputText);
+        const words = inputCtrl(inputText);
 
         const processed = outputCtrl(g, words);
         g = processed.gameData;
@@ -30,8 +30,9 @@ const controller = () => {
         });
     };
 
-    let g = setStartParameters();
+    let g = flags;
     console.log('Application has started.');
+    // Выводим экран, отправляем туда текущие флаги
     screenCtrl.makeScreen(g, 'Что будете делать?');
     setupEventListeners();
 }

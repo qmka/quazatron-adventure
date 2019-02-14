@@ -1,3 +1,5 @@
+import { vocabulary } from './gamedata.js';
+
 const seekWord = (type, word) => {
     for (let j of type) {
         const currentForms = j.forms;
@@ -18,10 +20,10 @@ const seekAdjId = (type, id) => {
     }
 }
 
-const inputCtrl = (data, input) => {
-    const verbs = data.verbs;
-    const objects = data.objects;
-    const adjectives = data.adjectives;
+const inputCtrl = (input) => {
+    const verbs = vocabulary.verbs;
+    const objects = vocabulary.objects;
+    const adjectives = vocabulary.adjectives;
     let isSecondItem = false;
     let verb, item1, item2, nonitem, object;
     let message = "Ок";
@@ -78,7 +80,7 @@ const inputCtrl = (data, input) => {
             }
         }
     }
-
+    
     return {
         verb: verb,
         obj: nonitem,

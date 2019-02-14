@@ -1,7 +1,15 @@
-import { USER_HAVE_ITEM } from './constants.js';
+import {
+    USER_HAVE_ITEM
+} from './constants.js';
+import {
+    vocabulary as v
+} from './gamedata.js';
+import {
+    locations
+} from './gamedata.js';
 
 const playerMove = (g, inputDir) => {
-    const gameDirections = g.locations[g.currentLoc].dir;
+    const gameDirections = locations[g.currentLoc].dir;
     const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
     const index = directionTypes.indexOf(inputDir);
     let answer = "Что будете делать?";
@@ -19,43 +27,45 @@ const playerMove = (g, inputDir) => {
 };
 
 const changeDir = (g, location, direction, value) => {
+    /*
     const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
     const index = directionTypes.indexOf(direction);
     if (index !== -1) {
         g.locations[location].dir[index] = value;
-    }
+    } */
     return g;
 }
 
-const getObjectById = (g, id) => {
-    const cur = g.objects.find(e => e.id === id);
+const getObjectById = (id) => {
+    const cur = v.objects.find(e => e.id === id);
     return cur;
 }
 
-const haveThisItem = (obj) => {
-    return obj.place === USER_HAVE_ITEM ? true : false;
+const haveThisItem = (g, obj) => {
+    if (g.place[obj.id] === USER_HAVE_ITEM) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 const haveItem = (g, id) => {
-    const obj = getObjectById(g, id);
-    if (obj === undefined) console.log("Вы неправильно указали ID объекта, проверьте");
-    return obj.place === USER_HAVE_ITEM ? true : false;
+    if (g.place[id] === USER_HAVE_ITEM) return true;
+    return false;
 }
 
 const itemPlace = (g, id) => {
-    const obj = getObjectById(g, id);
-    return obj.place;
+    return g.place[id];
 }
 
 const changeUnknownItemPlace = (g, obj, plc) => {
-    const ind = g.objects.findIndex(e => e === obj);
-    g.objects[ind].place = plc;
+    const key = v.objects.find(e => e === obj);
+    g.place[key.id] = plc;
     return g
 }
 
 const changeKnownItemPlace = (g, id, plc) => {
-    const ind = g.objects.findIndex(e => e.id === id);
-    g.objects[ind].place = plc;
+    g.place[id] = plc;
     return g
 }
 
@@ -70,19 +80,19 @@ const outputCtrl = (g, input) => {
     let answer = "Что будете делать?";
 
     if (input.item1 === undefined) {
-        thisItem = getObjectById(g, "dummyItem");
+        thisItem = getObjectById("dummyItem");
     } else {
-        thisItem = getObjectById(g, input.item1);
+        thisItem = getObjectById(input.item1);
     }
     if (input.item2 === undefined) {
-        anotherItem = getObjectById(g, "dummyAltItem");
+        anotherItem = getObjectById("dummyAltItem");
     } else {
-        anotherItem = getObjectById(g, input.item2);
+        anotherItem = getObjectById(input.item2);
     }
     if (input.obj === undefined) {
-        thisObject = getObjectById(g, "dummyObject");
+        thisObject = getObjectById("dummyObject");
     } else {
-        thisObject = getObjectById(g, input.obj);
+        thisObject = getObjectById(input.obj);
     }
 
     if (g.currentLoc === 27 && !g.flags.isWitchKilled) {
@@ -129,10 +139,10 @@ const outputCtrl = (g, input) => {
         case "положи":
             if (thisItem === {}) {
                 answer = `Что положить? Уточните.`;
-            } else if (haveThisItem(thisItem)) {
+            } else if (haveThisItem(g, thisItem)) {
                 g = changeUnknownItemPlace(g, thisItem, g.currentLoc);
                 answer = `Ок, положил.`;
-            } else if (thisItem.place === g.currentLoc) {
+            } else if (itemPlace(g, thisItem.id) === g.currentLoc) {
                 answer = `Это и так здесь уже лежит!`;
             } else {
                 answer = `Не могу выбросить, потому что у меня этого нет.`;
@@ -149,10 +159,10 @@ const outputCtrl = (g, input) => {
 
             if (thisItem === {}) {
                 answer = `Что взять? Уточните.`;
-            } else if (thisItem.place === g.currentLoc) {
+            } else if (itemPlace(g, thisItem.id) === g.currentLoc) {
                 g = changeUnknownItemPlace(g, thisItem, USER_HAVE_ITEM);
                 answer = `Ок, взял.`;
-            } else if (thisItem.place === USER_HAVE_ITEM) {
+            } else if (itemPlace(g, thisItem.id) === USER_HAVE_ITEM) {
                 answer = `У меня это уже есть!`;
             } else {
                 answer = `Здесь этого нет, не могу взять.`;
@@ -234,31 +244,31 @@ const outputCtrl = (g, input) => {
                 answer = "Прекрасная, но очень бледная. Её грудь медленно поднимается и опускается: принцесса крепко спит.";
                 break;
             }
-     
+
             if (itemPlace(g, thisItem.id) === g.currentLoc) {
                 answer = `Чтобы внимательно осмотреть предмет, нужно взять его в руки.`;
                 break;
             }
-            if (haveThisItem(thisItem)) {
+            if (haveThisItem(g, thisItem)) {
                 answer = thisItem.desc;
                 break;
             }
             answer = `Ничего необычного.`;
             break;
         case "прислони":
-            if (thisItem.id === "лестница" && haveThisItem(thisItem) && g.currentLoc === 8) {
+            if (thisItem.id === "лестница" && haveThisItem(g, thisItem) && g.currentLoc === 8) {
                 g = changeKnownItemPlace(g, "лестница", -1);
                 g.flags.isLadderLeanToTree = true;
                 g = changeDir(g, 8, "вверх", 9);
                 answer = `Я прислонил лестницу к дереву.`;
-            } else if (haveThisItem(thisItem)) {
+            } else if (haveThisItem(g, thisItem)) {
                 answer = `Хм, это делу не поможет.`;
             } else {
                 answer = `Я могу прислонить только то, что у меня есть.`;
             }
             break;
         case "сломай":
-            if (thisItem.id === "лестница" && haveThisItem(thisItem)) {
+            if (thisItem.id === "лестница" && haveThisItem(g, thisItem)) {
                 g = changeKnownItemPlace(g, "лестница", -1);
                 g = changeKnownItemPlace(g, "шест", g.currentLoc);
                 answer = `Я разломал лестницу на куски и получил неплохой длинный шест.`;
@@ -276,7 +286,7 @@ const outputCtrl = (g, input) => {
                 break;
             }
 
-            if (haveThisItem(thisItem)) {
+            if (haveThisItem(g, thisItem)) {
                 answer = `Не буду ломать. Вдруг мне это ещё пригодится?`;
             } else {
                 answer = `Я не могу это сломать.`;
@@ -462,7 +472,7 @@ const outputCtrl = (g, input) => {
         case "съешь":
 
             if (thisItem.id === "рыба") {
-                if (haveThisItem(thisItem)) {
+                if (haveThisItem(g, thisItem)) {
                     answer = "Я эту тухлятину есть не буду.";
                 } else {
                     answer = "У меня нет рыбы."
@@ -487,7 +497,7 @@ const outputCtrl = (g, input) => {
             answer = "Я не могу это купить.";
             break;
         case "включи":
-            if (thisItem.id === "лампа" && haveThisItem(thisItem)) {
+            if (thisItem.id === "лампа" && haveThisItem(g, thisItem)) {
                 if (g.currentLoc === 20) {
                     answer = "Здесь слишком холодно, лампа не загорится.";
                     break;
@@ -510,7 +520,7 @@ const outputCtrl = (g, input) => {
             answer = "У меня нет ничего такого, что включается.";
             break;
         case "высыпь":
-            if (thisItem.id === "соль" && haveThisItem(thisItem)) {
+            if (thisItem.id === "соль" && haveThisItem(g, thisItem)) {
                 if (g.currentLoc === 20 && !g.flags.isMonsterKilled) {
                     g.flags.isMonsterKilled = true;
                     g = changeKnownItemPlace(g, "соль", -1);
@@ -526,7 +536,7 @@ const outputCtrl = (g, input) => {
             answer = "Решительно не понимаю, что мне тут рассыпать?";
             break;
         case "брось":
-            if (thisItem.id === "соль" && haveThisItem(thisItem)) {
+            if (thisItem.id === "соль" && haveThisItem(g, thisItem)) {
                 if (g.currentLoc === 20 && !g.flags.isMonsterKilled) {
                     g.flags.isMonsterKilled = true;
                     g = changeKnownItemPlace(g, "соль", -1);
@@ -539,20 +549,20 @@ const outputCtrl = (g, input) => {
                     break;
                 }
             }
-            if (thisItem.id === "топор" && haveThisItem(thisItem)) {
+            if (thisItem.id === "топор" && haveThisItem(g, thisItem)) {
                 answer = "Начнём с того, что я не умею метать топоры. И, к тому же, это явно не метательный топорик. Давайте попробуем что-то другое.";
                 break;
             }
-            if (thisItem.id === "булава" && haveThisItem(thisItem)) {
+            if (thisItem.id === "булава" && haveThisItem(g, thisItem)) {
                 answer = "Слишком тяжёлая, чтобы метать. Ей надо бить, желательно промеж глаз.";
                 break;
             }
-            if (thisItem.id === "лампа" && haveThisItem(thisItem)) {
+            if (thisItem.id === "лампа" && haveThisItem(g, thisItem)) {
                 answer = "Я бросаю лампу, и она разбивается в осколки. И зачем нужно было это делать?";
                 g = changeKnownItemPlace(g, "лампа", -1);
                 break;
             }
-            if (haveThisItem(thisItem)) {
+            if (haveThisItem(g, thisItem)) {
                 g = changeUnknownItemPlace(g, thisItem, g.currentLoc);
                 answer = "Вы бросаете предмет, но ничего не происходит.";
                 break;

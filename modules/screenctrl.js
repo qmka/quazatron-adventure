@@ -1,8 +1,9 @@
 import { USER_HAVE_ITEM } from './constants.js';
+import { locations } from './gamedata.js';
 
 const makeLocation = (g) => {
     let description = "";
-    g.locations.forEach(e => {
+    locations.forEach(e => {
         if (e.index === g.currentLoc) {
             description += e.desc;
         }
@@ -20,40 +21,41 @@ const makeLocation = (g) => {
     if (g.currentLoc === 27 && !g.flags.isWitchKilled) description += "<br>В противоположном конце комнаты вы видите ведьму. Её заклятье летит прямо в вашу сторону, нужно быстро что-то делать!";
 
     description += "<br>";
-    if (g.objects.some(e => {
-            return e.place === g.currentLoc;
-        })) {
-        description += "<br>Здесь также есть:<br>";
-        g.objects.forEach(e => {
-            if (e.place === g.currentLoc) {
-                description += `- ${e.id}<br>`;
-            }
-        })
-    }
+    let itemsInLoc = "";
+    for (let key in g.place) {
+        if (g.place[key] === g.currentLoc) {
+                    itemsInLoc += `- ${key}<br>`;
+            };
+        }
+
+    if (itemsInLoc !== "") {
+        description += `<br>Здесь также есть:<br>${itemsInLoc}`;
+    } 
     return description;
 }
 
 const makeInventory = (g) => {
-    let inventory = "Инвентарь:<br><br>";
-    if (g.objects.some(e => {
-            return e.place === USER_HAVE_ITEM;
-        })) {
-        g.objects.forEach(e => {
-            if (e.place === USER_HAVE_ITEM) {
-                inventory += `${e.id}<br>`;
-            }
-        })
-    } else {
-        inventory += `пусто<br>`;
+    let inventoryText = "Инвентарь:<br><br>";
+    let itemsInInventory = "";
+    for (let key in g.place) {
+        if (g.place[key] === USER_HAVE_ITEM) {
+            itemsInInventory += `${key}<br>`;
+        }
     }
-    return inventory;
+    if (itemsInInventory !== "") {
+        inventoryText += itemsInInventory;
+    } else {
+        inventoryText += "пусто";
+    }
+
+    return inventoryText;
 }
 
 
 const makeScreen = (g, actionText) => {
     document.getElementById("screen").innerHTML = makeLocation(g);
     document.getElementById("right-sidebar").innerHTML = makeInventory(g);
-    document.getElementById("left-sidebar").innerHTML = `<img src="img/${g.locations[g.currentLoc].img}">`
+    document.getElementById("image").innerHTML = `<img src="img/${locations[g.currentLoc].img}">`
     document.getElementById("action").innerHTML = actionText;
     document.getElementById("input-area").style.display = "block";
 };
