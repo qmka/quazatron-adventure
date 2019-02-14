@@ -12,7 +12,7 @@ body {
 .container {
     max-width: 1024px;
     min-width: 800px;
-    height: 620px;
+    height: 650px;
     width: 85%;
     margin: 10px auto 0;
     font-size: 20px;
@@ -43,7 +43,7 @@ body {
     border-bottom-width: 0;
     padding: 0;
     min-width: 620px;
-    height: 270px;
+    height: 300px;
     overflow: hidden;
 }
 
