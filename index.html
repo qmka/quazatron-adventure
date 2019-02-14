@@ -5,28 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link href="styles.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Play" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css?family=Play" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
     <title>Terrormolinos</title>
 </head>
 
 <body>
-    <div id="screen_container">
-        <div class="ui" id="screen">
-        </div>
-        <div class="ui" id="sidebar"></div>
-        <div class="ui" id="action"></div>
-        <div class="ui" id="input_area">
-            <span style="color: white;">> </span><input id="input_field" type="text" autofocus size="55"></input>
-            <!-- <button class="input_button">Ввод</button> -->
-        </div>
-
+<div class="container">
+    <div class="row">
+        <div class="ui-block screen" id="screen"></div>
+        <div class="ui-block sidebar" id="sidebar"></div>
     </div>
-    
-    <!-- <script type="text/javascript" src="data.json"></script> -->
-    <script type="module" src="game.js"></script>
+    <div class="ui-block action-ask" id="action"></div>
+    <div class="ui-block input-wrapper" id="input_area">
+        <input id="input_field" type="text" class="user-input" autofocus size="55">
+        <label for="input_field">></label>
+    </div>
 
+</div>
+
+<script type="module" src="game.js"></script>
 </body>
 
 </html>
