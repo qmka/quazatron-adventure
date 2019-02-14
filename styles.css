@@ -6,15 +6,19 @@ body {
     background-color: black;
     padding: 0;
     margin: 0;
+    overflow: hidden;
 }
 
 .container {
     max-width: 1024px;
     min-width: 800px;
+    height: 650px;
     width: 85%;
     margin: 10px auto 0;
     font-size: 20px;
     font-family: 'Play', Tahoma, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
 }
 
 .ui-block {
@@ -28,37 +32,42 @@ body {
     display: flex;
 }
 
-.screen {
-    width: 50%;
-    border-bottom-width: 0;
-    min-height: 400px;
-}
-
-.right-sidebar {
-    width: 25%;
+.inventory {
+    flex: 1 0 180px;
     border-left-width: 0;
     border-bottom-width: 0;
 }
 
-.left-sidebar {
-    width: 25%;
-    border-right-width: 0;
+.image {
+    flex: 0 1 760px;
     border-bottom-width: 0;
     padding: 0;
+    min-width: 620px;
+    height: 300px;
+    overflow: hidden;
 }
 
-.left-sidebar img {
+.image img {
     display: block;
+    width: 100%;
+}
+
+.screen {
+    border-bottom-width: 0;
+    flex-grow: 1;
 }
 
 .action-ask {
     min-height: 110px;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    color: #f0e386;
 }
 
 .input-wrapper {
-    margin: 20px 0 0;
     padding: 5px 30px;
     position: relative;
+    margin-top: auto;
 }
 
 .input-wrapper label {

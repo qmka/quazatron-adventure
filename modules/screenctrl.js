@@ -53,7 +53,7 @@ const makeInventory = (g) => {
 const makeScreen = (g, actionText) => {
     document.getElementById("screen").innerHTML = makeLocation(g);
     document.getElementById("right-sidebar").innerHTML = makeInventory(g);
-    document.getElementById("left-sidebar").innerHTML = `<img src="img/${g.locations[g.currentLoc].img}">`
+    document.getElementById("image").innerHTML = `<img src="img/${g.locations[g.currentLoc].img}">`
     document.getElementById("action").innerHTML = actionText;
     document.getElementById("input-area").style.display = "block";
 };
