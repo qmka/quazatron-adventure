@@ -1,22 +1,28 @@
 import { ENTER_KEY_CODE } from './modules/constants.js';
-import { flags } from './modules/gamedata.js';
+import { state } from './modules/gamedata.js';
 import * as screenCtrl from './modules/screenctrl.js';
 import outputCtrl from './modules/outputctrl.js';
 import inputCtrl from './modules/inputctrl.js';
 
-// TODO: start and end screens__
+// TODO: start and end screens
 const controller = () => {
+
+    // Реакция программы на ввод игрока
     const userInput = () => {
 
+        // 1. Получаем введённую игроком команду и очищаем поле ввода
         const inputText = document.getElementById("input-field").value;
         document.getElementById("input-field").value = "";
 
+        // 2. Отправляем команду в словоанализатор
         const words = inputCtrl(inputText);
 
+        // 3. Выполняем действие игрока 
         const processed = outputCtrl(g, words);
         g = processed.gameData;
         const outputText = processed.answer;
 
+        // 4. Обновляем экран
         screenCtrl.makeScreen(g, outputText);
     };
 
@@ -30,9 +36,8 @@ const controller = () => {
         });
     };
 
-    let g = flags;
+    let g = state;
     console.log('Application has started.');
-    // Выводим экран, отправляем туда текущие флаги
     screenCtrl.makeScreen(g, 'Что будете делать?');
     setupEventListeners();
 }

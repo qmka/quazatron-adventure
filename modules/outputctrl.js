@@ -8,10 +8,115 @@ import {
     locations
 } from './gamedata.js';
 
+// Возвращает объект из словаря целиком по его id
+const findObjectById = (id) => {
+    return v.objects.find(e => e.id === id);
+}
+
+// Возвращает true, если у игрока есть объект obj. Используется в действиях, применимых ко всем предметам, например, при обработке команды "осмотри" или "положи"
+const haveThisObject = (g, obj) => {
+    if (g.place[obj.id] === USER_HAVE_ITEM) return true;
+    return false;
+}
+
+// Возвращает true, если у игрока есть объект с определённым id. Используется, когда нужно проверить, есть ли у игрока конкретный предмет
+const haveThisObjectId = (g, id) => {
+    if (g.place[id] === USER_HAVE_ITEM) return true;
+    return false;
+}
+
+// Возвращает номер локации, в которой находится предмет
+const itemPlace = (g, id) => {
+    return g.place[id];
+}
+
+// Помещает предмет, который назвал игрок, в локацию. Используется, когда нужно положить или взять предмет, указанный игроком
+const changeUnknownItemPlace = (g, obj, plc) => {
+    const key = v.objects.find(e => e === obj);
+    g.place[key.id] = plc;
+    return g
+}
+
+// Помещает предмет с известным id в локацию
+const changeKnownItemPlace = (g, id, plc) => {
+    g.place[id] = plc;
+    return g
+}
+
+// Функция проверяет, не мешает ли игроку какое-либо препятствие пройти в заданном направлении
+// True - не мешает, игрок может пройти
+// False - мешает
+// Возвращает flag - можно или нельзя пройти, и ответ, который игрок получает в том случае, когда пройти нельзя
+const canPlayerMoveToLoc = (g, dir) => {
+    let ans = "Что мне делать?";
+    let canMove = true;
+    switch (g.currentLoc) {
+        case 8:
+            // Если у дерева не стоит лестница
+            if (!g.flags.isLadderLeanToTree && dir === "вверх") {
+                ans = "Я не могу залезть на дерево. Ствол очень гладкий, не за что зацепиться";
+                canMove = false;
+            }
+            break;
+        case 7:
+            // Если тролль жив
+            if (!g.flags.isTrollKilled && dir === "в") {
+                ans = "Тролль рычит и не даёт мне пройти.";
+                canMove = false;
+            }
+            break;
+        case 11:
+            // Если дверь закрыта
+            if (!g.flags.isDoorOpened && dir === "в") {
+                ans = "Дверь закрыта, я не могу туда пройти.";
+                canMove = false;
+            }
+        case 17:
+            // Если решётка опущена
+            if (!g.flags.isPortcullisOpened && dir === "с") {
+                ans = "Решётка опущена до пола, я не могу туда пройти.";
+                canMove = false;
+            }
+        case 18:
+            if (!g.flags.isTrapdoorOpened && dir === "вниз") {
+                ans = "Путь вниз мне преграждает закрытый люк.";
+                canMove = false;
+            }
+        case 20:
+            if (!g.flags.isMonsterKilled && dir === "с") {
+                ans = "Ледяной монстр мешает мне пройти.";
+                canMove = false;
+            }
+        case 23:
+            if (!g.flags.isWormKilled && dir === "ю") {
+                ans = "Скальный червь мешает мне пройти.";
+                canMove = false;
+            }
+    }
+    return {
+        flag: canMove,
+        answer: ans
+    }
+}
+
+// Перемещаем игрока в указанном им направлении
+// Изменяем номер текущей локации и возвращаем ответ, который будет выведен игроку
 const playerMove = (g, inputDir) => {
     const gameDirections = locations[g.currentLoc].dir;
     const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
     const index = directionTypes.indexOf(inputDir);
+    // здесь вызываем функцию, которая проверяет, можно ли туда пройти
+    const canMove = canPlayerMoveToLoc(g, inputDir);
+
+    // Если нельзя
+    if (!canMove.flag) {
+        return {
+            g: g,
+            answer: canMove.answer
+        }
+    }
+
+    // Если можно
     let answer = "Что будете делать?";
 
     if (gameDirections[index] !== -1) {
@@ -26,82 +131,50 @@ const playerMove = (g, inputDir) => {
     }
 };
 
-const changeDir = (g, location, direction, value) => {
-    /*
-    const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
-    const index = directionTypes.indexOf(direction);
-    if (index !== -1) {
-        g.locations[location].dir[index] = value;
-    } */
-    return g;
-}
-
-const getObjectById = (id) => {
-    const cur = v.objects.find(e => e.id === id);
-    return cur;
-}
-
-const haveThisItem = (g, obj) => {
-    if (g.place[obj.id] === USER_HAVE_ITEM) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-const haveItem = (g, id) => {
-    if (g.place[id] === USER_HAVE_ITEM) return true;
-    return false;
-}
-
-const itemPlace = (g, id) => {
-    return g.place[id];
-}
-
-const changeUnknownItemPlace = (g, obj, plc) => {
-    const key = v.objects.find(e => e === obj);
-    g.place[key.id] = plc;
-    return g
-}
-
-const changeKnownItemPlace = (g, id, plc) => {
-    g.place[id] = plc;
-    return g
-}
-
+// Основная функция
+// На входе - объекты с текущим состоянием и с вводом игрока
+// На выходе - объект с текущим состоянием и текст, который нужно вывести игроку как результат его действий
 const outputCtrl = (g, input) => {
-    let thisItem, anotherItem, thisObject;
+
+    // Если словоанализатор выдал сообщение об ошибке, то выводим его игроку и выходим из функции
     if (input.message !== "Ок") {
         return {
             answer: input.message,
             gameData: g
         }
     }
+
     let answer = "Что будете делать?";
 
+    // Вынимаем из ввода игрока основной предмет, второй предмет (если есть) и игровой объект
+    let thisItem, anotherItem, thisObject;
+
+    // Если предметы или игровой объект отсутствуют, то присваиваем переменным id специального dummy-предмета, который нигде не используется и служит только для того, чтобы впоследствии браузер не ругался на ошибку, что у объекта нет какого-то свойства, которое мы хотим проверить (потому что объект undefined).
+    // Мне это не нравится, но я не знаю, как этого избежать
     if (input.item1 === undefined) {
-        thisItem = getObjectById("dummyItem");
+        thisItem = findObjectById("dummyItem");
     } else {
-        thisItem = getObjectById(input.item1);
+        thisItem = findObjectById(input.item1);
     }
     if (input.item2 === undefined) {
-        anotherItem = getObjectById("dummyAltItem");
+        anotherItem = findObjectById("dummyAltItem");
     } else {
-        anotherItem = getObjectById(input.item2);
+        anotherItem = findObjectById(input.item2);
     }
     if (input.obj === undefined) {
-        thisObject = getObjectById("dummyObject");
+        thisObject = findObjectById("dummyObject");
     } else {
-        thisObject = getObjectById(input.obj);
+        thisObject = findObjectById(input.obj);
     }
 
+    // Здесь отрабатываем особую ситуацию. В комнате с ведьмой нужно отразить заклятье мечом. Если ввести любую другую команду, то игра выкидывает игрока в предыдущую комнату
     if (g.currentLoc === 27 && !g.flags.isWitchKilled) {
-        if (input.verb === "отрази" && thisObject.id === "заклятье" && haveItem(g, "меч")) {
+        if (input.verb === "отрази" && thisObject.id === "заклятье" && haveThisObjectId(g, "меч")) {
             g.flags.isWitchKilled = true;
             g = changeKnownItemPlace(g, "меч", -1);
             answer = "Я отразил заклятье мечом, и оно ударило прямо в ведьму! Издав истошный крик, ведьма рассыпалась в пыль. К сожалению, меч тоже не уцелел.";
         } else {
-            if (input.verb === "отрази" && thisObject.id === "заклятье" && !haveItem(g, "меч")) {
+            if (input.verb === "отрази" && thisObject.id === "заклятье" && !haveThisObjectId(g, "меч")) {
                 answer = "Мне нечем отразить заклятье.";
             } else {
                 answer = "Я не успеваю ничего сделать.";
@@ -114,7 +187,9 @@ const outputCtrl = (g, input) => {
             gameData: g
         }
     }
+    // Конец особой ситуации
 
+    // Основная логика игры. Отталкиваемся от введённого игроком глагола
     switch (input.verb) {
         case "помоги":
             answer = 'Я понимаю команды в формате ГЛАГОЛ + ОБЪЕКТ (+ ОБЪЕКТ), например, <span style="color: yellow;">ВОЗЬМИ ЛЕСТНИЦУ</span> или <span style="color: yellow;">НАБЕРИ ВОДЫ В КУВШИН.</span><br>Используйте команды <span style="color: yellow;">С Ю З В ВВЕРХ ВНИЗ</span> для передвижения.<br>Команда <span style="color: yellow;">ОСМОТРИ</span> позволяет получить больше информации о различных объектах.<br>Команда <span style="color: yellow;">ВЫХОД</span> позволяет вернуться на стартовый экран.';
@@ -139,7 +214,7 @@ const outputCtrl = (g, input) => {
         case "положи":
             if (thisItem === {}) {
                 answer = `Что положить? Уточните.`;
-            } else if (haveThisItem(g, thisItem)) {
+            } else if (haveThisObject(g, thisItem)) {
                 g = changeUnknownItemPlace(g, thisItem, g.currentLoc);
                 answer = `Ок, положил.`;
             } else if (itemPlace(g, thisItem.id) === g.currentLoc) {
@@ -152,11 +227,9 @@ const outputCtrl = (g, input) => {
             if (thisItem.id === "лестница" && g.currentLoc === 8 && g.flags.isLadderLeanToTree) {
                 g = changeUnknownItemPlace(g, thisItem, USER_HAVE_ITEM);
                 g.flags.isLadderLeanToTree = false;
-                g = changeDir(g, 8, "вверх", -1);
                 answer = `Я забрал лестницу.`;
                 break;
             }
-
             if (thisItem === {}) {
                 answer = `Что взять? Уточните.`;
             } else if (itemPlace(g, thisItem.id) === g.currentLoc) {
@@ -182,7 +255,7 @@ const outputCtrl = (g, input) => {
                 }
                 break;
             }
-            if (thisItem.id === "дрова" && haveItem(g, "дрова")) {
+            if (thisItem.id === "дрова" && haveThisObjectId(g, "дрова")) {
                 answer = thisItem.desc;
                 if (!g.flags.isAxeRevealed) {
                     g.flags.isAxeRevealed = true;
@@ -249,26 +322,25 @@ const outputCtrl = (g, input) => {
                 answer = `Чтобы внимательно осмотреть предмет, нужно взять его в руки.`;
                 break;
             }
-            if (haveThisItem(g, thisItem)) {
+            if (haveThisObject(g, thisItem)) {
                 answer = thisItem.desc;
                 break;
             }
             answer = `Ничего необычного.`;
             break;
         case "прислони":
-            if (thisItem.id === "лестница" && haveThisItem(g, thisItem) && g.currentLoc === 8) {
+            if (thisItem.id === "лестница" && haveThisObject(g, thisItem) && g.currentLoc === 8) {
                 g = changeKnownItemPlace(g, "лестница", -1);
                 g.flags.isLadderLeanToTree = true;
-                g = changeDir(g, 8, "вверх", 9);
                 answer = `Я прислонил лестницу к дереву.`;
-            } else if (haveThisItem(g, thisItem)) {
+            } else if (haveThisObject(g, thisItem)) {
                 answer = `Хм, это делу не поможет.`;
             } else {
                 answer = `Я могу прислонить только то, что у меня есть.`;
             }
             break;
         case "сломай":
-            if (thisItem.id === "лестница" && haveThisItem(g, thisItem)) {
+            if (thisItem.id === "лестница" && haveThisObject(g, thisItem)) {
                 g = changeKnownItemPlace(g, "лестница", -1);
                 g = changeKnownItemPlace(g, "шест", g.currentLoc);
                 answer = `Я разломал лестницу на куски и получил неплохой длинный шест.`;
@@ -276,9 +348,8 @@ const outputCtrl = (g, input) => {
             }
 
             if (thisObject.id = "люк" && g.currentLoc === 18 && !g.flags.isTrapdoorOpened) {
-                if (haveItem(g, "топор")) {
+                if (haveThisObjectId(g, "топор")) {
                     g.flags.isTrapdoorOpened = true;
-                    g = changeDir(g, 18, "вниз", 21);
                     answer = "Я разломал топором деревянный люк. Теперь путь вниз открыт.";
                 } else {
                     answer = "У меня нет ничего, чем я могу сломать люк.";
@@ -286,7 +357,7 @@ const outputCtrl = (g, input) => {
                 break;
             }
 
-            if (haveThisItem(g, thisItem)) {
+            if (haveThisObject(g, thisItem)) {
                 answer = `Не буду ломать. Вдруг мне это ещё пригодится?`;
             } else {
                 answer = `Я не могу это сломать.`;
@@ -294,14 +365,14 @@ const outputCtrl = (g, input) => {
             break;
         case "перейди":
             if (thisObject.id === "пропасть" && g.currentLoc === 6) {
-                if (haveItem(g, "шест")) {
+                if (haveThisObjectId(g, "шест")) {
                     answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
                     g.currentLoc = 12;
                 } else {
                     answer = "Я упаду с верёвки, мне нужно что-то для балланса.";
                 }
             } else if (thisObject.id === "пропасть" && g.currentLoc === 12) {
-                if (haveItem(g, "шест")) {
+                if (haveThisObjectId(g, "шест")) {
                     answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
                     g.currentLoc = 6;
                 } else {
@@ -324,10 +395,9 @@ const outputCtrl = (g, input) => {
             }
             break;
         case "руби":
-            if (g.currentLoc === 18 && thisObject.id === "люк" && haveItem(g, "топор")) {
+            if (g.currentLoc === 18 && thisObject.id === "люк" && haveThisObjectId(g, "топор")) {
                 if (!g.flags.isTrapdoorOpened) {
                     g.flags.isTrapdoorOpened = true;
-                    g = changeDir(g, 18, "вниз", 21);
                     answer = "Я порубил топором деревянный люк. Теперь путь вниз открыт.";
                 } else {
                     answer = "Здесь уже нет люка.";
@@ -335,45 +405,45 @@ const outputCtrl = (g, input) => {
                 break;
             }
 
-            if (((g.currentLoc === 7 && thisObject.id === "тролль") || (g.currentLoc === 20 && thisObject.id === "монстр")) && haveItem(g, "топор")) {
+            if (((g.currentLoc === 7 && thisObject.id === "тролль") || (g.currentLoc === 20 && thisObject.id === "монстр")) && haveThisObjectId(g, "топор")) {
                 answer = "Этот топор хорош для колки дров, но в бою будет слабоват и неудобен.";
                 break;
             }
 
-            if (g.currentLoc === 23 && !g.flags.isWormKilled && haveItem(g, "топор")) {
+            if (g.currentLoc === 23 && !g.flags.isWormKilled && haveThisObjectId(g, "топор")) {
                 answer = "Шкура скального червя настолько твёрдая, что её невозможно повредить топором.";
                 break;
             }
 
-            if (g.currentLoc === 8 && thisObject.id === "дерево" && haveItem(g, "топор")) {
+            if (g.currentLoc === 8 && thisObject.id === "дерево" && haveThisObjectId(g, "топор")) {
                 g = changeKnownItemPlace(g, "топор", -1);
                 answer = "Я с размаху бью топором по дереву. Лезвие со свистом врезается в каменный ствол, сыплются искры, и мой топор разлетается на куски.";
                 break;
             }
 
-            if (g.currentLoc === 14 && thisObject.id === "куст" && haveItem(g, "топор")) {
+            if (g.currentLoc === 14 && thisObject.id === "куст" && haveThisObjectId(g, "топор")) {
                 answer = "Я попытался срубить куст, но его ветви чудесным образом отклоняются от лезвия, и я не могу причинить им вреда.";
                 break;
             }
 
-            if ((haveItem(g, "шест") || itemPlace(g, "шест") === g.currentLoc) && (thisItem.id === "шест" || anotherItem.id === "шест") && haveItem(g, "топор")) {
+            if ((haveThisObjectId(g, "шест") || itemPlace(g, "шест") === g.currentLoc) && (thisItem.id === "шест" || anotherItem.id === "шест") && haveThisObjectId(g, "топор")) {
                 g = changeKnownItemPlace(g, "шест", -1);
                 answer = "В ярости я накинулся на шест и порубил его в труху.";
                 break;
             }
 
-            if ((haveItem(g, "дрова") || itemPlace(g, "дрова") === g.currentLoc) && (thisItem.id === "дрова" || anotherItem.id === "дрова") && haveItem(g, "топор")) {
+            if ((haveThisObjectId(g, "дрова") || itemPlace(g, "дрова") === g.currentLoc) && (thisItem.id === "дрова" || anotherItem.id === "дрова") && haveThisObjectId(g, "топор")) {
                 g = changeKnownItemPlace(g, "дрова", -1);
                 answer = "В ярости я накинулся на вязанку дров и порубил их в щепки. Эх, теперь ведь дровосек расстроится...";
                 break;
             }
 
-            if (g.currentLoc === 5 && thisObject.id === "старушка" && haveItem(g, "топор")) {
+            if (g.currentLoc === 5 && thisObject.id === "старушка" && haveThisObjectId(g, "топор")) {
                 answer = "Вам не кажется, что эта ситуация со старушкой и топором - немного из другого произведения?";
                 break;
             }
 
-            if (!haveItem(g, "топор") && !haveItem(g, "меч")) {
+            if (!haveThisObjectId(g, "топор") && !haveThisObjectId(g, "меч")) {
                 answer = "Чем прикажете рубить?";
                 break;
             }
@@ -381,9 +451,8 @@ const outputCtrl = (g, input) => {
             break;
         case "открой":
             if (g.currentLoc === 11 && thisObject.id === "дверь") {
-                if (haveItem(g, "ключ") && !g.flags.isDoorOpened) {
+                if (haveThisObjectId(g, "ключ") && !g.flags.isDoorOpened) {
                     g.flags.isDoorOpened = true;
-                    g = changeDir(g, 11, "в", 15);
                     answer = "Вы открыли дверь ключом.";
                 } else if (g.flags.isDoorOpened) {
                     answer = "Дверь уже открыта.";
@@ -401,16 +470,15 @@ const outputCtrl = (g, input) => {
             break;
         case "ударь":
             if (g.currentLoc === 7 && thisObject.id === "тролль" && !g.flags.isTrollKilled) {
-                if (haveItem(g, "булава")) {
+                if (haveThisObjectId(g, "булава")) {
                     g.flags.isTrollKilled = true;
-                    g = changeDir(g, 7, "в", 10);
                     g = changeKnownItemPlace(g, "булава", -1);
                     answer = "В прыжке я вломил троллю булавой прямо промеж глаз! Дико заревев, искалеченный тролль с торчащей в черепе булавой убежал в лес. Путь на восток свободен.";
                     break;
-                } else if (haveItem(g, "топор")) {
+                } else if (haveThisObjectId(g, "топор")) {
                     answer = "Не стоит с маленьким топориком лезть на большого тролля. Нужно что-то посерьёзнее.";
                     break;
-                } else if (haveItem(g, "шест")) {
+                } else if (haveThisObjectId(g, "шест")) {
                     answer = "Я похож на черепашку-ниндзя, чтобы нападать с деревянным шестом на толстого тролля?";
                     break;
                 } else {
@@ -420,7 +488,7 @@ const outputCtrl = (g, input) => {
             }
 
             if (g.currentLoc === 5 && thisObject.id === "старушка") {
-                if (haveItem(g, "топор")) {
+                if (haveThisObjectId(g, "топор")) {
                     answer = "Вам не кажется, что эта ситуация со старушкой и топором - из другого произведения?";
                     break;
                 } else {
@@ -444,7 +512,7 @@ const outputCtrl = (g, input) => {
                 break;
             }
 
-            if (haveItem(g, "топор")) {
+            if (haveThisObjectId(g, "топор")) {
                 answer = "Не совсем понятно, что мне нужно сделать. Если хотите что-то порубить топором, то лучше скажите мне РУБИ или РАЗРУБИ.";
                 break;
             }
@@ -470,9 +538,8 @@ const outputCtrl = (g, input) => {
             answer = "Здесь не с кем говорить.";
             break;
         case "съешь":
-
             if (thisItem.id === "рыба") {
-                if (haveThisItem(g, thisItem)) {
+                if (haveThisObject(g, thisItem)) {
                     answer = "Я эту тухлятину есть не буду.";
                 } else {
                     answer = "У меня нет рыбы."
@@ -484,7 +551,7 @@ const outputCtrl = (g, input) => {
         case "купи":
         case "заплати":
             if ((thisItem.id === "лампа" || thisItem.id === "монета" || thisObject.id === "старушка") && g.currentLoc === 5) {
-                if (haveItem(g, "монета")) {
+                if (haveThisObjectId(g, "монета")) {
                     g = changeKnownItemPlace(g, "монета", -1);
                     g = changeKnownItemPlace(g, "лампа", 5);
                     answer = "Я купил у старушки лампу за серебряную монету.";
@@ -497,7 +564,7 @@ const outputCtrl = (g, input) => {
             answer = "Я не могу это купить.";
             break;
         case "включи":
-            if (thisItem.id === "лампа" && haveThisItem(g, thisItem)) {
+            if (thisItem.id === "лампа" && haveThisObject(g, thisItem)) {
                 if (g.currentLoc === 20) {
                     answer = "Здесь слишком холодно, лампа не загорится.";
                     break;
@@ -506,7 +573,6 @@ const outputCtrl = (g, input) => {
                     g.flags.isLampEmpty = true;
                     if (g.currentLoc === 23 && !g.flags.isWormKilled) {
                         g.flags.isWormKilled = true;
-                        g = changeDir(g, 23, "ю", 24);
                         answer = "Я включаю лампу, и её яркий свет озаряет шахту. Червь, привыкший к темноте, издаёт кошмарный вопль и уползает в глубины подземелья. Через несколько мгновений лампа тухнет.";
                     } else {
                         answer = "Я включаю лампу, она ярко горит всего несколько мгновений, а потом тухнет.";
@@ -520,11 +586,10 @@ const outputCtrl = (g, input) => {
             answer = "У меня нет ничего такого, что включается.";
             break;
         case "высыпь":
-            if (thisItem.id === "соль" && haveThisItem(g, thisItem)) {
+            if (thisItem.id === "соль" && haveThisObject(g, thisItem)) {
                 if (g.currentLoc === 20 && !g.flags.isMonsterKilled) {
                     g.flags.isMonsterKilled = true;
                     g = changeKnownItemPlace(g, "соль", -1);
-                    g = changeDir(g, 20, "с", 25);
                     answer = "Я бросил мешочек с солью в монстра, и как только крупинки соли коснулись его поверхности, монстр превратился в лужу воды.";
                     break;
                 } else {
@@ -536,11 +601,10 @@ const outputCtrl = (g, input) => {
             answer = "Решительно не понимаю, что мне тут рассыпать?";
             break;
         case "брось":
-            if (thisItem.id === "соль" && haveThisItem(g, thisItem)) {
+            if (thisItem.id === "соль" && haveThisObject(g, thisItem)) {
                 if (g.currentLoc === 20 && !g.flags.isMonsterKilled) {
                     g.flags.isMonsterKilled = true;
                     g = changeKnownItemPlace(g, "соль", -1);
-                    g = changeDir(g, 20, "с", 25);
                     answer = "Я бросил мешочек с солью в монстра, и как только крупинки соли коснулись его поверхности, монстр превратился в лужу воды.";
                     break;
                 } else {
@@ -549,20 +613,20 @@ const outputCtrl = (g, input) => {
                     break;
                 }
             }
-            if (thisItem.id === "топор" && haveThisItem(g, thisItem)) {
+            if (thisItem.id === "топор" && haveThisObject(g, thisItem)) {
                 answer = "Начнём с того, что я не умею метать топоры. И, к тому же, это явно не метательный топорик. Давайте попробуем что-то другое.";
                 break;
             }
-            if (thisItem.id === "булава" && haveThisItem(g, thisItem)) {
+            if (thisItem.id === "булава" && haveThisObject(g, thisItem)) {
                 answer = "Слишком тяжёлая, чтобы метать. Ей надо бить, желательно промеж глаз.";
                 break;
             }
-            if (thisItem.id === "лампа" && haveThisItem(g, thisItem)) {
+            if (thisItem.id === "лампа" && haveThisObject(g, thisItem)) {
                 answer = "Я бросаю лампу, и она разбивается в осколки. И зачем нужно было это делать?";
                 g = changeKnownItemPlace(g, "лампа", -1);
                 break;
             }
-            if (haveThisItem(g, thisItem)) {
+            if (haveThisObject(g, thisItem)) {
                 g = changeUnknownItemPlace(g, thisItem, g.currentLoc);
                 answer = "Вы бросаете предмет, но ничего не происходит.";
                 break;
@@ -570,8 +634,8 @@ const outputCtrl = (g, input) => {
             answer = "У меня нет того, что вы предлагаете мне бросить.";
             break;
         case "заправь":
-            if ((thisItem.id === "лампа" || anotherItem.id === "лампа") && haveItem(g, "лампа")) {
-                if (haveItem(g, "масло")) {
+            if ((thisItem.id === "лампа" || anotherItem.id === "лампа") && haveThisObjectId(g, "лампа")) {
+                if (haveThisObjectId(g, "масло")) {
                     g.flags.isLampEmpty = false;
                     answer = "Я залил чуть-чуть масла в лампу.";
                     break;
@@ -584,7 +648,7 @@ const outputCtrl = (g, input) => {
             break;
         case "смажь":
             if (thisObject.id === "рычаг" && g.currentLoc === 25) {
-                if (!g.flags.isLeverOiled && haveItem(g, "масло")) {
+                if (!g.flags.isLeverOiled && haveThisObjectId(g, "масло")) {
                     g.flags.isLeverOiled = true;
                     g = changeKnownItemPlace(g, "масло", -1);
                     answer = "Я аккуратно смазал рычаг и детали его механизма, потратив всё масло.";
@@ -594,12 +658,12 @@ const outputCtrl = (g, input) => {
                     answer = "Рычаг уже смазан.";
                     break;
                 }
-                if (!haveItem(g, "масло")) {
+                if (!haveThisObjectId(g, "масло")) {
                     answer = "Мне нечем смазать рычаг.";
                     break;
                 }
             }
-            if (haveItem(g, "масло")) {
+            if (haveThisObjectId(g, "масло")) {
                 answer = "Зачем это смазывать? Я просто потрачу масло";
                 break;
             }
@@ -610,10 +674,8 @@ const outputCtrl = (g, input) => {
                 if (g.flags.isLeverOiled) {
                     if (!g.flags.isPortcullisOpened) {
                         g.flags.isPortcullisOpened = true;
-                        g = changeDir(g, 17, "с", 27);
                     } else {
                         g.flags.isPortcullisOpened = false;
-                        g = changeDir(g, 17, "с", -1);
                     }
                     answer = "Я нажал на рычаг. Вдали послышался какой-то лязг";
                     break;
