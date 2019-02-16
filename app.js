@@ -1,8 +1,9 @@
 import { ENTER_KEY_CODE } from './modules/constants.js';
 import { state } from './modules/gamedata.js';
 import * as screenCtrl from './modules/screenctrl.js';
-import outputCtrl from './modules/outputctrl.js';
-import inputCtrl from './modules/inputctrl.js';
+// import outputCtrl from './modules/outputctrl.js';
+import game from './modules/core.js';
+import parseInput from './modules/parseinput.js';
 
 // TODO: start and end screens
 const controller = () => {
@@ -15,12 +16,15 @@ const controller = () => {
         document.getElementById("input-field").value = "";
 
         // 2. Отправляем команду в словоанализатор
-        const words = inputCtrl(inputText);
+        const words = parseInput(inputText);
 
         // 3. Выполняем действие игрока 
+        /*
         const processed = outputCtrl(g, words);
+
         g = processed.gameData;
-        const outputText = processed.answer;
+        const outputText = processed.answer; */
+        const outputText = game(words);
 
         // 4. Обновляем экран
         screenCtrl.makeScreen(g, outputText);

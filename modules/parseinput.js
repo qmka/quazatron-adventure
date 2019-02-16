@@ -43,7 +43,7 @@ const findAdjectiveID = (type, id) => {
     }
 }
 
-const inputCtrl = (input) => {
+const parseInput = (input) => {
     const verbs = vocabulary.verbs;
     const objects = vocabulary.objects;
     const adjectives = vocabulary.adjectives;
@@ -125,4 +125,4 @@ const inputCtrl = (input) => {
     }
 }
 
-export default inputCtrl
+export default parseInput
