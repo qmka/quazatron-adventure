@@ -11,12 +11,12 @@ import {
     state
 } from './gamedata.js';
 
-
-const canPlayerMove = (direction, locationIndex) => {
+// Проверяем, может ли игрок пройти в указанном направлении
+const canPlayerMove = (direction, newLocation, flags, currentLocation) => {
     let access, answer;
 
     // Проверяем доступность в общем случае
-    if (locationIndex !== -1) {
+    if (newLocation !== -1) {
         access = true;
         answer = "Что будете делать?";
     } else {
@@ -25,49 +25,49 @@ const canPlayerMove = (direction, locationIndex) => {
     }
 
     // Проверяем частные случаи для определённых локаций
-    switch (state.currentLocation) {
+    switch (currentLocation) {
         case 8:
             // Если у дерева не стоит лестница
-            if (!state.flags.isLadderLeanToTree && direction === "вверх") {
+            if (!flags.isLadderLeanToTree && direction === "вверх") {
                 answer = "Я не могу залезть на дерево. Ствол очень гладкий, не за что зацепиться";
                 access = false;
             }
             break;
         case 7:
             // Если тролль жив
-            if (!state.flags.isTrollKilled && direction === "в") {
+            if (!flags.isTrollKilled && direction === "в") {
                 answer = "Тролль рычит и не даёт мне пройти.";
                 access = false;
             }
             break;
         case 11:
             // Если дверь закрыта
-            if (!state.flags.isDoorOpened && direction === "в") {
+            if (!flags.isDoorOpened && direction === "в") {
                 answer = "Дверь закрыта, я не могу туда пройти.";
                 access = false;
             }
             break;
         case 17:
             // Если решётка опущена
-            if (!state.flags.isPortcullisOpened && direction === "с") {
+            if (!flags.isPortcullisOpened && direction === "с") {
                 answer = "Решётка опущена до пола, я не могу туда пройти.";
                 access = false;
             }
             break;
         case 18:
-            if (!state.flags.isTrapdoorOpened && direction === "вниз") {
+            if (!flags.isTrapdoorOpened && direction === "вниз") {
                 answer = "Путь вниз мне преграждает закрытый люк.";
                 access = false;
             }
             break;
         case 20:
-            if (!state.flags.isMonsterKilled && direction === "с") {
+            if (!flags.isMonsterKilled && direction === "с") {
                 answer = "Ледяной монстр мешает мне пройти.";
                 access = false;
             }
             break;
         case 23:
-            if (!state.flags.isWormKilled && direction === "ю") {
+            if (!flags.isWormKilled && direction === "ю") {
                 answer = "Скальный червь мешает мне пройти.";
                 access = false;
             }
@@ -80,20 +80,29 @@ const canPlayerMove = (direction, locationIndex) => {
     }
 }
 
-const movePlayer = (direction) => {
-    const gameDirections = locations[state.currentLocation].dir;
+// Перемещение игрока из одной локации в другую
+const movePlayer = (direction, currentLocation, flags) => {
+    let newLocation = -1;
+    let playerChangeLocation = false;
+    const gameDirections = locations[currentLocation].dir;
     const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
     const index = directionTypes.indexOf(direction);
     const indexOfTransitionLocation = gameDirections[index];
 
     // Проверяем, можно ли туда пройти
-    const canMove = canPlayerMove(direction, indexOfTransitionLocation);
+    const canMove = canPlayerMove(direction, indexOfTransitionLocation, flags, currentLocation);
 
     // Если можно, то перемещаем игрока
     if (canMove.access) {
-        state.currentLocation = indexOfTransitionLocation;
+        newLocation = indexOfTransitionLocation;
+        playerChangeLocation = true;
     }
-    return canMove.answer;
+
+    return {
+        answer: canMove.answer,
+        newLocation: newLocation,
+        playerChangeLocation: playerChangeLocation
+    };
 }
 
 const game = (userInput) => {
@@ -124,7 +133,14 @@ const processVerb = (verb) => {
         case "з":
         case "вверх":
         case "вниз":
-            answer = movePlayer(verb);
+            const resultOfMove = movePlayer(verb, state.currentLocation, state.flags);
+            if (resultOfMove.playerChangeLocation) {
+                state.currentLocation = resultOfMove.newLocation;
+            }
+            answer = resultOfMove.answer;
+            break;
+        case "возьми":
+            answer = takeItem(mainItem);
             break;
     }
 
