@@ -2,7 +2,7 @@ import {
     USER_HAVE_ITEM
 } from './constants.js';
 import {
-    vocabulary as v
+    vocabulary
 } from './gamedata.js';
 import {
     locations
@@ -10,6 +10,14 @@ import {
 import {
     state
 } from './gamedata.js';
+
+import { userExamineObject, userExamineItem } from './userfunctions.js'
+
+// Возвращаем описание предмета по его id
+const getItemDescriptionById = (id) => {
+    const item = vocabulary.objects.find(e => e.id === id);
+    return item.desc;
+}
 
 // Проверяем, может ли игрок пройти в указанном направлении
 const canPlayerMove = (direction, newLocation, flags, currentLocation) => {
@@ -105,6 +113,82 @@ const movePlayer = (direction, currentLocation, flags) => {
     };
 }
 
+const takeItem = (item, inventory, itemPlaces, currentLocation, flags) => {
+    let answer;
+    // Проверяем особые игровые случаи
+    // Если лестница прислонена к дереву, то её можно забрать
+    if (item === "лестница" && currentLocation === 8 && flags.isLadderLeanToTree) {
+        inventory[item] = true;
+        itemPlaces = -1;
+        flags.isLadderLeanToTree = false;
+        answer = "Я забрал лестницу.";
+    } else
+
+        // Общий случай
+        if (inventory[item] === false && itemPlaces[item] === currentLocation) {
+            inventory[item] = true;
+            itemPlaces[item] = -1;
+            answer = "Ок, взял.";
+        } else {
+            answer = "Я не могу это взять.";
+        }
+    return {
+        answer: answer,
+        inventory: inventory,
+        itemPlaces: itemPlaces,
+        flags: flags
+    }
+}
+
+const dropItem = (item, inventory, itemPlaces, currentLocation, flags) => {
+    let answer;
+
+    // Общий случай
+    if (inventory[item] === true) {
+        inventory[item] = false;
+        itemPlaces[item] = currentLocation;
+        answer = "Ок, положил.";
+    } else {
+        answer = "У меня нет этого.";
+    }
+    return {
+        answer: answer,
+        inventory: inventory,
+        itemPlaces: itemPlaces,
+        flags: flags
+    }
+}
+
+const examine = (item, object, inventory, itemPlaces, currentLocation, flags) => {
+    let answer = "Ничего необычного.";
+
+    // Проверяем особые случаи для игровых объектов
+    const examineObj = userExamineObject(object, inventory, itemPlaces, currentLocation, flags);
+    inventory = examineObj.inventory;
+    itemPlaces = examineObj.itemPlaces;
+    flags = examineObj.flags;
+    if (examineObj.answer !== undefined) answer = examineObj.answer;
+
+    // Проверяем особые случаи для предметов
+
+    const examineItem = userExamineObject(object, inventory, itemPlaces, currentLocation, flags);
+    inventory = examineItem.inventory;
+    itemPlaces = examineItem.itemPlaces;
+    flags = examineItem.flags;
+    if (examineItem.answer !== undefined) answer = examineItem.answer;
+
+    // Общий случай осмотра предмета
+    if (itemPlaces[item] === currentLocation) answer = `Чтобы внимательно осмотреть предмет, нужно взять его в руки.`;
+    if (inventory[item]) answer = getItemDescriptionById(item);
+
+    return {
+        answer: answer,
+        inventory: inventory,
+        itemPlaces: itemPlaces,
+        flags: flags
+    }
+}
+
 const game = (userInput) => {
     // Разбираем полученный из парсера объект на item1, item2, object, verb; записываем в них соотв. id
     const mainItem = userInput.item1;
@@ -118,13 +202,13 @@ const game = (userInput) => {
     // TODO: Здесь предусмотреть функцию для отработки особых игровых ситуаций
 
     // Обрабатываем команду игрока (по глаголу)
-    answer = processVerb(verb);
+    answer = processVerb(verb, mainItem, secondItem, gameObject);
 
     // Возвращаем реакцию программы на действие игрока
     return answer;
 }
 
-const processVerb = (verb) => {
+const processVerb = (verb, mainItem, secondItem, gameObject) => {
     let answer;
     switch (verb) {
         case "с":
@@ -140,7 +224,25 @@ const processVerb = (verb) => {
             answer = resultOfMove.answer;
             break;
         case "возьми":
-            answer = takeItem(mainItem);
+            const resultOfTake = takeItem(mainItem, state.inventory, state.itemPlaces, state.currentLocation, state.flags);
+            state.inventory = resultOfTake.inventory;
+            state.itemPlaces = resultOfTake.itemPlaces;
+            state.flags = resultOfTake.flags;
+            answer = resultOfTake.answer;
+            break;
+        case "положи":
+            const resultOfDrop = dropItem(mainItem, state.inventory, state.itemPlaces, state.currentLocation, state.flags);
+            state.inventory = resultOfDrop.inventory;
+            state.itemPlaces = resultOfDrop.itemPlaces;
+            state.flags = resultOfDrop.flags;
+            answer = resultOfDrop.answer;
+            break;
+        case "осмотри":
+            const resultOfExamine = examine(mainItem, gameObject, state.inventory, state.itemPlaces, state.currentLocation, state.flags);
+            state.inventory = resultOfExamine.inventory;
+            state.itemPlaces = resultOfExamine.itemPlaces;
+            state.flags = resultOfExamine.flags;
+            answer = resultOfExamine.answer;
             break;
     }
 

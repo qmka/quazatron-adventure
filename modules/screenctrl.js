@@ -1,5 +1,6 @@
 import { USER_HAVE_ITEM } from './constants.js';
 import { locations } from './gamedata.js';
+import { state } from './gamedata.js';
 
 // Возвращает текст, который выводится как описание локации
 const makeLocation = (g) => {
@@ -48,8 +49,17 @@ const makeLocation = (g) => {
 const makeInventory = (g) => {
     let inventoryText = "Инвентарь:<br><br>";
     let itemsInInventory = "";
+
+    /*
     for (let key in g.itemPlaces) {
         if (g.itemPlaces[key] === USER_HAVE_ITEM) {
+            itemsInInventory += `${key}<br>`;
+        }
+    }
+    */
+
+    for (let key in g.inventory) {
+        if (g.inventory[key]) {
             itemsInInventory += `${key}<br>`;
         }
     }
