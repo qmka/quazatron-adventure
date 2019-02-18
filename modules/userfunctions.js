@@ -7,7 +7,7 @@ const getItemDescriptionById = (id) => {
     return item.desc;
 }
 
-const userExamineObject = (object, inventory, itemPlaces, currentLocation, flags) => {
+const userExamineObject = (object, item, inventory, itemPlaces, currentLocation, flags) => {
     let answer;
     if (object === "пропасть" && (currentLocation === 6 || currentLocation === 12)) answer = "Передо мной узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие. Верёвка на вид крепкая.";
 
@@ -50,17 +50,6 @@ const userExamineObject = (object, inventory, itemPlaces, currentLocation, flags
 
     if (object === "принцесса" && currentLocation === 28) answer = "Прекрасная, но очень бледная. Её грудь медленно поднимается и опускается: принцесса крепко спит.";
 
-    return {
-        answer: answer,
-        inventory: inventory,
-        itemPlaces: itemPlaces,
-        flags: flags
-    }
-}
-
-const userExamineItem = (item, inventory, itemPlaces, currentLocation, flags) => {
-    let answer;
-
     if (item === "дрова" && inventory[item]) {
         answer = getItemDescriptionById(item);
         if (!flags.isAxeRevealed) {
@@ -72,6 +61,7 @@ const userExamineItem = (item, inventory, itemPlaces, currentLocation, flags) =>
 
     if (item === "лестница" && flags.isLadderLeanToTree && currentLocation === 8) answer = "Лестница приставлена к дереву. Я могу залезть наверх.";
 
+
     return {
         answer: answer,
         inventory: inventory,
@@ -80,4 +70,50 @@ const userExamineItem = (item, inventory, itemPlaces, currentLocation, flags) =>
     }
 }
 
-export { userExamineObject, userExamineItem };
+const userLeanItem = (item, inventory, itemPlaces, currentLocation, flags) => {
+    let answer;
+
+    if (item === "лестница" && inventory[item] && currentLocation === 8) {
+        inventory[item] = false;
+        flags.isLadderLeanToTree = true;
+        answer = "Я прислонил лестницу к дереву."
+    }
+
+    return {
+        answer: answer,
+        inventory: inventory,
+        itemPlaces: itemPlaces,
+        flags: flags
+    }
+}
+
+const userTakeItem = (item, inventory, itemPlaces, currentLocation, flags) => {
+    let answer;
+
+    if (item === "лестница" && currentLocation === 8 && flags.isLadderLeanToTree) {
+        inventory[item] = true;
+        itemPlaces = -1;
+        flags.isLadderLeanToTree = false;
+        answer = "Я забрал лестницу.";
+    }
+
+    return {
+        answer: answer,
+        inventory: inventory,
+        itemPlaces: itemPlaces,
+        flags: flags
+    }
+}
+
+const userDropItem = (item, inventory, itemPlaces, currentLocation, flags) => {
+    let answer;
+
+    return {
+        answer: answer,
+        inventory: inventory,
+        itemPlaces: itemPlaces,
+        flags: flags
+    }
+} 
+
+export { userExamineObject, userLeanItem, userTakeItem, userDropItem };
