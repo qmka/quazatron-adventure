@@ -8,77 +8,108 @@ import {
     state
 } from './gamedata.js';
 
-import {
-    userExamineObject,
-    userLeanItem,
-    userTakeItem,
-    userDropItem
-} from './userfunctions.js'
-
 // Возвращаем описание предмета по его id
 const getItemDescriptionById = (id) => {
-    const item = vocabulary.objects.find(e => e.id === id);
+    const item = vocabulary.objects.find((e) => e.id === id);
     return item.desc;
 }
 
+// Возвращаем текущую локацию
+const getCurrentLocation = () => {
+    return state.currentLocation;
+}
+
+const setCurrentLocation = (location) => {
+    state.currentLocation = location;
+}
+
+const setItemPlace = (item, location) => {
+    state.itemPlaces[item] = location;
+}
+
+const getItemPlace = (item) => {
+    return state.itemPlaces[item];
+}
+
+const isItemInInventory = (item) => {
+    return state.inventory[item];
+}
+
+const addItemToInventory = (item) => {
+    state.inventory[item] = true;
+}
+
+const removeItemFromInventory = (item) => {
+    state.inventory[item] = false;
+}
+
+const setFlag = (flag, value) => {
+    state.flags[flag] = value;
+}
+
+const getFlag = (flag) => {
+    return state.flags[flag];
+}
+
 // Проверяем, может ли игрок пройти в указанном направлении
-const canPlayerMove = (direction, newLocation, flags, currentLocation) => {
-    let access, answer;
+const canPlayerMove = (direction, newLocation) => {
+    let access = true,
+        answer = "Что будете делать?";
 
     // Проверяем доступность в общем случае
-
-    if (newLocation !== -1) {
-        access = true;
-        answer = "Что будете делать?";
-    } else {
-        access = false;
+    if (newLocation === -1) {
         answer = "Я не могу туда пройти";
+        access = false;
+        return {
+            access,
+            answer
+        }
     }
 
     // Проверяем частные случаи для определённых локаций
-    switch (currentLocation) {
+    switch (getCurrentLocation()) {
         case 8:
             // Если у дерева не стоит лестница
-            if (!flags.isLadderLeanToTree && direction === "вверх") {
+            if (!getFlag("isLadderLeanToTree") && direction === "вверх") {
                 answer = "Я не могу залезть на дерево. Ствол очень гладкий, не за что зацепиться";
                 access = false;
             }
             break;
         case 7:
             // Если тролль жив
-            if (!flags.isTrollKilled && direction === "в") {
+            if (!getFlag("isTrollKilled") && direction === "в") {
                 answer = "Тролль рычит и не даёт мне пройти.";
                 access = false;
-            }
+            };
             break;
         case 11:
             // Если дверь закрыта
-            if (!flags.isDoorOpened && direction === "в") {
+            if (!getFlag("isDoorOpened") && direction === "в") {
                 answer = "Дверь закрыта, я не могу туда пройти.";
                 access = false;
-            }
+            };
             break;
         case 17:
             // Если решётка опущена
-            if (!flags.isPortcullisOpened && direction === "с") {
+            if (!getFlag("isPortcullisOpened") && direction === "с") {
                 answer = "Решётка опущена до пола, я не могу туда пройти.";
                 access = false;
-            }
+            };
             break;
         case 18:
-            if (!flags.isTrapdoorOpened && direction === "вниз") {
+            if (!getFlag("isTrapdoorOpened") && direction === "вниз") {
                 answer = "Путь вниз мне преграждает закрытый люк.";
                 access = false;
-            }
+            };
             break;
         case 20:
-            if (!flags.isMonsterKilled && direction === "с") {
+            if (!getFlag("isMonsterKilled") && direction === "с") {
                 answer = "Ледяной монстр мешает мне пройти.";
                 access = false;
-            }
+            };
             break;
         case 23:
-            if (!flags.isWormKilled && direction === "ю") {
+            if (!getFlag("isWormKilled") && direction === "ю") {
                 answer = "Скальный червь мешает мне пройти.";
                 access = false;
             }
@@ -86,133 +117,148 @@ const canPlayerMove = (direction, newLocation, flags, currentLocation) => {
     }
 
     return {
-        access: access,
-        answer: answer
+        access,
+        answer
     }
 }
 
 // Перемещение игрока из одной локации в другую
-const movePlayer = (direction, currentLocation, flags) => {
+const movePlayer = (direction) => {
     let newLocation = -1;
-    let playerChangeLocation = false;
-    const gameDirections = locations[currentLocation].dir;
+    let canChangeLocation = false;
+    const gameDirections = locations[getCurrentLocation()].dir;
     const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
     const index = directionTypes.indexOf(direction);
     const indexOfTransitionLocation = gameDirections[index];
 
     // Проверяем, можно ли туда пройти
-    const canMove = canPlayerMove(direction, indexOfTransitionLocation, flags, currentLocation);
+    const canMove = canPlayerMove(direction, indexOfTransitionLocation);
 
     // Если можно, то перемещаем игрока
     if (canMove.access) {
         newLocation = indexOfTransitionLocation;
-        playerChangeLocation = true;
+        canChangeLocation = true;
     }
     return {
         answer: canMove.answer,
-        newLocation: newLocation,
-        playerChangeLocation: playerChangeLocation
+        newLocation,
+        canChangeLocation
     };
 }
 
-const verbTake = (item, inventory, itemPlaces, currentLocation, flags) => {
-    let answer;
-    // Проверяем особые игровые случаи
-    const takeItem = userTakeItem(item, inventory, itemPlaces, currentLocation, flags);
-    inventory = takeItem.inventory;
-    itemPlaces = takeItem.itemPlaces;
-    flags = takeItem.flags;
-    answer = takeItem.answer;
+const takeItem = (item) => {
+    let answer = "Я не могу это взять.";
 
-    if (answer === undefined) {
-        // Общий случай
-        if (inventory[item] === false && itemPlaces[item] === currentLocation) {
-            inventory[item] = true;
-            itemPlaces[item] = -1;
-            answer = "Ок, взял.";
-        } else {
-            answer = "Я не могу это взять.";
-        }
+    // Особые случаи
+    if (item === "лестница" && getCurrentLocation() === 8 && getFlag("isLadderLeanToTree")) {
+        addItemToInventory(item);
+        setItemPlace(item, -1);
+        setFlag("isLadderLeanToTree", false);
+        answer = "Я забрал лестницу.";
     }
 
-    return {
-        answer: answer,
-        inventory: inventory,
-        itemPlaces: itemPlaces,
-        flags: flags
+    // Общий случай
+    if (!isItemInInventory(item) && getItemPlace(item) === getCurrentLocation()) {
+        addItemToInventory(item);
+        setItemPlace(item, -1);
+        answer = "Ок, взял.";
     }
+
+    return answer;
 }
 
-const verbDrop = (item, inventory, itemPlaces, currentLocation, flags) => {
-    let answer;
+const dropItem = (item) => {
+    let answer = "У меня нет этого.";
 
-    // Проверяем особые случаи для предметов
+    // Особые случаи
+    // В демо-игре отсутствуют
 
-    const dropItem = userDropItem(item, inventory, itemPlaces, currentLocation, flags);
-    inventory = dropItem.inventory;
-    itemPlaces = dropItem.itemPlaces;
-    flags = dropItem.flags;
-    answer = dropItem.answer;
+    // Общий случай
 
-    if (dropItem.answer === undefined) {
-        // Общий случай
-        if (inventory[item] === true) {
-            inventory[item] = false;
-            itemPlaces[item] = currentLocation;
-            answer = "Ок, положил.";
-        } else {
-            answer = "У меня нет этого.";
-        }
-    }
-    return {
-        answer: answer,
-        inventory: inventory,
-        itemPlaces: itemPlaces,
-        flags: flags
-    }
+    if (isItemInInventory(item)) {
+        removeItemFromInventory(item);
+        setItemPlace(item, getCurrentLocation());
+        answer = "Ок, положил.";
+    } 
+
+    return answer;
 }
 
-const verbExamine = (item, object, inventory, itemPlaces, currentLocation, flags) => {
+const examine = (item, object) => {
     let answer = "Ничего необычного.";
 
-    // Проверяем особые случаи для игровых объектов и предметов
-    const examineObj = userExamineObject(object, item, inventory, itemPlaces, currentLocation, flags);
-    inventory = examineObj.inventory;
-    itemPlaces = examineObj.itemPlaces;
-    flags = examineObj.flags;
-    if (examineObj.answer !== undefined) answer = examineObj.answer;
+    // Особые случаи
+    if (object === "пропасть" && (getCurrentLocation() === 6 || getCurrentLocation() === 12)) answer = "Передо мной узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие. Верёвка на вид крепкая.";
+
+    if (object === "куст" && getCurrentLocation() === 14) {
+        answer = "Ветви этого куста похожи на щупальца осминога.";
+        if (!getFlag("isKeyRevealed")) {
+            setFlag("isKeyRevealed", true);
+            addItemToInventory("ключ");
+            answer += " На одном из таких щупальцев я обнаружил ключ.";
+        }
+    }
+
+    if (object === "дверь" && getCurrentLocation() === 11) {
+        answer = getFlag("isDoorOpened") ? "Дверь открыта." : "Дверь заперта.";
+    }
+
+    if (object === "тролль" && getCurrentLocation() === 7 && !getFlag("isTrollKilled")) {
+        answer = "Это огромный мерзкий зелёный тролль. Ничего, кроме страха и омерзения, не вызывает.";
+    }
+
+    if (object === "дерево" && getCurrentLocation() === 8) answer = "Это невысокое, но очень широкое в обхвате дерево, превратившееся в камень под действием какого-то неизвестного колдовства. Ствол дерева гол словно столб, а на вершине в два моих роста ветви хитро переплетаются, образуя нишу.";
+
+    if (object === "решётка" && getCurrentLocation() === 17) {
+        answer = getFlag("isPortcullisOpened") ? "Решётка поднята к потолку - проход свободен." : "Мощная железная решётка с толстыми прутьями. Своими силами такую не поднять, но, может быть, где-то я найду подъёмный механизм?";
+    }
+
+    if (object === "люк" && getCurrentLocation() === 18) {
+        answer = getFlag("isTrapdoorOpened") ? "Здесь уже дыра вместо люка, да щепки вокруг разбросаны." : "Это деревянный люк,  закрывающий путь вниз. Я не вижу никакой ручки, с помощью которой можно открыть этот люк, видимо, время её не пощадило.";
+    }
+
+    if (object === "старушка" && getCurrentLocation() === 5) answer = "Это старая женщина в деревенской одежде. Рядом с ней на куске ткани разложены различные масляные лампы, которые она продаёт.";
+
+    if (object === "червь" && getCurrentLocation() === 23 && !getFlag("isWormKilled")) answer = "Огромный скальный червь. Его шкура крепче камня, и ходят легенды, что убить эту тварь невозможно в принципе. Эти древние злобные создания проводят всю жизнь под землёй и никогда не видят солнечного света.";
+
+    if (object === "монстр" && getCurrentLocation() === 20 && !getFlag("isMonsterKilled")) answer = "Этот монстр кажется слепленным из бесформенных глыб льда. Судя по всему, именно из-за него замёрзли ближайшие комнаты.";
+
+    if (object === "рычаг" && getCurrentLocation() === 25) {
+        answer = getFlag("isLeverOiled") ? "Это ржавый рычаг, присоединённый к какому-то механизму. Я его смазал, теперь его можно нажимать." : "Это ржавый рычаг, присоединённый к какому-то механизму. Нажать не получится - за долгие годы он сильно проржавел. Не мешало бы его смазать."
+    }
+
+    if (object === "принцесса" && getCurrentLocation() === 28) answer = "Прекрасная, но очень бледная. Её грудь медленно поднимается и опускается: принцесса крепко спит.";
+
+    if (item === "дрова" && isItemInInventory(item)) {
+        answer = getItemDescriptionById(item);
+        if (!getFlag("isAxeRevealed")) {
+            setFlag("isAxeRevealed", true);
+            setItemPlace("топор", getCurrentLocation());
+            answer += " Осматривая вязанку, я обнаружил спрятанный в ней топор.";
+        }
+    }
+
+    if (item === "лестница" && getFlag("isLadderLeanToTree") && getCurrentLocation() === 8) answer = "Лестница приставлена к дереву. Я могу залезть наверх.";
+
 
     // Общий случай осмотра предмета
-    if (itemPlaces[item] === currentLocation) answer = `Чтобы внимательно осмотреть предмет, нужно взять его в руки.`;
-    if (inventory[item]) answer = getItemDescriptionById(item);
+    if (getItemPlace(item) === getCurrentLocation()) answer = "Чтобы внимательно осмотреть предмет, нужно взять его в руки.";
+    if (isItemInInventory(item)) answer = getItemDescriptionById(item);
 
-    return {
-        answer: answer,
-        inventory: inventory,
-        itemPlaces: itemPlaces,
-        flags: flags
-    }
+    return answer;
 }
 
-const verbLean = (item, inventory, itemPlaces, currentLocation, flags) => {
-    let answer;
+const leanItem = (item) => {
+    let answer = "Хм, это делу не поможет.";
 
-    // Проверяем особые случаи для предметов
-
-    const leanItem = userLeanItem(item, inventory, itemPlaces, currentLocation, flags);
-    inventory = leanItem.inventory;
-    itemPlaces = leanItem.itemPlaces;
-    flags = leanItem.flags;
-
-    if (leanItem.answer !== undefined) answer = leanItem.answer;
-    else answer = "Хм, это делу не поможет.";
-
-    return {
-        answer: answer,
-        inventory: inventory,
-        itemPlaces: itemPlaces,
-        flags: flags
+    // Особый случай
+    if (item === "лестница" && isItemInInventory(item) && getCurrentLocation() === 8) {
+        removeItemFromInventory(item);
+        setFlag("isLadderLeanToTree", true);
+        answer = "Я прислонил лестницу к дереву.";
     }
+
+    return answer
 }
 
 const game = (userInput) => {
@@ -235,38 +281,33 @@ const game = (userInput) => {
 }
 
 const processVerb = (verb, mainItem, secondItem, gameObject) => {
-    let answer, actionResult;
+    let answer;
     // TODO: сделать обработку неигровых глаголов "ПОМОГИ", "ВЫХОД", "ИДИ"
     if (verb === "с" || verb === "ю" || verb === "з" || verb === "в" || verb === "вверх" || verb === "вниз") {
-        const resultOfMove = movePlayer(verb, state.currentLocation, state.flags);
-        if (resultOfMove.playerChangeLocation) {
-            state.currentLocation = resultOfMove.newLocation;
+        const resultOfMove = movePlayer(verb);
+        if (resultOfMove.canChangeLocation) {
+            setCurrentLocation(resultOfMove.newLocation);
         }
         answer = resultOfMove.answer;
     } else {
         switch (verb) {
             case "возьми":
-                actionResult = verbTake(mainItem, state.inventory, state.itemPlaces, state.currentLocation, state.flags);
+                answer = takeItem(mainItem);
                 break;
             case "положи":
-                actionResult = verbDrop(mainItem, state.inventory, state.itemPlaces, state.currentLocation, state.flags);
+                answer = dropItem(mainItem);
                 break;
             case "осмотри":
-                actionResult = verbExamine(mainItem, gameObject, state.inventory, state.itemPlaces, state.currentLocation, state.flags);
+                answer = examine(mainItem, gameObject);
                 break;
             case "прислони":
-                actionResult = verbLean(mainItem, state.inventory, state.itemPlaces, state.currentLocation, state.flags);
+                answer = leanItem(mainItem);
+                break;
+            default:
+                answer = "Я не понимаю.";
                 break;
 
         }
-
-        // Обновляем состояние игры
-        state.inventory = actionResult.inventory;
-        state.itemPlaces = actionResult.itemPlaces;
-        state.flags = actionResult.flags;
-        answer = actionResult.answer;
-
-
     }
     return answer
 };

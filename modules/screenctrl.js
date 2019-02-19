@@ -1,4 +1,3 @@
-import { USER_HAVE_ITEM } from './constants.js';
 import { locations } from './gamedata.js';
 import { state } from './gamedata.js';
 
@@ -7,7 +6,7 @@ const makeLocation = (g) => {
     let description = "";
 
     // Берём из объекта с локациями описание текущей локации
-    locations.forEach(e => {
+    locations.forEach((e) => {
         if (e.id === g.currentLocation) {
             description += e.desc;
         }
@@ -49,14 +48,6 @@ const makeLocation = (g) => {
 const makeInventory = (g) => {
     let inventoryText = "Инвентарь:<br><br>";
     let itemsInInventory = "";
-
-    /*
-    for (let key in g.itemPlaces) {
-        if (g.itemPlaces[key] === USER_HAVE_ITEM) {
-            itemsInInventory += `${key}<br>`;
-        }
-    }
-    */
 
     for (let key in g.inventory) {
         if (g.inventory[key]) {

@@ -1,7 +1,8 @@
 import { ENTER_KEY_CODE } from './modules/constants.js';
-import { state } from './modules/gamedata.js';
+import {
+    state
+} from './modules/gamedata.js';
 import * as screenCtrl from './modules/screenctrl.js';
-// import outputCtrl from './modules/outputctrl.js';
 import game from './modules/core.js';
 import parseInput from './modules/parseinput.js';
 
@@ -11,9 +12,11 @@ const controller = () => {
     // Реакция программы на ввод игрока
     const userInput = () => {
 
+        const inputField = document.getElementById("input-field");
+
         // 1. Получаем введённую игроком команду и очищаем поле ввода
-        const inputText = document.getElementById("input-field").value;
-        document.getElementById("input-field").value = "";
+        const inputText = inputField.value;
+        inputField.value = "";
 
         // 2. Отправляем команду в словоанализатор
         const words = parseInput(inputText);
@@ -32,7 +35,17 @@ const controller = () => {
 
     const setupEventListeners = () => {
         document.addEventListener('keypress', function (event) {
-            if (event.keyCode === ENTER_KEY_CODE || event.which === ENTER_KEY_CODE) {
+            let code;
+
+            if (event.key !== undefined) {
+                code = event.key;
+            } else if (event.keyIdentifier !== undefined) {
+                code = event.keyIdentifier;
+            } else if (event.keyCode !== undefined) {
+                code = event.keyCode;
+            }
+
+            if (code === "Enter" || code === ENTER_KEY_CODE) {
                 {
                     userInput();
                 }

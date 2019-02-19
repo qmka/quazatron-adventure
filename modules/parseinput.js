@@ -22,7 +22,7 @@ import { vocabulary } from './gamedata.js';
 // - Предлоги игнорируются
 
 // Возвращает id слова, соответствующего слову, введённому игроком, в словаре
-const findWordID = (type, word) => {
+const findWordId = (type, word) => {
     for (let j of type) {
         const currentForms = j.forms;
         for (let k of currentForms) {
@@ -34,7 +34,7 @@ const findWordID = (type, word) => {
 }
 
 // Возвращает id объекта, которому соответствует введённое игроком прилагательное
-const findAdjectiveID = (type, id) => {
+const findAdjectiveId = (type, id) => {
     for (let n of type) {
         const adjId = n.adjective;
         if (id === adjId) {
@@ -54,7 +54,7 @@ const parseInput = (input) => {
     // Возвращает true, если слово - предмет, и false, если слово - игровой объект
     const isItem = (ob) => {
         if (ob !== undefined) {
-            const current = objects.find(e => e.id === ob);
+            const current = objects.find((e) => e.id === ob);
             return current.item;
         }
         return undefined;
@@ -62,7 +62,7 @@ const parseInput = (input) => {
 
     // Возвращает true, если слово есть в словаре прилагательных
     const isAdjective = (word) => {
-        const result = findWordID(adjectives, word);
+        const result = findWordId(adjectives, word);
         return result !== undefined;
     }
 
@@ -76,17 +76,17 @@ const parseInput = (input) => {
     for (let i = 0; i < words.length; i += 1) {
         // Первое слово по умолчанию всегда должно быть глаголом
         if (i === 0) {
-            const pVerb = findWordID(verbs, words[i]);
+            const pVerb = findWordId(verbs, words[i]);
             if (pVerb !== undefined) verb = pVerb;
         } else {
             // Ищем id текущего слова
-            const pObject = findWordID(objects, words[i]);
+            const pObject = findWordId(objects, words[i]);
 
             
             if (isAdjective(words[i - 1])) {    // Если перед текущим словом стояло прилагательное
-                const pAdjective = findWordID(adjectives, words[i - 1]);
+                const pAdjective = findWordId(adjectives, words[i - 1]);
                 if (pObject !== undefined) {
-                    const verifObj = findAdjectiveID(objects, pAdjective);
+                    const verifObj = findAdjectiveId(objects, pAdjective);
                     object = verifObj !== undefined ? verifObj : pObject;
                 }
             } else {
@@ -117,11 +117,11 @@ const parseInput = (input) => {
     }
     
     return {
-        verb: verb,
+        verb,
         obj: nonitem,
         item1: item1,
         item2: item2,
-        message: message
+        message
     }
 }
 
