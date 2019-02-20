@@ -1,5 +1,9 @@
-import { vocabulary } from './gamedata.js';
-import { WORD_TYPES } from './constants.js';
+import {
+    vocabulary
+} from './gamedata.js';
+import {
+    WORD_TYPES
+} from './constants.js';
 
 // Word Analyzer for ABS v.0.9
 // На входе команда игрока
@@ -28,28 +32,31 @@ const findWordId = (type, word) => {
     let key = `${type}s`;
     if (!type in vocabulary || !key in vocabulary) return -1;
     const result = vocabulary[key].find((item) => item.forms.includes(word));
-    return result !== undefined ? result.id : -1;
+    return result !== undefined ? result.id : "";
 }
 
-// Возвращает id объекта, которому соответствует введённое игроком прилагательное
-const findAdjectiveId = (type, id) => {
-    for (let n of type) {
-        const adjId = n.adjective;
-        if (id === adjId) {
-            return n.id;
-        }
-    }
+
+const findAdjectiveId = (adjectiveId) => {
+    // смотрим каждый объект, ищем у него свойство adjective
+    // сравниваем значение свойства adjective у объекта и переданный id из словаря прилагательных
+    // если совпадает, то возвращаем id этого объекта
+    const result = vocabulary["objects"].find((item) => item.adjective === adjectiveId);
+    return result !== undefined ? result.id : "";
 }
 
 const parseInput = (input) => {
     const objects = vocabulary.objects;
     let isSecondItem = false;
-    let verb, item1, item2, nonitem, object;
+    let verb = "",
+        item1 = "",
+        item2 = "",
+        nonitem = "",
+        object = "";
     let message = "Ок";
 
     // Возвращает true, если слово - предмет, и false, если слово - игровой объект
     const isItem = (ob) => {
-        if (ob !== undefined) {
+        if (ob !== undefined && ob !== null) {
             const current = objects.find((e) => e.id === ob);
             return current.item;
         }
@@ -59,7 +66,7 @@ const parseInput = (input) => {
     // Возвращает true, если слово есть в словаре прилагательных
     const isAdjective = (word) => {
         const result = findWordId(WORD_TYPES.adjective, word);
-        return result !== undefined;
+        return result !== "" ? true : false;
     }
 
     if (!input.length) {
@@ -68,50 +75,80 @@ const parseInput = (input) => {
     input = input.toLowerCase();
     const words = input.split(/[\s,]+/);
 
-    // Запускаем цикл, в котором рассматриваем каждое слово из фразы игрока по отдельности
-    for (let i = 0; i < words.length; i += 1) {
-        // Первое слово по умолчанию всегда должно быть глаголом 
-        if (i === 0) {
-            const pVerb = findWordId(WORD_TYPES.verb, words[i]);
-            if (pVerb !== undefined) verb = pVerb;
-        } else {
-            // Ищем id текущего слова
-            const pObject = findWordId(WORD_TYPES.noun, words[i]);
+    // Ищем глагол
+    const pVerb = findWordId(WORD_TYPES.verb, words[0]);
+    // Если нашли id, то записываем его в verb, иначе verb остаётся пустым ""
+    if (pVerb !== "") verb = pVerb;
 
-            
-            if (isAdjective(words[i - 1])) {    // Если перед текущим словом стояло прилагательное
-                const pAdjective = findWordId(WORD_TYPES.adjective, words[i - 1]);
-                if (pObject !== undefined) {
-                    const verifObj = findAdjectiveId(objects, pAdjective);
-                    object = verifObj !== undefined ? verifObj : pObject;
-                }
-            } else {
-                   const thisObject = objects.find(e => e.id === pObject);
-                if (pObject !== undefined) {
-                    if ("adjective" in thisObject) message = `Уточните прилагательное для слова "${words[i]}".`;
-                    else object = pObject;
-                }
+
+    // Запускаем цикл, в котором рассматриваем каждое слово из фразы игрока по отдельности
+    for (let i = 1; i < words.length; i += 1) {
+
+        // Ищем id текущего слова, предполагая, что это существительное. 
+        // Если это прилагательное, то мы его просто пропустим
+        const pObject = findWordId(WORD_TYPES.noun, words[i]);
+
+        // Если перед текущим словом стояло прилагательное
+        if (isAdjective(words[i - 1])) {
+
+            // Ищем id этого прилагательного в словаре прилагательных
+            const pAdjective = findWordId(WORD_TYPES.adjective, words[i - 1]);
+
+            // Если нашли
+            if (pObject !== "") {
+
+                // То записываем в verifObj id объекта, у которого в свойстве adjective стоит указанное игроком прилагательное
+                const verifObj = findAdjectiveId(objects, pAdjective);
+
+                // Присваиваем в object либо полученный verifObj (если есть прилагательное), 
+                // или (если нет прилагательного) pObject
+                object = verifObj !== undefined ? verifObj : pObject;
             }
 
-            // Если нашли слово в словаре, то определяем, предмет это или игровой объект
-            if (object !== undefined) {
-                if (isItem(object)) {
+            // Если перед текущим словом не стояло прилагательного
+        } else {
+            // Ищем в массиве объектов объект с id, который мы записали в pObject
+            const thisObject = objects.find(e => e.id === pObject);
 
-                    // Если в фразе игрока упоминается два предмета, то разносим их в разные переменные
-                    if (!isSecondItem) {
-                        isSecondItem = true;
-                        item1 = object;
-                        object = undefined;
-                    } else {
-                        item2 = object;
-                    }
-                } else {
-                    nonitem = object;
-                }
+            // Если мы вообще нашли такой id
+            if (thisObject !== undefined) {
+
+                // Если у объекта есть прилагательное, а игрок его не ввёл, то надо уточнить
+                if ("adjective" in thisObject) message = `Уточните прилагательное для слова "${words[i]}".`;
+
+                // Иначе записываем в object
+                else object = pObject;
             }
         }
+
+        // Если мы сопоставили ввод игрока с каким-либо игровым объектом
+        if (object !== "") {
+
+            // Проверяем, предмет это или статический объект
+            // Если предмет:
+            if (isItem(object)) {
+
+                // Если в фразе игрока упоминается два предмета, то разносим их в разные переменные
+                if (!isSecondItem) {
+                    isSecondItem = true;
+                    item1 = object;
+                    object = "";
+                } else {
+                    item2 = object;
+                }
+            } else {
+                nonitem = object;
+            }
+        }
+
     }
-    
+    console.log({
+        verb,
+        obj: nonitem,
+        item1: item1,
+        item2: item2,
+        message
+    });
     return {
         verb,
         obj: nonitem,
