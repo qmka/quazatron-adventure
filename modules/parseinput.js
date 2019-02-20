@@ -45,12 +45,9 @@ const findAdjectiveId = (adjectiveId) => {
 }
 
 // Возвращает true, если слово - предмет, и false, если слово - игровой объект
-const canHoldItem = (object) => {
-    if (object !== undefined) {
-        const current = vocabulary.objects.find((e) => e.id === object);
-        return current.item;
-    }
-    return undefined;
+const canHoldItem = (objId) => {
+    const result = vocabulary.objects.find((e) => e.id === objId);
+    return result.canHold;
 }
 
 // Возвращает true, если слово есть в словаре прилагательных

@@ -5,7 +5,7 @@ import {
     locations
 } from './gamedata.js';
 import {
-    state
+    state, inventory
 } from './gamedata.js';
 
 // Возвращаем описание предмета по его id
@@ -32,15 +32,15 @@ const getItemPlace = (item) => {
 }
 
 const isItemInInventory = (item) => {
-    return state.inventory[item];
+    return inventory.isItemInInventory(item);
 }
 
 const addItemToInventory = (item) => {
-    state.inventory[item] = true;
+    inventory.addItem(item);
 }
 
 const removeItemFromInventory = (item) => {
-    state.inventory[item] = false;
+    inventory.removeItem(item);
 }
 
 const setFlag = (flag, value) => {

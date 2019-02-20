@@ -1,5 +1,6 @@
 import { locations } from './gamedata.js';
 import { state } from './gamedata.js';
+import { inventory } from './gamedata.js';
 
 // Возвращает текст, который выводится как описание локации
 const makeLocation = (g) => {
@@ -49,11 +50,11 @@ const makeInventory = (g) => {
     let inventoryText = "Инвентарь:<br><br>";
     let itemsInInventory = "";
 
-    for (let key in g.inventory) {
-        if (g.inventory[key]) {
-            itemsInInventory += `${key}<br>`;
-        }
-    }
+    inventory.allItems().forEach((item) => {
+        itemsInInventory += `${item}<br>`;
+    })
+
+
     if (itemsInInventory !== "") {
         inventoryText += itemsInInventory;
     } else {
