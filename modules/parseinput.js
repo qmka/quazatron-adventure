@@ -1,4 +1,5 @@
 import { vocabulary } from './gamedata.js';
+import { WORD_TYPES } from './constants.js';
 
 // Word Analyzer for ABS v.0.9
 // На входе команда игрока
@@ -22,15 +23,12 @@ import { vocabulary } from './gamedata.js';
 // - Предлоги игнорируются
 
 // Возвращает id слова, соответствующего слову, введённому игроком, в словаре
+
 const findWordId = (type, word) => {
-    for (let j of type) {
-        const currentForms = j.forms;
-        for (let k of currentForms) {
-            if (k === word) {
-                return j.id;
-            }
-        }
-    }
+    let key = `${type}s`;
+    if (!type in vocabulary || !key in vocabulary) return -1;
+    const result = vocabulary[key].find((item) => item.forms.includes(word));
+    return result !== undefined ? result.id : -1;
 }
 
 // Возвращает id объекта, которому соответствует введённое игроком прилагательное
@@ -44,9 +42,7 @@ const findAdjectiveId = (type, id) => {
 }
 
 const parseInput = (input) => {
-    const verbs = vocabulary.verbs;
     const objects = vocabulary.objects;
-    const adjectives = vocabulary.adjectives;
     let isSecondItem = false;
     let verb, item1, item2, nonitem, object;
     let message = "Ок";
@@ -62,7 +58,7 @@ const parseInput = (input) => {
 
     // Возвращает true, если слово есть в словаре прилагательных
     const isAdjective = (word) => {
-        const result = findWordId(adjectives, word);
+        const result = findWordId(WORD_TYPES.adjective, word);
         return result !== undefined;
     }
 
@@ -74,17 +70,17 @@ const parseInput = (input) => {
 
     // Запускаем цикл, в котором рассматриваем каждое слово из фразы игрока по отдельности
     for (let i = 0; i < words.length; i += 1) {
-        // Первое слово по умолчанию всегда должно быть глаголом
+        // Первое слово по умолчанию всегда должно быть глаголом 
         if (i === 0) {
-            const pVerb = findWordId(verbs, words[i]);
+            const pVerb = findWordId(WORD_TYPES.verb, words[i]);
             if (pVerb !== undefined) verb = pVerb;
         } else {
             // Ищем id текущего слова
-            const pObject = findWordId(objects, words[i]);
+            const pObject = findWordId(WORD_TYPES.noun, words[i]);
 
             
             if (isAdjective(words[i - 1])) {    // Если перед текущим словом стояло прилагательное
-                const pAdjective = findWordId(adjectives, words[i - 1]);
+                const pAdjective = findWordId(WORD_TYPES.adjective, words[i - 1]);
                 if (pObject !== undefined) {
                     const verifObj = findAdjectiveId(objects, pAdjective);
                     object = verifObj !== undefined ? verifObj : pObject;
