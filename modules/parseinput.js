@@ -45,7 +45,7 @@ const findAdjectiveId = (adjectiveId) => {
 }
 
 // Возвращает true, если слово - предмет, и false, если слово - игровой объект
-const isItem = (object) => {
+const canHoldItem = (object) => {
     if (object !== undefined) {
         const current = vocabulary.objects.find((e) => e.id === object);
         return current.item;
@@ -125,7 +125,7 @@ const parseInput = (input) => {
 
             // Проверяем, предмет это или статический объект
             // Если предмет:
-            if (isItem(object)) {
+            if (canHoldItem(object)) {
 
                 // Если в фразе игрока упоминается два предмета, то разносим их в разные переменные
                 if (!isSecondItem) {
