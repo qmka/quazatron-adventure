@@ -44,6 +44,21 @@ const findAdjectiveId = (adjectiveId) => {
     return result !== undefined ? result.id : "";
 }
 
+// Возвращает true, если слово - предмет, и false, если слово - игровой объект
+const isItem = (object) => {
+    if (object !== undefined) {
+        const current = vocabulary.objects.find((e) => e.id === object);
+        return current.item;
+    }
+    return undefined;
+}
+
+// Возвращает true, если слово есть в словаре прилагательных
+const isAdjective = (word) => {
+    const result = findWordId(WORD_TYPES.adjective, word);
+    return result !== "" ? true : false;
+}
+
 const parseInput = (input) => {
     const objects = vocabulary.objects;
     let isSecondItem = false;
@@ -53,21 +68,6 @@ const parseInput = (input) => {
         nonitem = "",
         object = "";
     let message = "Ок";
-
-    // Возвращает true, если слово - предмет, и false, если слово - игровой объект
-    const isItem = (ob) => {
-        if (ob !== undefined && ob !== null) {
-            const current = objects.find((e) => e.id === ob);
-            return current.item;
-        }
-        return undefined;
-    }
-
-    // Возвращает true, если слово есть в словаре прилагательных
-    const isAdjective = (word) => {
-        const result = findWordId(WORD_TYPES.adjective, word);
-        return result !== "" ? true : false;
-    }
 
     if (!input.length) {
         message = "Что мне делать?";
@@ -79,7 +79,6 @@ const parseInput = (input) => {
     const pVerb = findWordId(WORD_TYPES.verb, words[0]);
     // Если нашли id, то записываем его в verb, иначе verb остаётся пустым ""
     if (pVerb !== "") verb = pVerb;
-
 
     // Запускаем цикл, в котором рассматриваем каждое слово из фразы игрока по отдельности
     for (let i = 1; i < words.length; i += 1) {
