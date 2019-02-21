@@ -40,7 +40,7 @@ const findAdjectiveId = (adjectiveId) => {
     // смотрим каждый объект, ищем у него свойство adjective
     // сравниваем значение свойства adjective у объекта и переданный id из словаря прилагательных
     // если совпадает, то возвращаем id этого объекта
-    const result = vocabulary["objects"].find((item) => item.adjective === adjectiveId);
+    const result = vocabulary.objects.find((item) => item.adjective === adjectiveId);
     return result !== undefined ? result.id : "";
 }
 
@@ -53,7 +53,7 @@ const canHoldItem = (objId) => {
 // Возвращает true, если слово есть в словаре прилагательных
 const isAdjective = (word) => {
     const result = findWordId(WORD_TYPES.adjective, word);
-    return result !== "" ? true : false;
+    return result !== "";
 }
 
 const parseInput = (input) => {
@@ -67,15 +67,28 @@ const parseInput = (input) => {
     let message = "Ок";
 
     if (!input.length) {
-        message = "Что мне делать?";
+        return {
+            verb,
+            obj: nonitem,
+            item1,
+            item2,
+            message: "Что мне делать?"
+        }
     }
-    input = input.toLowerCase();
-    const words = input.split(/[\s,]+/);
+
+    const words = input.toLowerCase().split(/[\s,]+/);
 
     // Ищем глагол
-    const pVerb = findWordId(WORD_TYPES.verb, words[0]);
-    // Если нашли id, то записываем его в verb, иначе verb остаётся пустым ""
-    if (pVerb !== "") verb = pVerb;
+    const verb = findWordId(WORD_TYPES.verb, words[0]);
+    if (verb === "") {
+        return {
+            verb,
+            obj: nonitem,
+            item1,
+            item2,
+            message: "Я не понимаю."
+        }
+    }
 
     // Запускаем цикл, в котором рассматриваем каждое слово из фразы игрока по отдельности
     for (let i = 1; i < words.length; i += 1) {
@@ -88,17 +101,17 @@ const parseInput = (input) => {
         if (isAdjective(words[i - 1])) {
 
             // Ищем id этого прилагательного в словаре прилагательных
-            const pAdjective = findWordId(WORD_TYPES.adjective, words[i - 1]);
+            const adjectiveId = findWordId(WORD_TYPES.adjective, words[i - 1]);
 
             // Если нашли
             if (pObject !== "") {
 
                 // То записываем в verifObj id объекта, у которого в свойстве adjective стоит указанное игроком прилагательное
-                const verifObj = findAdjectiveId(objects, pAdjective);
+                const verifObj = findAdjectiveId(objects, adjectiveId);
 
                 // Присваиваем в object либо полученный verifObj (если есть прилагательное), 
                 // или (если нет прилагательного) pObject
-                object = verifObj !== undefined ? verifObj : pObject;
+                object = verifObj !== "" ? verifObj : pObject;
             }
 
             // Если перед текущим словом не стояло прилагательного
