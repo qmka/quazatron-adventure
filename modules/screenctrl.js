@@ -1,6 +1,12 @@
-import { locations } from './gamedata.js';
-import { state } from './gamedata.js';
-import { inventory } from './gamedata.js';
+import {
+    locations
+} from './gamedata.js';
+import {
+    state
+} from './gamedata.js';
+import {
+    inventory
+} from './gamedata.js';
 
 // Возвращает текст, который выводится как описание локации
 const makeLocation = (g) => {
@@ -27,21 +33,29 @@ const makeLocation = (g) => {
 
     // Если в локации лежат предметы, то добавляем их список к описанию локации
 
-    // Object.keys(quesArr).length
-
     description += "<br>";
     let itemsInLoc = "";
+    let itemsArray = [];
 
     // Не знаю, как для ассоциативного массива определить последний элемент, и для него выводить не запятую, а точку
     for (let key in g.itemPlaces) {
         if (g.itemPlaces[key] === g.currentLocation) {
-                    itemsInLoc += `${key}, `;
-            };
+            itemsArray.push(key);
+        };
+    }
+
+    for (let i = 0; i < itemsArray.length; i += 1) {
+        itemsInLoc += itemsArray[i];
+        if (i === itemsArray.length - 1) {
+            itemsInLoc += ".";
+        } else {
+            itemsInLoc += ", ";
         }
-    
+    }
+
     if (itemsInLoc !== "") {
         description += `<br>Здесь также есть: ${itemsInLoc}`;
-    } 
+    }
     return description;
 }
 
@@ -82,4 +96,7 @@ const makeStaticScreen = (text, sidebar, action, image) => {
     document.getElementById("input-area").style.display = "none";
 }
 
-export { makeScreen, makeStaticScreen };
+export {
+    makeScreen,
+    makeStaticScreen
+};

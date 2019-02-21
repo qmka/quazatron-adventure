@@ -40,7 +40,7 @@ const addItemToInventory = (item) => {
 }
 
 const removeItemFromInventory = (item) => {
-    inventory.removeItem(item);
+    inventory.removeItem;
 }
 
 const setFlag = (flag, value) => {
