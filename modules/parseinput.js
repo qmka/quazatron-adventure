@@ -5,73 +5,48 @@ import {
     WORD_TYPES
 } from './constants.js';
 
-// Word Analyzer for ABS v.0.9
-// На входе команда игрока
-// На выходе объект, свойства которого:
-// - verb: глагол
-// - obj: игровой объект (не предмет), с которым можно взаимодействовать
-// - item1: предмет
-// - item2: второй предмет (если есть, а если нет - то undefined)
-// - message: служебное сообщение, которое нужно вывести в случае ошибки анализатора
-//
-// Анализатор точно определяет следующие конструкции:
-// - одиночная команда, например "с" для передвижения на север. Такая команда считается ГЛАГОЛОМ.
-// - простое действие ГЛАГОЛ + СУЩЕСТВИТЕЛЬНОЕ. Например, "возьми монету".
-// - сложное действие ГЛАГОЛ + СУЩЕСТВИТЕЛЬНОЕ + СУЩЕСТВИТЕЛЬНОЕ. Например, "ударь мечом монстра".
-// - сочетания ПРИЛАГАТЕЛЬНОЕ + СУЩЕСТВИТЕЛЬНОЕ в простом или сложном действии. При этом объект должен стоять сразу после прилагательного, с которым он связан. Например, "возьми золотую монету".
-// - СУЩЕСТВИТЕЛЬНОЕ может быть как предметом, который можно взять, так и игровым объектом, с которым игрок может взаимодействовать. 
-//
-// Имеются разумные ограничения
-// - ГЛАГОЛ всегда является первым словом в предложении. Конструкции а-ля Мастер Йода "монету золотую ты возьми" не сработают.
-// - Предполагается, что в команде будет не более двух СУЩЕСТВИТЕЛЬНЫХ. То есть, команда "ударь мечом монстра" сработает, а команда "положи в мешок монету и кольцо" - нет. Один предмет - одно действие, за исключением случаев, когда надо воздействовать одним предметом на другой - "открой банку ножом".
-// - Предлоги игнорируются
-
-// Возвращает id слова, соответствующего слову, введённому игроком, в словаре
-
+// Ищем id слова word в словаре type
 const findWordId = (type, word) => {
     let key = `${type}s`;
     if (!type in vocabulary || !key in vocabulary) return -1;
     const result = vocabulary[key].find((item) => item.forms.includes(word));
-    return result !== undefined ? result.id : "";
+    return result !== undefined ? result.id : -1;
 }
 
-
-const findAdjectiveId = (adjectiveId) => {
-    // смотрим каждый объект, ищем у него свойство adjective
-    // сравниваем значение свойства adjective у объекта и переданный id из словаря прилагательных
-    // если совпадает, то возвращаем id этого объекта
-    const result = vocabulary.objects.find((item) => item.adjective === adjectiveId);
-    return result !== undefined ? result.id : "";
+// Ищем id объектов, в массиве forms которых встречается слово word. 
+// Возвращаем массив этих id или -1, если не нашли ничего
+const findObjectId = (word) => {
+    let arrayOfWordsIds = [];
+    vocabulary.objects.forEach(e => {
+        if (e.forms.includes(word)) {
+            arrayOfWordsIds.push(e.id);
+        }
+    })
+    return arrayOfWordsIds.length !== 0 ? arrayOfWordsIds : -1;
 }
 
-// Возвращает true, если слово - предмет, и false, если слово - игровой объект
-const canHoldItem = (objId) => {
-    const result = vocabulary.objects.find((e) => e.id === objId);
-    return result.canHold;
+// Возвращаем свойство adjective объекта с соответствующим id
+const findAdjectiveProperty = (id) => {
+    const object = vocabulary.objects[id];
+    if (object === undefined) return -1;
+    return object.adjective;
 }
 
-// Возвращает true, если слово есть в словаре прилагательных
-const isAdjective = (word) => {
-    const result = findWordId(WORD_TYPES.adjective, word);
-    return result !== "";
-}
-
+// Основная функция парсера. На входе - строка, введённая игроком.
+// На выходе 
 const parseInput = (input) => {
-    const objects = vocabulary.objects;
-    let isSecondItem = false;
-    let verb = "",
-        item1 = "",
-        item2 = "",
-        nonitem = "",
-        object = "";
-    let message = "Ок";
+    let isFirstItem = true;
+    let verb = -1,
+        object1 = -1,
+        object2 = -1,
+        message = "Ок";
 
+    // Если игрок не ввёл ничего и нажал Enter
     if (!input.length) {
         return {
             verb,
-            obj: nonitem,
-            item1,
-            item2,
+            object1,
+            object2,
             message: "Что мне делать?"
         }
     }
@@ -79,90 +54,101 @@ const parseInput = (input) => {
     const words = input.toLowerCase().split(/[\s,]+/);
 
     // Ищем глагол
-    const verb = findWordId(WORD_TYPES.verb, words[0]);
-    if (verb === "") {
+    verb = findWordId(WORD_TYPES.verb, words[0]);
+
+    // Если не нашли глагола в словаре, то пишем, что программа не понимает
+    if (verb === -1) {
         return {
             verb,
-            obj: nonitem,
-            item1,
-            item2,
-            message: "Я не понимаю."
+            object1,
+            object2,
+            message: "Я не понимаю"
         }
     }
 
     // Запускаем цикл, в котором рассматриваем каждое слово из фразы игрока по отдельности
     for (let i = 1; i < words.length; i += 1) {
+        // Ищем id текущего слова в словаре игровых объектов. Получаем массив объектов, для которых встречается
+        // данная словоформа. В общем случае это будет массив из одного слова.
 
-        // Ищем id текущего слова, предполагая, что это существительное. 
-        // Если это прилагательное, то мы его просто пропустим
-        const pObject = findWordId(WORD_TYPES.noun, words[i]);
+        // Зачем нужен массив? Потому что иначе парсер находил первый объект, в котором встречалось слово игрока,// и возвращал его. То есть, форма "монета" есть у "серебряной монеты" id=11 и "медной монеты" id=12,
+        // и парсер всегда возвращал id=11, а до id=12 не добирался.
 
-        // Если перед текущим словом стояло прилагательное
-        if (isAdjective(words[i - 1])) {
+        // Поэтому, когда парсер видит слово "монета", он выдаёт массив, содержащий id и той, и другой монет.
+        // А дальше уже перебором по массиву мы определяем, о какой конкретно монете идёт речь.
+        const wordIds = findObjectId(words[i]);
 
-            // Ищем id этого прилагательного в словаре прилагательных
-            const adjectiveId = findWordId(WORD_TYPES.adjective, words[i - 1]);
+        // Если нашли id в словаре
+        if (wordIds !== -1) {
+            // В currentObjectId будем хранить итоговый id объекта (после проверок с прилагательными)
+            let currentObjectId;
 
-            // Если нашли
-            if (pObject !== "") {
-
-                // То записываем в verifObj id объекта, у которого в свойстве adjective стоит указанное игроком прилагательное
-                const verifObj = findAdjectiveId(objects, adjectiveId);
-
-                // Присваиваем в object либо полученный verifObj (если есть прилагательное), 
-                // или (если нет прилагательного) pObject
-                object = verifObj !== "" ? verifObj : pObject;
-            }
-
-            // Если перед текущим словом не стояло прилагательного
-        } else {
-            // Ищем в массиве объектов объект с id, который мы записали в pObject
-            const thisObject = objects.find(e => e.id === pObject);
-
-            // Если мы вообще нашли такой id
-            if (thisObject !== undefined) {
-
-                // Если у объекта есть прилагательное, а игрок его не ввёл, то надо уточнить
-                if ("adjective" in thisObject) message = `Уточните прилагательное для слова "${words[i]}".`;
-
-                // Иначе записываем в object
-                else object = pObject;
-            }
-        }
-
-        // Если мы сопоставили ввод игрока с каким-либо игровым объектом
-        if (object !== "") {
-
-            // Проверяем, предмет это или статический объект
-            // Если предмет:
-            if (canHoldItem(object)) {
-
-                // Если в фразе игрока упоминается два предмета, то разносим их в разные переменные
-                if (!isSecondItem) {
-                    isSecondItem = true;
-                    item1 = object;
-                    object = "";
-                } else {
-                    item2 = object;
-                }
+            // Если у нас всего один id в массиве, значит, он и будет currentObjectId
+            if (wordIds.length === 1) {
+                currentObjectId = wordIds[0];
             } else {
-                nonitem = object;
+                // А если несколько, то прогоняем цикл по массиву для определения правильного currentObjectId
+                // За значение по умолчанию берём вариант, когда непонятно, какой объект имеет в виду игрок.
+                currentObjectId = -1;
+
+                // Производим для каждого id из массива wordIds проверку на предмет использования данного объекта с прилагательным
+                for (let wordId of wordIds) {
+                    // У объекта с этим id есть свойство adjective?
+                    const wordAdjective = findAdjectiveProperty(wordId);
+
+                    // Если есть, то значит это объект, который нужно называть только с прилагательным ("Красная кнопка")
+                    // Переходим подпрограмму сопоставления объекта и соответствуюшего ему прилагательного
+                    if (wordAdjective !== -1) {
+                        // Если игрок хочет взаимодействовать с таким объектом, он должен написать перед этим словом
+                        // соответствующее ему прилагательное. Ищем, является ли предшествующее слово прилагательным,
+                        // и записываем в adjectiveId его id. Если не находим прилагательного в словаре, получаем -1
+                        const adjectiveId = findWordId(WORD_TYPES.adjective, words[i - 1]);
+
+                        // Если не нашли прилагательного в словаре ИЛИ нашли прилагательное, которое не относится к нашему объекту
+                        // то возвращаем сообщение об ошибке игроку
+                        if (adjectiveId === -1) {
+                            return {
+                                verb,
+                                object1,
+                                object2,
+                                message: "Уточните, какой конкретно объект вы имеете в виду?"
+                            }
+                        }
+
+                        if (wordAdjective === adjectiveId) {
+                            // Мы нашли правильное слово
+                            currentObjectId = wordId;
+                        }
+                    }
+                }
+
+                // Если правильного слова мы не нашли
+                if (currentObjectId === -1) {
+                    return {
+                        verb,
+                        object1,
+                        object2,
+                        message: "Уточните, какой конкретно из объектов вы имеете в виду?"
+                    }
+                }
+            }
+            
+            // Это первый объект, упомянутый в фразе?
+            if (isFirstItem) {
+                object1 = currentObjectId;
+                isFirstItem = false;
+            } else {
+                object2 = currentObjectId;
             }
         }
-
     }
-    console.log({
-        verb,
-        obj: nonitem,
-        item1: item1,
-        item2: item2,
-        message
-    });
+
+    console.log(`verb = ${verb}; obj1 = ${object1}; obj2 = ${object2}; message = ${message}`);
+
     return {
         verb,
-        obj: nonitem,
-        item1: item1,
-        item2: item2,
+        object1,
+        object2,
         message
     }
 }
