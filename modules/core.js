@@ -40,7 +40,7 @@ const addItemToInventory = (item) => {
 }
 
 const removeItemFromInventory = (item) => {
-    inventory.removeItem;
+    inventory.removeItem(item);
 }
 
 const setFlag = (flag, value) => {
@@ -67,53 +67,13 @@ const canPlayerMove = (direction, newLocation) => {
     }
 
     // Проверяем частные случаи для определённых локаций
-    switch (getCurrentLocation()) {
-        case 8:
-            // Если у дерева не стоит лестница
-            if (!getFlag("isLadderLeanToTree") && direction === "вверх") {
-                answer = "Я не могу залезть на дерево. Ствол очень гладкий, не за что зацепиться";
-                access = false;
-            }
-            break;
-        case 7:
-            // Если тролль жив
-            if (!getFlag("isTrollKilled") && direction === "в") {
-                answer = "Тролль рычит и не даёт мне пройти.";
-                access = false;
-            };
-            break;
-        case 11:
-            // Если дверь закрыта
-            if (!getFlag("isDoorOpened") && direction === "в") {
-                answer = "Дверь закрыта, я не могу туда пройти.";
-                access = false;
-            };
-            break;
-        case 17:
-            // Если решётка опущена
-            if (!getFlag("isPortcullisOpened") && direction === "с") {
-                answer = "Решётка опущена до пола, я не могу туда пройти.";
-                access = false;
-            };
-            break;
-        case 18:
-            if (!getFlag("isTrapdoorOpened") && direction === "вниз") {
-                answer = "Путь вниз мне преграждает закрытый люк.";
-                access = false;
-            };
-            break;
-        case 20:
-            if (!getFlag("isMonsterKilled") && direction === "с") {
-                answer = "Ледяной монстр мешает мне пройти.";
-                access = false;
-            };
-            break;
-        case 23:
-            if (!getFlag("isWormKilled") && direction === "ю") {
-                answer = "Скальный червь мешает мне пройти.";
-                access = false;
-            }
-            break;
+    // Если у локации есть метод playerCanNotMove, то в нём указаны условия, по которым куда-то нельзя пройти
+    if ("playerCanNotMove" in locations[state.currentLocation]) {
+        const result = locations[state.currentLocation].playerCanNotMove(direction);
+        if (result !== undefined) {
+            answer = result;
+            access = false;
+        }
     }
 
     return {
@@ -127,9 +87,7 @@ const movePlayer = (direction) => {
     let newLocation = -1;
     let canChangeLocation = false;
     const gameDirections = locations[getCurrentLocation()].dir;
-    const directionTypes = ["с", "в", "ю", "з", "вверх", "вниз"];
-    const index = directionTypes.indexOf(direction);
-    const indexOfTransitionLocation = gameDirections[index];
+    const indexOfTransitionLocation = gameDirections[direction];
 
     // Проверяем, можно ли туда пройти
     const canMove = canPlayerMove(direction, indexOfTransitionLocation);
@@ -146,19 +104,21 @@ const movePlayer = (direction) => {
     };
 }
 
+
 const takeItem = (item) => {
     let answer = "Я не могу это взять.";
 
     // Особые случаи
-    if (item === "лестница" && getCurrentLocation() === 8 && getFlag("isLadderLeanToTree")) {
-        addItemToInventory(item);
-        setItemPlace(item, -1);
-        setFlag("isLadderLeanToTree", false);
-        answer = "Я забрал лестницу.";
+    if ("take" in locations[state.currentLocation]) {
+        const result = locations[state.currentLocation].take(item);
+        if (result !== undefined) {
+            answer = result;
+        }
     }
-
+    console.log(!isItemInInventory(item) + " " + getItemPlace(item) + " " + getCurrentLocation())
     // Общий случай
     if (!isItemInInventory(item) && getItemPlace(item) === getCurrentLocation()) {
+        
         addItemToInventory(item);
         setItemPlace(item, -1);
         answer = "Ок, взял.";
@@ -172,6 +132,13 @@ const dropItem = (item) => {
 
     // Особые случаи
     // В демо-игре отсутствуют
+    // Особые случаи
+    if ("drop" in locations[state.currentLocation]) {
+        const result = locations[state.currentLocation].drop(item);
+        if (result !== undefined) {
+            answer = result;
+        }
+    }
 
     // Общий случай
 
@@ -184,9 +151,16 @@ const dropItem = (item) => {
     return answer;
 }
 
-const examine = (item, object) => {
-    let answer = "Ничего необычного.";
+const examine = (object) => {
+    let answer = "Ничего необычного";
 
+    // Особый случай наступает, когда в локации есть соотв. функция
+    if ("examine" in locations[state.currentLocation]) {
+        const locationAnswer = locations[state.currentLocation].examine(object);
+        if (locationAnswer !== undefined) answer = locationAnswer;
+    }
+    // Конец особых случаев
+/*
     // Особые случаи
     if (object === "пропасть" && (getCurrentLocation() === 6 || getCurrentLocation() === 12)) answer = "Передо мной узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие. Верёвка на вид крепкая.";
 
@@ -240,11 +214,12 @@ const examine = (item, object) => {
 
     if (item === "лестница" && getFlag("isLadderLeanToTree") && getCurrentLocation() === 8) answer = "Лестница приставлена к дереву. Я могу залезть наверх.";
 
-
+*/
     // Общий случай осмотра предмета
+    /*
     if (getItemPlace(item) === getCurrentLocation()) answer = "Чтобы внимательно осмотреть предмет, нужно взять его в руки.";
     if (isItemInInventory(item)) answer = getItemDescriptionById(item);
-
+*/
     return answer;
 }
 
@@ -252,10 +227,11 @@ const leanItem = (item) => {
     let answer = "Хм, это делу не поможет.";
 
     // Особый случай
-    if (item === "лестница" && isItemInInventory(item) && getCurrentLocation() === 8) {
-        removeItemFromInventory(item);
-        setFlag("isLadderLeanToTree", true);
-        answer = "Я прислонил лестницу к дереву.";
+    if ("lean" in locations[state.currentLocation]) {
+        const result = locations[state.currentLocation].lean(item);
+        if (result !== undefined) {
+            answer = result;
+        }
     }
 
     return answer
@@ -263,27 +239,30 @@ const leanItem = (item) => {
 
 const game = (userInput) => {
     // Разбираем полученный из парсера объект на item1, item2, object, verb; записываем в них соотв. id
-    const mainItem = userInput.item1;
-    const secondItem = userInput.item2;
-    const gameObject = userInput.obj;
+    const object1 = userInput.object1;
+    const object2 = userInput.object2;
     const verb = userInput.verb;
-    let answer = userInput.answer;
+    let answer = userInput.message;
 
     // TODO: Выдаём игроку сообщение об ошибке, если парсер выдал сообщение об ошибке
+    if (answer !== "Ок") return answer;
 
     // TODO: Здесь предусмотреть функцию для отработки особых игровых ситуаций
 
     // Обрабатываем команду игрока (по глаголу)
-    answer = processVerb(verb, mainItem, secondItem, gameObject);
+    answer = processVerb(verb, object1, object2);
 
     // Возвращаем реакцию программы на действие игрока
     return answer;
 }
 
-const processVerb = (verb, mainItem, secondItem, gameObject) => {
+const processVerb = (verb, object1, object2) => {
     let answer;
+
     // TODO: сделать обработку неигровых глаголов "ПОМОГИ", "ВЫХОД", "ИДИ"
-    if (verb === "с" || verb === "ю" || verb === "з" || verb === "в" || verb === "вверх" || verb === "вниз") {
+
+    // Если это глагол перемещения
+    if (verb <= 5) {
         const resultOfMove = movePlayer(verb);
         if (resultOfMove.canChangeLocation) {
             setCurrentLocation(resultOfMove.newLocation);
@@ -291,17 +270,17 @@ const processVerb = (verb, mainItem, secondItem, gameObject) => {
         answer = resultOfMove.answer;
     } else {
         switch (verb) {
-            case "возьми":
-                answer = takeItem(mainItem);
+            case 8:
+                answer = takeItem(object1);
                 break;
-            case "положи":
-                answer = dropItem(mainItem);
+            case 9:
+                answer = dropItem(object1);
                 break;
-            case "осмотри":
-                answer = examine(mainItem, gameObject);
+            case 22:
+                answer = examine(object1);
                 break;
-            case "прислони":
-                answer = leanItem(mainItem);
+            case 21:
+                answer = leanItem(object1);
                 break;
             default:
                 answer = "Я не понимаю.";
@@ -309,6 +288,8 @@ const processVerb = (verb, mainItem, secondItem, gameObject) => {
 
         }
     }
+
+    
     return answer
 };
 

@@ -41,18 +41,19 @@ const state = {
 
     // Массив с расположением предметов
     itemPlaces: {
-        "лестница": 0,
-        "рыба": 3,
-        "булава": 9,
-        "шест": -1,
-        "дрова": 13,
-        "топор": -1,
-        "ключ": -1,
-        "лампа": -1,
-        "соль": 24,
-        "масло": 22,
-        "меч": 26,
-        "монета": 19
+        0: 0,
+        1: 3,
+        2: 9,
+        3: -1,
+        4: 13,
+        5: -1,
+        6: -1,
+        7: -1,
+        8: 24,
+        9: 22,
+        10: 26,
+        11: 19,
+        12: 2
     },
 
     userDirections: {
@@ -79,12 +80,12 @@ const vocabulary = {
         forms: ["в"]
     }, {
         id: 2,
-        name: "з",
-        forms: ["з"]
-    }, {
-        id: 3,
         name: "ю",
         forms: ["ю"]
+    }, {
+        id: 3,
+        name: "з",
+        forms: ["з"]
     }, {
         id: 4,
         name: "вверх",
@@ -465,13 +466,45 @@ const locations = [
     desc: "Вы на дороге, ведущей с запада на восток через тёмный лес. Сверху доносятся вороньи крики.",
     dir: [-1, 10, -1, 5, -1, -1],
     type: 'game',
-    img: 'location007.png'
+    img: 'location007.png',
+    playerCanNotMove(direction) {
+        if (!state.flags.isTrollKilled && direction === 1) {
+            return "Тролль рычит и не даёт мне пройти.";
+        }
+    }
 }, {
     id: 8,
     desc: "Вы стоите около огромного каменного дерева, совершенно лишённого веток. Дорога здесь кончается, выход только на юг.",
     dir: [-1, -1, 4, -1, 9, -1],
     type: 'game',
-    img: 'location008.png'
+    img: 'location008.png',
+    examine(objectId) {
+        if (objectId === 18) {
+            return "Это дерево начисто лишено веток.";
+        }
+        if (objectId === 0 && state.flags.isLadderLeanToTree === true) {
+            return "Лестница прислонена к дереву.";
+        }
+    },
+    playerCanNotMove(direction) {
+        if (!state.flags.isLadderLeanToTree && direction === 4) {
+            return "Я не могу залезть на дерево. Ствол очень гладкий, не за что зацепиться";
+        }
+    },
+    take(itemId) {
+        if (itemId === 0 && state.flags.isLadderLeanToTree) {
+            state.flags.isLadderLeanToTree = false;
+            inventory.addItem(itemId);
+            return "Я забрал лестницу.";
+        }
+    },
+    lean(itemId) {
+        if (itemId === 0 && !state.flags.isLadderLeanToTree && inventory.isItemInInventory(itemId)) {
+            state.flags.isLadderLeanToTree = true;
+            inventory.removeItem(itemId);
+            return "Я прислонил лестницу к дереву.";
+        }
+    }
 }, {
     id: 9,
     desc: "Вы в каменной комнате, вырубленной в гигантском окаменевшем дереве. Толстый слой пыли покрывает пол. Путь отсюда только вниз.",
@@ -489,7 +522,12 @@ const locations = [
     desc: "Вы снаружи зловеще выглядящего замка Камелот. Величественное ранее знамя теперь изорвано в клочья и истрёпано ветрами. Большая дверь из слоновой кости на востоке - единственный вход.",
     dir: [-1, 15, -1, 10, -1, -1],
     type: 'game',
-    img: 'location011.png'
+    img: 'location011.png',
+    playerCanNotMove(direction) {
+        if (!state.flags.isDoorOpened && direction === 1) {
+            return "Дверь закрыта, я не могу туда пройти.";
+        }
+    }
 }, {
     id: 12,
     desc: "Вы на краю Бирвудского леса. На севере верёвка пересекает ужасное ущелье. На юг от пропасти ведёт дорога.",
@@ -525,13 +563,23 @@ const locations = [
     desc: "Вы в небольшой тёмной комнате, которая имеет опускную железную решётку, врезанную в северную стену. Если не считать решётки, то возможный выход - только на юг.",
     dir: [27, -1, 16, -1, -1, -1],
     type: 'game',
-    img: 'location000.png'
+    img: 'location000.png',
+    playerCanNotMove(direction) {
+        if (!state.flags.isPortcullisOpened && direction === 0) {
+            return "Решётка опущена до пола, она мешает мне пройти.";
+        }
+    }
 }, {
     id: 18,
     desc: "Вы в комнате, заваленной мусором. Через мелкие дыры в стене слышны завывания ветра. Можно идти на север и восток.",
     dir: [16, 19, -1, -1, -1, 21],
     type: 'game',
-    img: 'location000.png'
+    img: 'location000.png',
+    playerCanNotMove(direction) {
+        if (!state.flags.isTrapdoorOpened && direction === 5) {
+            return "Путь вниз мне преграждает закрытый люк.";
+        }
+    }
 }, {
     id: 19,
     desc: "Вы стоите в богато украшенном вестибюле, который покрыт тонким слоем льда. Выходы на востоке и на западе.",
@@ -543,7 +591,12 @@ const locations = [
     desc: "Вы в жутко холодной комнате. Всё здесь покрыто толстым слоем льда. Выходы на западе и на севере.",
     dir: [25, -1, -1, 19, -1, -1],
     type: 'game',
-    img: 'location000.png'
+    img: 'location000.png',
+    playerCanNotMove(direction) {
+        if (!state.flags.isMonsterKilled && direction === 0) {
+            return "Ледяной монстр мешает мне пройти.";
+        }
+    }
 }, {
     id: 21,
     desc: "Вы в старой соляной шахте. Мрачный туннель ведёт на юг и на запад. Через отверстие в потолке можно пролезть наверх.",
@@ -561,7 +614,12 @@ const locations = [
     desc: "Вы в южной части шахты. Здесь очень душно. Тоннели ведут на север и на юг.",
     dir: [21, -1, 24, -1, -1, -1],
     type: 'game',
-    img: 'location000.png'
+    img: 'location000.png',
+    playerCanNotMove(direction) {
+        if (!state.flags.isWormKilled && direction === 2) {
+            return "Скальный червь мешает мне пройти.";
+        }
+    }
 }, {
     id: 24,
     desc: "Вы в конце шахты, в тупике. Слышно, как капает вода. Выход отсюда - на север.",

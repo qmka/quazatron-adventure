@@ -2,7 +2,7 @@ import {
     locations
 } from './gamedata.js';
 import {
-    state
+    vocabulary
 } from './gamedata.js';
 import {
     inventory
@@ -37,7 +37,6 @@ const makeLocation = (g) => {
     let itemsInLoc = "";
     let itemsArray = [];
 
-    // Не знаю, как для ассоциативного массива определить последний элемент, и для него выводить не запятую, а точку
     for (let key in g.itemPlaces) {
         if (g.itemPlaces[key] === g.currentLocation) {
             itemsArray.push(key);
@@ -45,7 +44,7 @@ const makeLocation = (g) => {
     }
 
     for (let i = 0; i < itemsArray.length; i += 1) {
-        itemsInLoc += itemsArray[i];
+        itemsInLoc += vocabulary.objects[itemsArray[i]].name;
         if (i === itemsArray.length - 1) {
             itemsInLoc += ".";
         } else {
@@ -60,12 +59,12 @@ const makeLocation = (g) => {
 }
 
 // Возвращает текст, который выводится разделе инвентаря
-const makeInventory = (g) => {
+const makeInventory = () => {
     let inventoryText = "Инвентарь:<br><br>";
     let itemsInInventory = "";
 
     inventory.allItems().forEach((item) => {
-        itemsInInventory += `${item}<br>`;
+        itemsInInventory += `${vocabulary.objects[item].name}<br>`;
     })
 
 
@@ -81,7 +80,7 @@ const makeInventory = (g) => {
 // Формирует экран, который выдаётся пользователю после совершённого им действия
 const makeScreen = (g, actionText) => {
     document.getElementById("screen").innerHTML = makeLocation(g);
-    document.getElementById("right-sidebar").innerHTML = makeInventory(g);
+    document.getElementById("right-sidebar").innerHTML = makeInventory();
     document.getElementById("image").innerHTML = `<img src="img/${locations[g.currentLocation].img}">`
     document.getElementById("action").innerHTML = actionText;
     document.getElementById("input-area").style.display = "block";
