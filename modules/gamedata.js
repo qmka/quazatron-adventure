@@ -377,26 +377,6 @@ const vocabulary = {
         forms: ["принцесса", "принцессу", "принцессе", "принцессой", "принцессы"],
         canHold: false,
         adjective: -1
-    }, {
-        id: 27,
-        name: "dummyItem",
-        forms: ["dummyItem"],
-        canHold: true,
-        desc: "Ничего особенного",
-        adjective: -1
-    }, {
-        id: 28,
-        name: "dummyAltItem",
-        forms: ["dummyAltItem"],
-        canHold: true,
-        desc: "Ничего особенного",
-        adjective: -1
-    }, {
-        id: 29,
-        name: "dummyObject",
-        forms: ["dummyObject"],
-        canHold: false,
-        adjective: -1
     }],
 
     // Словарь прилагательных
@@ -410,10 +390,6 @@ const vocabulary = {
         id: 1,
         name: "медный",
         forms: ["медный", "медного", "медному", "медном", "медная", "медную", "медной", "медное"]
-    }, {
-        id: 2,
-        name: "dummy",
-        forms: ["kWJMOgEdmy"]
     }]
 }
 
@@ -466,45 +442,13 @@ const locations = [
     desc: "Вы на дороге, ведущей с запада на восток через тёмный лес. Сверху доносятся вороньи крики.",
     dir: [-1, 10, -1, 5, -1, -1],
     type: 'game',
-    img: 'location007.png',
-    playerCanNotMove(direction) {
-        if (!state.flags.isTrollKilled && direction === 1) {
-            return "Тролль рычит и не даёт мне пройти.";
-        }
-    }
+    img: 'location007.png'
 }, {
     id: 8,
     desc: "Вы стоите около огромного каменного дерева, совершенно лишённого веток. Дорога здесь кончается, выход только на юг.",
     dir: [-1, -1, 4, -1, 9, -1],
     type: 'game',
-    img: 'location008.png',
-    examine(objectId) {
-        if (objectId === 18) {
-            return "Это дерево начисто лишено веток.";
-        }
-        if (objectId === 0 && state.flags.isLadderLeanToTree === true) {
-            return "Лестница прислонена к дереву.";
-        }
-    },
-    playerCanNotMove(direction) {
-        if (!state.flags.isLadderLeanToTree && direction === 4) {
-            return "Я не могу залезть на дерево. Ствол очень гладкий, не за что зацепиться";
-        }
-    },
-    take(itemId) {
-        if (itemId === 0 && state.flags.isLadderLeanToTree) {
-            state.flags.isLadderLeanToTree = false;
-            inventory.addItem(itemId);
-            return "Я забрал лестницу.";
-        }
-    },
-    lean(itemId) {
-        if (itemId === 0 && !state.flags.isLadderLeanToTree && inventory.isItemInInventory(itemId)) {
-            state.flags.isLadderLeanToTree = true;
-            inventory.removeItem(itemId);
-            return "Я прислонил лестницу к дереву.";
-        }
-    }
+    img: 'location008.png'
 }, {
     id: 9,
     desc: "Вы в каменной комнате, вырубленной в гигантском окаменевшем дереве. Толстый слой пыли покрывает пол. Путь отсюда только вниз.",
@@ -522,12 +466,7 @@ const locations = [
     desc: "Вы снаружи зловеще выглядящего замка Камелот. Величественное ранее знамя теперь изорвано в клочья и истрёпано ветрами. Большая дверь из слоновой кости на востоке - единственный вход.",
     dir: [-1, 15, -1, 10, -1, -1],
     type: 'game',
-    img: 'location011.png',
-    playerCanNotMove(direction) {
-        if (!state.flags.isDoorOpened && direction === 1) {
-            return "Дверь закрыта, я не могу туда пройти.";
-        }
-    }
+    img: 'location011.png'
 }, {
     id: 12,
     desc: "Вы на краю Бирвудского леса. На севере верёвка пересекает ужасное ущелье. На юг от пропасти ведёт дорога.",
@@ -563,23 +502,13 @@ const locations = [
     desc: "Вы в небольшой тёмной комнате, которая имеет опускную железную решётку, врезанную в северную стену. Если не считать решётки, то возможный выход - только на юг.",
     dir: [27, -1, 16, -1, -1, -1],
     type: 'game',
-    img: 'location000.png',
-    playerCanNotMove(direction) {
-        if (!state.flags.isPortcullisOpened && direction === 0) {
-            return "Решётка опущена до пола, она мешает мне пройти.";
-        }
-    }
+    img: 'location000.png'
 }, {
     id: 18,
     desc: "Вы в комнате, заваленной мусором. Через мелкие дыры в стене слышны завывания ветра. Можно идти на север и восток.",
     dir: [16, 19, -1, -1, -1, 21],
     type: 'game',
-    img: 'location000.png',
-    playerCanNotMove(direction) {
-        if (!state.flags.isTrapdoorOpened && direction === 5) {
-            return "Путь вниз мне преграждает закрытый люк.";
-        }
-    }
+    img: 'location000.png'
 }, {
     id: 19,
     desc: "Вы стоите в богато украшенном вестибюле, который покрыт тонким слоем льда. Выходы на востоке и на западе.",
@@ -591,12 +520,7 @@ const locations = [
     desc: "Вы в жутко холодной комнате. Всё здесь покрыто толстым слоем льда. Выходы на западе и на севере.",
     dir: [25, -1, -1, 19, -1, -1],
     type: 'game',
-    img: 'location000.png',
-    playerCanNotMove(direction) {
-        if (!state.flags.isMonsterKilled && direction === 0) {
-            return "Ледяной монстр мешает мне пройти.";
-        }
-    }
+    img: 'location000.png'
 }, {
     id: 21,
     desc: "Вы в старой соляной шахте. Мрачный туннель ведёт на юг и на запад. Через отверстие в потолке можно пролезть наверх.",
@@ -614,12 +538,7 @@ const locations = [
     desc: "Вы в южной части шахты. Здесь очень душно. Тоннели ведут на север и на юг.",
     dir: [21, -1, 24, -1, -1, -1],
     type: 'game',
-    img: 'location000.png',
-    playerCanNotMove(direction) {
-        if (!state.flags.isWormKilled && direction === 2) {
-            return "Скальный червь мешает мне пройти.";
-        }
-    }
+    img: 'location000.png'
 }, {
     id: 24,
     desc: "Вы в конце шахты, в тупике. Слышно, как капает вода. Выход отсюда - на север.",
@@ -652,9 +571,148 @@ const locations = [
     img: 'location000.png'
 }];
 
+const encounters = {
+    playerCanNotMove(direction) {
+        if (state.currentLocation === 7 && !state.flags.isTrollKilled && direction === 1) {
+            return "Тролль рычит и не даёт мне пройти.";
+        }
+        if (state.currentLocation === 8 && !state.flags.isLadderLeanToTree && direction === 4) {
+            return "Я не могу залезть на дерево. Ствол очень гладкий, не за что зацепиться";
+        }
+        if (state.currentLocation === 11 && !state.flags.isDoorOpened && direction === 1) {
+            return "Дверь закрыта, я не могу туда пройти.";
+        }
+        if (state.currentLocation === 18 && !state.flags.isPortcullisOpened && direction === 0) {
+            return "Решётка опущена до пола, она мешает мне пройти.";
+        }
+        if (state.currentLocation === 18 && !state.flags.isTrapdoorOpened && direction === 5) {
+            return "Путь вниз мне преграждает закрытый люк.";
+        }
+        if (state.currentLocation === 20 && !state.flags.isMonsterKilled && direction === 0) {
+            return "Ледяной монстр мешает мне пройти.";
+        }
+        if (state.currentLocation === 23 && !state.flags.isWormKilled && direction === 2) {
+            return "Скальный червь мешает мне пройти.";
+        }
+    },
+
+    take(item) {
+        if (item === 0 && state.flags.isLadderLeanToTree) {
+            state.flags.isLadderLeanToTree = false;
+            inventory.addItem(item);
+            return "Я забрал лестницу.";
+        }
+    },
+
+    drop(item) {
+        // В демоигре нет никаких особых событий, связанных с необходимостью положить предмет
+
+    },
+
+    examine(object) {
+        if (state.currentLocation === 8 && object === 18) {
+            return "Это невысокое, но широкое в обхвате дерево, превратившееся в камень под действием неизвестного колдовства. Ствол дерева гол словно столб, а на вершине в два моих роста ветви хитро переплетаются, образуя что-то вроде гнезда.";
+        }
+        if (state.currentLocation === 8 && object === 0 && state.flags.isLadderLeanToTree === true) {
+            return "Лестница приставлена к дереву. Я могу залезть наверх.";
+        }
+        if ((state.currentLocation === 6 || state.currentLocation === 12) && object === 13) {
+            return "Передо мной узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие. Верёвка на вид крепкая.";
+        }
+        if (state.currentLocation === 14 && object === 14) {
+            let answer = "Ветви этого куста похожи на щупальца.";
+            if (!state.flags.isKeyRevealed) {
+                state.flags.isKeyRevealed = true;
+                state.itemPlaces[6] = 14;
+                answer += " На одном из таких щупальцев я обнаружил ключ.";
+            }
+            return answer;
+        }
+        if (state.currentLocation === 11 && object === 16) {
+            return state.flags.isDoorOpened ? "Дверь открыта." : "Дверь заперта.";
+        }
+        if (state.currentLocation === 7 && !state.flags.isTrollKilled && object === 17) {
+            return "Это огромный мерзкий зелёный тролль. Ничего, кроме страха и омерзения, не вызывает.";
+        }
+        if (state.currentLocation === 17 && object === 19) {
+            return state.flags.isPortcullisOpened ? "Решётка поднята к потолку - проход свободен." : "Это мощная железная решётка с толстыми прутьями. Своими силами такую не поднять, но, может быть, где-то я найду подъёмный механизм?";
+        }
+        if (state.currentLocation === 18 && object === 20) {
+            return state.flags.isTrapdoorOpened ? "Здесь уже дыра вместо люка, да щепки вокруг разбросаны." : "Это деревянный люк,  закрывающий путь вниз. Я не вижу никакой ручки, с помощью которой можно открыть этот люк, видимо, время её не пощадило.";
+        }
+        if (state.currentLocation === 5 && object === 21) {
+            return "Это старая женщина в деревенской одежде. Рядом с ней на куске ткани разложены различные масляные лампы, которые она продаёт.";
+        }
+        if (state.currentLocation === 23 && !state.flags.isWormKilled && object === 22) {
+            return "Огромный скальный червь. Его шкура крепче камня, и ходят легенды, что убить эту тварь невозможно в принципе. Эти древние злобные создания проводят всю жизнь под землёй и никогда не видят солнечного света.";
+        }
+        if (state.currentLocation === 20 && !state.flags.isMonsterKilled && object === 23) {
+            return "Этот монстр кажется слепленным из бесформенных глыб льда. Судя по всему, именно из-за него замёрзли ближайшие комнаты.";
+        }
+        if (state.currentLocation === 25 && object === 24) {
+            return state.flags.isLeverOiled ? "Это ржавый рычаг, присоединённый к какому-то механизму. Я его смазал, теперь его можно нажимать." : "Это ржавый рычаг, присоединённый к какому-то механизму. Нажать не получится - за долгие годы он сильно проржавел. Не мешало бы его смазать.";
+        }
+        if (state.currentLocation === 28 && object === 26) {
+            return "Прекрасная, но очень бледная. Её грудь медленно поднимается и опускается: принцесса крепко спит.";
+        }
+        if (object === 4 && inventory.isItemInInventory(4)) {
+            let answer = vocabulary.objects[4].desc;
+            if (!state.flags.isAxeRevealed) {
+                state.flags.isAxeRevealed === true;
+                state.itemPlaces[5] = state.currentLocation;
+                answer += " Осматривая вязанку, я обнаружил спрятанный в ней топор.";
+            }
+            return answer;
+        }
+    },
+
+    lean(object1, object2) {
+        if ((object1 === 0 || object2 === 0) && !state.flags.isLadderLeanToTree && inventory.isItemInInventory(0)) {
+            state.flags.isLadderLeanToTree = true;
+            inventory.removeItem(0);
+            return "Я прислонил лестницу к дереву.";
+        }
+    },
+
+    destroy(object1, object2) {
+        if ((object1 === 0 || object2 === 0) && inventory.isItemInInventory(0)) {
+            inventory.removeItem(0);
+            state.itemPlaces[3] = state.currentLocation;
+            return "Я разломал лестницу на куски и получил неплохой длинный шест.";
+        }
+        if ((object1 === 20 || object2 === 20) && state.currentLocation === 18 && !state.flags.isTrapdoorOpened) {
+            if (inventory.isItemInInventory(5)) {
+                state.flags.isTrapdoorOpened = true;
+                return "Я разломал топором деревянный люк. Теперь путь вниз открыт.";
+            } else {
+                return "У меня нет ничего, чем я могу сломать люк.";
+            }
+        }
+    },
+
+    cross(object) {
+        if (object === 13 && (state.currentLocation === 6 || state.currentLocation === 12)) {
+            let answer;
+            if (inventory.isItemInInventory(3)) {
+                answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
+                console.log(state.currentLocation);
+                if (state.currentLocation === 6) {
+                    state.currentLocation = 12;
+                } else {
+                    state.currentLocation = 6;
+                }
+            } else {
+                answer = "Я упаду с верёвки, мне нужно что-то для балланса.";
+            }
+            return answer;
+        }
+    }
+}
+
 export {
     state,
     vocabulary,
     locations,
-    inventory
+    inventory,
+    encounters
 };

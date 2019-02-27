@@ -1,11 +1,9 @@
 import {
-    vocabulary
-} from './gamedata.js';
-import {
-    locations
-} from './gamedata.js';
-import {
-    state, inventory
+    vocabulary,
+    locations,
+    state,
+    inventory,
+    encounters
 } from './gamedata.js';
 
 // Возвращаем описание предмета по его id
@@ -67,14 +65,14 @@ const canPlayerMove = (direction, newLocation) => {
     }
 
     // Проверяем частные случаи для определённых локаций
-    // Если у локации есть метод playerCanNotMove, то в нём указаны условия, по которым куда-то нельзя пройти
-    if ("playerCanNotMove" in locations[state.currentLocation]) {
-        const result = locations[state.currentLocation].playerCanNotMove(direction);
-        if (result !== undefined) {
-            answer = result;
-            access = false;
-        }
+    // В объекте encounters указаны условия, по которым куда-то нельзя пройти
+
+    const result = encounters.playerCanNotMove(direction);
+    if (result !== undefined) {
+        answer = result;
+        access = false;
     }
+
 
     return {
         access,
@@ -109,16 +107,14 @@ const takeItem = (item) => {
     let answer = "Я не могу это взять.";
 
     // Особые случаи
-    if ("take" in locations[state.currentLocation]) {
-        const result = locations[state.currentLocation].take(item);
-        if (result !== undefined) {
-            answer = result;
-        }
+    const result = encounters.take(item);
+    if (result !== undefined) {
+        answer = result;
     }
-    console.log(!isItemInInventory(item) + " " + getItemPlace(item) + " " + getCurrentLocation())
+
     // Общий случай
     if (!isItemInInventory(item) && getItemPlace(item) === getCurrentLocation()) {
-        
+
         addItemToInventory(item);
         setItemPlace(item, -1);
         answer = "Ок, взял.";
@@ -132,13 +128,9 @@ const dropItem = (item) => {
 
     // Особые случаи
     // В демо-игре отсутствуют
-    // Особые случаи
-    if ("drop" in locations[state.currentLocation]) {
-        const result = locations[state.currentLocation].drop(item);
-        if (result !== undefined) {
-            answer = result;
-        }
-    }
+
+    const result = encounters.drop(item);
+    if (result !== undefined) answer = result;
 
     // Общий случай
 
@@ -146,7 +138,7 @@ const dropItem = (item) => {
         removeItemFromInventory(item);
         setItemPlace(item, getCurrentLocation());
         answer = "Ок, положил.";
-    } 
+    }
 
     return answer;
 }
@@ -155,86 +147,53 @@ const examine = (object) => {
     let answer = "Ничего необычного";
 
     // Особый случай наступает, когда в локации есть соотв. функция
-    if ("examine" in locations[state.currentLocation]) {
-        const locationAnswer = locations[state.currentLocation].examine(object);
-        if (locationAnswer !== undefined) answer = locationAnswer;
-    }
-    // Конец особых случаев
-/*
-    // Особые случаи
-    if (object === "пропасть" && (getCurrentLocation() === 6 || getCurrentLocation() === 12)) answer = "Передо мной узкая, но глубокая пропасть. Через неё можно перейти по верёвке, но перед этим озаботьтесь тем, чтобы суметь удержать равновесие. Верёвка на вид крепкая.";
 
-    if (object === "куст" && getCurrentLocation() === 14) {
-        answer = "Ветви этого куста похожи на щупальца осминога.";
-        if (!getFlag("isKeyRevealed")) {
-            setFlag("isKeyRevealed", true);
-            addItemToInventory("ключ");
-            answer += " На одном из таких щупальцев я обнаружил ключ.";
-        }
-    }
+    const result = encounters.examine(object);
+    if (result !== undefined) answer = result;
 
-    if (object === "дверь" && getCurrentLocation() === 11) {
-        answer = getFlag("isDoorOpened") ? "Дверь открыта." : "Дверь заперта.";
-    }
-
-    if (object === "тролль" && getCurrentLocation() === 7 && !getFlag("isTrollKilled")) {
-        answer = "Это огромный мерзкий зелёный тролль. Ничего, кроме страха и омерзения, не вызывает.";
-    }
-
-    if (object === "дерево" && getCurrentLocation() === 8) answer = "Это невысокое, но очень широкое в обхвате дерево, превратившееся в камень под действием какого-то неизвестного колдовства. Ствол дерева гол словно столб, а на вершине в два моих роста ветви хитро переплетаются, образуя нишу.";
-
-    if (object === "решётка" && getCurrentLocation() === 17) {
-        answer = getFlag("isPortcullisOpened") ? "Решётка поднята к потолку - проход свободен." : "Мощная железная решётка с толстыми прутьями. Своими силами такую не поднять, но, может быть, где-то я найду подъёмный механизм?";
-    }
-
-    if (object === "люк" && getCurrentLocation() === 18) {
-        answer = getFlag("isTrapdoorOpened") ? "Здесь уже дыра вместо люка, да щепки вокруг разбросаны." : "Это деревянный люк,  закрывающий путь вниз. Я не вижу никакой ручки, с помощью которой можно открыть этот люк, видимо, время её не пощадило.";
-    }
-
-    if (object === "старушка" && getCurrentLocation() === 5) answer = "Это старая женщина в деревенской одежде. Рядом с ней на куске ткани разложены различные масляные лампы, которые она продаёт.";
-
-    if (object === "червь" && getCurrentLocation() === 23 && !getFlag("isWormKilled")) answer = "Огромный скальный червь. Его шкура крепче камня, и ходят легенды, что убить эту тварь невозможно в принципе. Эти древние злобные создания проводят всю жизнь под землёй и никогда не видят солнечного света.";
-
-    if (object === "монстр" && getCurrentLocation() === 20 && !getFlag("isMonsterKilled")) answer = "Этот монстр кажется слепленным из бесформенных глыб льда. Судя по всему, именно из-за него замёрзли ближайшие комнаты.";
-
-    if (object === "рычаг" && getCurrentLocation() === 25) {
-        answer = getFlag("isLeverOiled") ? "Это ржавый рычаг, присоединённый к какому-то механизму. Я его смазал, теперь его можно нажимать." : "Это ржавый рычаг, присоединённый к какому-то механизму. Нажать не получится - за долгие годы он сильно проржавел. Не мешало бы его смазать."
-    }
-
-    if (object === "принцесса" && getCurrentLocation() === 28) answer = "Прекрасная, но очень бледная. Её грудь медленно поднимается и опускается: принцесса крепко спит.";
-
-    if (item === "дрова" && isItemInInventory(item)) {
-        answer = getItemDescriptionById(item);
-        if (!getFlag("isAxeRevealed")) {
-            setFlag("isAxeRevealed", true);
-            setItemPlace("топор", getCurrentLocation());
-            answer += " Осматривая вязанку, я обнаружил спрятанный в ней топор.";
-        }
-    }
-
-    if (item === "лестница" && getFlag("isLadderLeanToTree") && getCurrentLocation() === 8) answer = "Лестница приставлена к дереву. Я могу залезть наверх.";
-
-*/
     // Общий случай осмотра предмета
-    /*
-    if (getItemPlace(item) === getCurrentLocation()) answer = "Чтобы внимательно осмотреть предмет, нужно взять его в руки.";
-    if (isItemInInventory(item)) answer = getItemDescriptionById(item);
-*/
+
+    else if (getItemPlace(object) === getCurrentLocation()) answer = "Чтобы внимательно осмотреть предмет, нужно взять его в руки.";
+    else if (isItemInInventory(object)) answer = getItemDescriptionById(object);
+
     return answer;
 }
 
-const leanItem = (item) => {
+const lean = (object1, object2) => {
     let answer = "Хм, это делу не поможет.";
 
     // Особый случай
-    if ("lean" in locations[state.currentLocation]) {
-        const result = locations[state.currentLocation].lean(item);
-        if (result !== undefined) {
-            answer = result;
-        }
+    const result = encounters.lean(object1, object2);
+    if (result !== undefined) {
+        answer = result;
     }
 
-    return answer
+    return answer;
+}
+
+const destroy = (object1, object2) => {
+    let answer = "Я не могу это сломать.";
+
+    // Особый случай
+    const result = encounters.destroy(object1, object2);
+    if (result !== undefined) {
+        answer = result;
+    }
+
+    if (isItemInInventory(object1)) return "Не стоит ломать. Вдруг мне это ещё пригодится?";
+    return answer;
+}
+
+const cross = (object1) => {
+    let answer = "Я не могу это сделать.";
+
+    // Особый случай
+    const result = encounters.cross(object1);
+    if (result !== undefined) {
+        answer = result;
+    }
+
+    return answer;
 }
 
 const game = (userInput) => {
@@ -276,11 +235,17 @@ const processVerb = (verb, object1, object2) => {
             case 9:
                 answer = dropItem(object1);
                 break;
+            case 19:
+                answer = cross(object1);
+                break;
+            case 20:
+                answer = destroy(object1, object2);
+                break;
             case 22:
                 answer = examine(object1);
                 break;
             case 21:
-                answer = leanItem(object1);
+                answer = lean(object1, object2);
                 break;
             default:
                 answer = "Я не понимаю.";
@@ -289,7 +254,7 @@ const processVerb = (verb, object1, object2) => {
         }
     }
 
-    
+
     return answer
 };
 

@@ -5,7 +5,7 @@ Pre-Alpha version, russian language only.
 
 TODO:
 - ~~finish demo-game~~
-- improve code
+- refactoring
 - add some graphics
 - add "start" and "game over" screens
 - prepare code for node.js

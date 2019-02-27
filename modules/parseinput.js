@@ -62,7 +62,7 @@ const parseInput = (input) => {
             verb,
             object1,
             object2,
-            message: "Я не понимаю"
+            message: "Я не понимаю."
         }
     }
 
