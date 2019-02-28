@@ -6,47 +6,22 @@ import {
     encounters
 } from './gamedata.js';
 
+import {
+    getCurrentLocation,
+    setCurrentLocation,
+    getItemPlace,
+    setItemPlace,
+    getFlag,
+    setFlag,
+    isItemInInventory,
+    addItemToInventory,
+    removeItemFromInventory
+} from './functions.js'
+
 // Возвращаем описание предмета по его id
 const getItemDescriptionById = (id) => {
     const item = vocabulary.objects.find((e) => e.id === id);
     return item.desc;
-}
-
-// Возвращаем текущую локацию
-const getCurrentLocation = () => {
-    return state.currentLocation;
-}
-
-const setCurrentLocation = (location) => {
-    state.currentLocation = location;
-}
-
-const setItemPlace = (item, location) => {
-    state.itemPlaces[item] = location;
-}
-
-const getItemPlace = (item) => {
-    return state.itemPlaces[item];
-}
-
-const isItemInInventory = (item) => {
-    return inventory.isItemInInventory(item);
-}
-
-const addItemToInventory = (item) => {
-    inventory.addItem(item);
-}
-
-const removeItemFromInventory = (item) => {
-    inventory.removeItem(item);
-}
-
-const setFlag = (flag, value) => {
-    state.flags[flag] = value;
-}
-
-const getFlag = (flag) => {
-    return state.flags[flag];
 }
 
 // Проверяем, может ли игрок пройти в указанном направлении
@@ -251,7 +226,7 @@ const processVerb = (verb, object1, object2) => {
                 answer = "Я не понимаю.";
                 break;
 
-        }
+        } 
     }
 
 
@@ -259,3 +234,6 @@ const processVerb = (verb, object1, object2) => {
 };
 
 export default game
+
+
+
