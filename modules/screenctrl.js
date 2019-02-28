@@ -1,11 +1,5 @@
 import {
-    locations
-} from './gamedata.js';
-import {
-    vocabulary
-} from './gamedata.js';
-import {
-    inventory
+    locations, vocabulary, inventory, encounters
 } from './gamedata.js';
 
 // Возвращает текст, который выводится как описание локации
@@ -20,16 +14,7 @@ const makeLocation = (g) => {
     })
 
     // Добавляем пояснение для особых игровых ситуаций
-    if (g.flags.isLadderLeanToTree && g.currentLocation === 8) description += "<br>К дереву приставлена лестница.";
-    if (g.currentLocation === 11 && g.flags.isDoorOpened) description += "<br>Дверь открыта.";
-    if (g.currentLocation === 7 && !g.flags.isTrollKilled) description += "<br>Путь на восток преграждает толстый тролль.";
-    if (g.currentLocation === 17 && !g.flags.isPortcullisOpened) description += "<br>Решётка опущена - не пройти.";
-    if (g.currentLocation === 17 && g.flags.isPortcullisOpened) description += "<br>Решётка поднята к потолку.";
-    if (g.currentLocation === 18 && g.flags.isTrapdoorOpened) description += "<br>В полу комнаты дыра, через которую можно спуститься вниз.";
-    if (g.currentLocation === 18 && !g.flags.isTrapdoorOpened) description += "<br>В полу есть закрытый люк.";
-    if (g.currentLocation === 23 && !g.flags.isWormKilled) description += "<br>Вход в южный тоннель преграждает огромный скальный червь.";
-    if (g.currentLocation === 20 && !g.flags.isMonsterKilled) description += "<br>Северный проход охраняет страшный ледяной монстр.";
-    if (g.currentLocation === 27 && !g.flags.isWitchKilled) description += "<br>В противоположном конце комнаты вы видите ведьму. Её заклятье летит прямо в вашу сторону, нужно быстро что-то делать!";
+    description += encounters.addDescription();
 
     // Если в локации лежат предметы, то добавляем их список к описанию локации
 
