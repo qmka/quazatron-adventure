@@ -1,14 +1,14 @@
 import {
-    locations, vocabulary, inventory, encounters
+    locations, vocabulary, inventory, encounters, state
 } from './gamedata.js';
 
 // Возвращает текст, который выводится как описание локации
-const makeLocation = (g) => {
+const makeLocation = () => {
     let description = "";
 
     // Берём из объекта с локациями описание текущей локации
     locations.forEach((e) => {
-        if (e.id === g.currentLocation) {
+        if (e.id === state.currentLocation) {
             description += e.desc;
         }
     })
@@ -22,14 +22,16 @@ const makeLocation = (g) => {
     let itemsInLoc = "";
     let itemsArray = [];
 
-    for (let key in g.itemPlaces) {
-        if (g.itemPlaces[key] === g.currentLocation) {
+    for (let key in state.itemPlaces) {
+        if (state.itemPlaces[key] === state.currentLocation) {
             itemsArray.push(key);
         };
     }
 
     for (let i = 0; i < itemsArray.length; i += 1) {
+        itemsInLoc += '<span style="color: cyan;">';
         itemsInLoc += vocabulary.objects[itemsArray[i]].name;
+        itemsInLoc += '</span>';
         if (i === itemsArray.length - 1) {
             itemsInLoc += ".";
         } else {
@@ -63,10 +65,10 @@ const makeInventory = () => {
 }
 
 // Формирует экран, который выдаётся пользователю после совершённого им действия
-const makeScreen = (g, actionText) => {
-    document.getElementById("screen").innerHTML = makeLocation(g);
+const makeScreen = (actionText) => {
+    document.getElementById("screen").innerHTML = makeLocation();
     document.getElementById("right-sidebar").innerHTML = makeInventory();
-    document.getElementById("image").innerHTML = `<img src="img/${locations[g.currentLocation].img}">`
+    document.getElementById("image").innerHTML = `<img src="img/${locations[state.currentLocation].img}">`
     document.getElementById("action").innerHTML = actionText;
     document.getElementById("input-area").style.display = "block";
 };
