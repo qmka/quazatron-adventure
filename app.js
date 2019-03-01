@@ -1,16 +1,15 @@
-import { ENTER_KEY_CODE } from './modules/constants.js';
 import {
-    state
-} from './modules/gamedata.js';
+    ENTER_KEY_CODE
+} from './modules/constants.js';
 import * as screenCtrl from './modules/screenctrl.js';
-import game from './modules/core.js';
+import inputProcessing from './modules/core.js';
 import parseInput from './modules/parseinput.js';
 
 // TODO: start and end screens
-const controller = () => {
+const game = () => {
 
     // Реакция программы на ввод игрока
-    const userInput = () => {
+    const gameLoop = () => {
 
         const inputField = document.getElementById("input-field");
 
@@ -22,15 +21,10 @@ const controller = () => {
         const words = parseInput(inputText);
 
         // 3. Выполняем действие игрока 
-        /*
-        const processed = outputCtrl(g, words);
-
-        g = processed.gameData;
-        const outputText = processed.answer; */
-        const outputText = game(words);
+        const outputText = inputProcessing(words);
 
         // 4. Обновляем экран
-        screenCtrl.makeScreen(g, outputText);
+        screenCtrl.makeScreen(outputText);
     };
 
     const setupEventListeners = () => {
@@ -47,16 +41,15 @@ const controller = () => {
 
             if (code === "Enter" || code === ENTER_KEY_CODE) {
                 {
-                    userInput();
+                    gameLoop();
                 }
             }
         });
     };
 
-    let g = state;
     console.log('Application has started.');
-    screenCtrl.makeScreen(g, 'Что будете делать?');
+    screenCtrl.makeScreen('Что будете делать?');
     setupEventListeners();
 }
 
-controller();
+game();
