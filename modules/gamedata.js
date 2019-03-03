@@ -81,8 +81,7 @@ const state = {
 // Словарь - существительные, глаголы и прилагательные, которые понимает игра
 const vocabulary = {
     // Словарь глаголов
-    verbs: [
-    {
+    verbs: [{
         id: 0,
         forms: ["с", "север"]
     }, {
@@ -205,8 +204,7 @@ const vocabulary = {
     }],
 
     // Словарь объектов
-    objects: [
-    {
+    objects: [{
         id: 0,
         name: "лестница",
         forms: ["лестница", "лестницу", "лестницой", "лестнице"],
@@ -339,7 +337,7 @@ const vocabulary = {
         adjective: -1
     }, {
         id: 21,
-        forms: ["старушка", "старушку", "старушки", "старушке", "старушкой"],
+        forms: ["старушка", "старушку", "старушки", "старушке", "старушкой", "старуха", "старуху", "старухи", "старухе", "старухой", "бабка", "бабку", "бабки", "бабке", "бабкой", "бабушка", "бабушку", "бабушки", "бабушке", "бабушкой"],
         canHold: false,
         adjective: -1
     }, {
@@ -370,8 +368,7 @@ const vocabulary = {
     }],
 
     // Словарь прилагательных
-    adjectives: [
-    {
+    adjectives: [{
         id: 0,
         forms: ["серебряный", "серебряного", "серебряному", "серебряном", "серебряная", "серебряную", "серебряной", "серебрянный", "серебрянного", "серебрянному", "серебрянном", "серебрянная", "серебрянную", "серебрянной", "серебряное", "серебрянное"]
     }, {
@@ -381,8 +378,7 @@ const vocabulary = {
 }
 
 // Игровые локации
-const locations = [
-{
+const locations = [{
     id: 0,
     desc: 'Вы находитесь на развалинах крестьянского домика. На север ведёт заросшая травой дорога.',
     dir: [1, -1, -1, -1, -1, -1], // [north, east, south, west, up, down]
@@ -670,7 +666,7 @@ const encounters = {
         }
     },
 
-    throw(objects) {
+    throw (objects) {
         if (objects.includes(8) && isItemInInventory(8)) {
             removeItemFromInventory(8);
             if (getCurrentLocation() === 20 && !getFlag("isMonsterKilled")) {
@@ -708,6 +704,136 @@ const encounters = {
             return "Чтобы с ней пообщаться, нужно её разбудить.";
         }
         return "Здесь не с кем говорить.";
+    },
+
+    buy(objects) {
+        if (objects.includes(7) && getCurrentLocation() === 5) {
+            if (isItemInInventory(11)) {
+                removeItemFromInventory(11);
+                addItemToInventory(7);
+                return "Я купил у старушки лампу за серебряную монету";
+            } else if (isItemInInventory(12)) {
+                return 'Старушка пробует монету на зуб и говорит: "Нет, это не серебро!"';
+            } else {
+                return "У меня нет денег."
+            }
+        }
+        return "Я не могу это купить";
+    },
+
+    pay(objects) {
+        if (getCurrentLocation() === 5) {
+            if (objects.includes(11) && isItemInInventory(11)) {
+                removeItemFromInventory(11);
+                addItemToInventory(7);
+                return "Я купил у старушки лампу за серебряную монету";
+            } else if (isItemInInventory(12)) {
+                return 'Старушка пробует монету на зуб и говорит: "Нет, это не серебро!"';
+            } else {
+                return "Мне нужны деньги, чтобы заплатить."
+            }
+        }
+        if (getCurrentLocation() === 7 && !getFlag("isTrollKilled")) {
+            return "Тролль злобно рычит на меня.";
+        }
+        return "Похоже, здесь никому не нужны деньги.";
+    },
+
+    hit(objects) {
+        if (getCurrentLocation() === 7 && !getFlag("isTrollKilled") && objects.includes(17)) {
+            if (isItemInInventory(2)) {
+                setFlag("isTrollKilled");
+                removeItemFromInventory(2);
+                return "Я бросился на тролля и вломил ему булавой прямо по макушке! Дико заревев, искалеченный тролль с торчащей в черепе булавой убежал в лес. Теперь путь на восток свободен.";
+            }
+            if (isItemInInventory(5) && objects.includes(5)) {
+                return "Не стоит с маленьким топориком лезть на большого тролля. Нужно что-то посерьёзнее.";
+            }
+            if (isItemInInventory(3) && objects.includes(3)) {
+                return "Я похож на черепашку-ниндзя, чтобы нападать с деревянным шестом на толстого тролля?";
+            }
+            if (!isItemInInventory(3) && !isItemInInventory(5)) {
+                return "Нападать на тролля с голыми руками? Нет уж!";
+            }
+            return "Уточните, чем это вы собираетесь убивать тролля?";
+        }
+        if (getCurrentLocation() === 5 && objects.includes(21)) {
+            if (isItemInInventory(5)) {
+                return "Вам не кажется, что эта ситуация со старушкой и топором - из другого произведения?";
+            }
+            return "Эээ, я не стану нападать на добрую беззащитную старушку!";
+        }
+        if (getCurrentLocation() === 23 && !getFlag("isWormKilled") && objects.includes(22)) {
+            return "Шкура скального червя настолько твёрдая, что я не смогу повредить её никаким оружием.";
+        }
+        if (getCurrentLocation() === 28 && objects.includes(26)) {
+            return "Напоминаю, что эта прекрасная девушка - цель моего приключения. И я не хочу, чтобы это приключение закончилось плачевно.";
+        }
+        if (getCurrentLocation() === 20 && !getFlag("isMonsterKilled") && objects.includes(23)) {
+            return "На такого монстра идти разве что с боевым ледорубом. Но такого у меня точно нет, придётся искать какую-нибудь хитрость.";
+        }
+        if (isItemInInventory(5)) {
+            return "Ничего не произошло. Подсказка: если хотите что-то порубить топором, то лучше скажите мне РУБИ или РАЗРУБИ... или ПОРУБИ, ну, в общем, вы поняли."
+        }
+        return "Ничего не произошло.";
+    },
+
+    chop(objects) {
+        if (!isItemInInventory(5)) {
+            return "У меня нет топора."
+        }
+        if (getCurrentLocation() === 18 && objects.includes(20) && !getFlag("isTrapdoorOpened")) {
+            setFlag("isTrapdoorOpened");
+            return "Я разломал топором деревянный люк. Теперь можно спуститься вниз.";
+        }
+        if ((getCurrentLocation() === 7 && objects.includes(17)) || (getCurrentLocation() === 20 && objects.includes(23)) || (getCurrentLocation() === 23 && objects.includes(22))) {
+            return "Этот топор хорош для колки дров, но в бою будет маловат и неудобен.";
+        }
+        if (getCurrentLocation() === 8 && objects.includes(18)) {
+            removeItemFromInventory(5);
+            return "Бить топором об камень - не самая хорошая идея. Но, тем не менее, я с размаху бью топором по дереву. Лезвие со свистом врезается в каменный ствол, сыплются искры, и мой топор разлетается на куски.";
+        }
+        if (getCurrentLocation() === 14 && objects.includes(14)) {
+            return "Вы когда-нибудь пробовали рубить топором кусты? Попробуйте на досуге. Здесь пригодился бы секатор, ну, или штыковая лопата, но уж точно не топор";
+        }
+        if (isItemInInventory(3) && objects.includes(3)) {
+            removeItemFromInventory(5);
+            return "В ярости я накинулся на шест и порубил его в труху.";
+        }
+        if (getItemPlace(3) === getCurrentLocation() && objects.includes(3)) {
+            setItemPlace(3, -1);
+            return "В ярости я накинулся на шест и порубил его в труху.";
+        }
+        if (isItemInInventory(4) && objects.includes(4)) {
+            removeItemFromInventory(4);
+            return "Я бросил на землю дрова и порубил их в труху.";
+        }
+        if (getItemPlace(4) === getCurrentLocation() && objects.includes(4)) {
+            setItemPlace(4, -1);
+            return "С особой жестокостью я уничтожил все дрова.";
+        }
+        if (getCurrentLocation() === 5 && objects.includes(21)) {
+            return "Вам не кажется, что эта ситуация со старушкой и топором - немного из другого произведения?";
+        }
+        return "Это делу не поможет."
+    },
+
+    open(objects) {
+        if (getCurrentLocation() === 11 && objects.includes(16)) {
+            if (isItemInInventory(6) && !getFlag("isDoorOpened")) {
+                setFlag("isDoorOpened");
+                removeItemFromInventory(6);
+                return "Я открыл дверь ключом и теперь могу пройти в замок. Правда, ключ намертво застрял в замочной скважине, но вряд ли теперь он мне понадобится.";
+            } else if (!getFlag("isDoorOpened")) {
+                return "Кажется, дверь заперта. Мне нужен ключ.";
+            } else {
+                return "Дверь уже открыта, я могу пройти."
+            }
+        }
+        if (getCurrentLocation() === 18 && objects.includes(20) && !getFlag("isTrapdoorOpened")) {
+            return "Я не представляю, как его открыть. Здесь нет никакой ручки, не за что зацепиться.";
+        }
+        return "Тут нечего открывать.";
     },
 
     lean(objects) {
