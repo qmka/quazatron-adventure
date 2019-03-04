@@ -12,7 +12,9 @@ import {
     setItemPlace,
     isItemInInventory,
     addItemToInventory,
-    removeItemFromInventory
+    removeItemFromInventory,
+    getFlag,
+    setFlag
 } from './functions.js';
 
 // Возвращаем описание предмета по его id
@@ -137,39 +139,42 @@ const inputProcessing = (userInput) => {
     const object2 = userInput.object2;
     const verb = userInput.verb;
     let answer = userInput.message;
+    const objects = [object1, object2];
 
-    // Выдаём игроку сообщение об ошибке, если парсер выдал сообщение об ошибке
-    if (answer !== "Ок") return answer;
-
-    // Дефолтное значение answer на случай, если программа не понимает введённый игроком глагол
-    answer = "Я не понимаю";
-
-    // TODO: Здесь предусмотреть функцию для отработки особых игровых ситуаций
-
-    // Обрабатываем команду игрока (по глаголу)
-    // Если это глагол перемещения
-    if (verb <= 5) {
-        const resultOfMove = movePlayer(verb);
-        if (resultOfMove.canChangeLocation) {
-            setCurrentLocation(resultOfMove.newLocation);
-        }
-        answer = resultOfMove.answer;
-    } else if (verb === 6) {
-        // Глагол "ПОМОГИ" (6)
-        answer = gameDefaultTexts.help;
-    } else if (verb === 7) {
-        // TODO: сделать обработку команды выхода из игры "ВЫХОД" (7)
-    } else if (verb >= 8 && verb <= 10) {
-        // Отдельно обрабатываем глаголы "ВЗЯТЬ" (8), "ПОЛОЖИТЬ" (9), "ОСМОТРЕТЬ" (10), БРОСИТЬ (11)
-        answer = action[vocabulary.verbs[verb].method](object1);
+    // Обрабатываем особые игровые ситуации. Так, в комнате с ведьмой игрок может только отразить заклятье, и если не делает этого, то его выкидывает в предыдущую комнату
+    const uniqueEncounter = encounters.uniqueEncounter(verb, objects);
+    console.log(uniqueEncounter);
+    if (uniqueEncounter.flag) {
+        return uniqueEncounter.answer;
     } else {
-        // Все остальные глаголы обрабатываем по одной и той же схеме
-        const objects = [object1, object2];
-        answer = encounters[vocabulary.verbs[verb].method](objects);
-    }
+        // Выдаём игроку сообщение об ошибке, если парсер выдал сообщение об ошибке
+        if (answer !== "Ок") return answer;
+        // Дефолтное значение answer на случай, если программа не понимает введённый игроком глагол
+        answer = "Я не понимаю";
+        // Обрабатываем команду игрока (по глаголу)
+        // Если это глагол перемещения
+        if (verb <= 5) {
+            const resultOfMove = movePlayer(verb);
+            if (resultOfMove.canChangeLocation) {
+                setCurrentLocation(resultOfMove.newLocation);
+            }
+            answer = resultOfMove.answer;
+        } else if (verb === 6) {
+            // Глагол "ПОМОГИ" (6)
+            answer = gameDefaultTexts.help;
+        } else if (verb === 7) {
+            // TODO: сделать обработку команды выхода из игры "ВЫХОД" (7)
+        } else if (verb >= 8 && verb <= 10) {
+            // Отдельно обрабатываем глаголы "ВЗЯТЬ" (8), "ПОЛОЖИТЬ" (9), "ОСМОТРЕТЬ" (10), БРОСИТЬ (11)
+            answer = action[vocabulary.verbs[verb].method](object1);
+        } else {
+            // Все остальные глаголы обрабатываем по одной и той же схеме
+            answer = encounters[vocabulary.verbs[verb].method](objects);
+        }
 
-    // Возвращаем реакцию программы на действие игрока
-    return answer
+        // Возвращаем реакцию программы на действие игрока
+        return answer
+    }
 };
 
 export default inputProcessing

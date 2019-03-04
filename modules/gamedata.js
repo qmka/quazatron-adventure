@@ -11,7 +11,7 @@ import {
 } from './functions.js'
 
 const inventory = {
-    _inventory: [],
+    _inventory: [10],
 
     addItem(item) {
         this._inventory.push(item)
@@ -33,7 +33,7 @@ const inventory = {
 // Объект с начальным состоянием игры
 const state = {
     // Текущая локация
-    currentLocation: 0,
+    currentLocation: 17,
 
     // Флаги и триггеры
     flags: {
@@ -42,7 +42,7 @@ const state = {
         isKeyRevealed: false,
         isDoorOpened: false,
         isTrollKilled: false,
-        isPortcullisOpened: false,
+        isPortcullisOpened: true,
         isTrapdoorOpened: false,
         isWormKilled: false,
         isLampEmpty: false,
@@ -66,15 +66,6 @@ const state = {
         10: 26,
         11: 19,
         12: 2
-    },
-
-    userDirections: {
-        "с": null,
-        "ю": null,
-        "в": null,
-        "з": null,
-        "вверх": null,
-        "вниз": null,
     },
 };
 
@@ -111,7 +102,7 @@ const vocabulary = {
         method: "takeItem"
     }, {
         id: 9,
-        forms: ["положи", "выбрось", "оставь"],
+        forms: ["положи", "выбрось", "оставь", "выброси"],
         method: "dropItem"
     }, {
         id: 10,
@@ -352,7 +343,7 @@ const vocabulary = {
         adjective: -1
     }, {
         id: 24,
-        forms: ["рычаг", "рычага", "рычагом"],
+        forms: ["рычаг", "рычага", "рычагом", "рычагу", "механизм", "механизма", "механизмом", "механизму"],
         canHold: false,
         adjective: -1
     }, {
@@ -582,7 +573,7 @@ const encounters = {
         if (getCurrentLocation() === 11 && !getFlag("isDoorOpened") && direction === 1) {
             return "Дверь закрыта, я не могу туда пройти.";
         }
-        if (getCurrentLocation() === 18 && !getFlag("isPortcullisOpened") && direction === 0) {
+        if (getCurrentLocation() === 17 && !getFlag("isPortcullisOpened") && direction === 0) {
             return "Решётка опущена до пола, она мешает мне пройти.";
         }
         if (getCurrentLocation() === 18 && !getFlag("isTrapdoorOpened") && direction === 5) {
@@ -593,6 +584,30 @@ const encounters = {
         }
         if (getCurrentLocation() === 23 && !getFlag("isWormKilled") && direction === 2) {
             return "Скальный червь мешает мне пройти.";
+        }
+    },
+
+    uniqueEncounter(verb, objects) {
+        let answer, flag = false;
+        if (getCurrentLocation() === 27 && !getFlag("isWitchKilled")) {
+            flag = true;
+            if (verb === 29 && objects.includes(25)) {
+                if (isItemInInventory(10)) {
+                    setFlag("isWitchKilled");
+                    removeItemFromInventory(10);
+                    answer = "Я отразил заклятье мечом, и оно ударило прямо в ведьму! Издав истошный крик, ведьма рассыпалась в пыль. К сожалению, меч тоже не уцелел.";
+                } else {
+                    setCurrentLocation(17);
+                    answer = "Мне нечем отразить заклятье. Заклятье ударяет мне в грудь и выкидывает из этой комнаты в комнату с решёткой."
+                }
+            } else {
+                setCurrentLocation(17);
+                answer = "Я не успеваю ничего сделать. Заклятье ударяет мне в грудь и выкидывает из этой комнаты в комнату с решёткой.";
+            }
+        }
+        return {
+            answer,
+            flag
         }
     },
 
@@ -673,7 +688,7 @@ const encounters = {
                 setFlag("isMonsterKilled");
                 return "Я бросил мешочек с солью в монстра, и как только крупинки соли коснулись его поверхности, монстр превратился в лужу воды.";
             } else {
-                return "Я рассыпал всю соль. Непонятно, правда, зачем было так делать - вдруг она бы мне пригодилась?";
+                return "Я высыпал всю соль. Непонятно, правда, зачем было так делать - вдруг она бы мне пригодилась?";
             }
         }
         if (objects.includes(5) && isItemInInventory(5)) {
@@ -772,7 +787,7 @@ const encounters = {
         if (getCurrentLocation() === 20 && !getFlag("isMonsterKilled") && objects.includes(23)) {
             return "На такого монстра идти разве что с боевым ледорубом. Но такого у меня точно нет, придётся искать какую-нибудь хитрость.";
         }
-        if (isItemInInventory(5)) {
+        if (isItemInInventory(5) && objects.includes(5)) {
             return "Ничего не произошло. Подсказка: если хотите что-то порубить топором, то лучше скажите мне РУБИ или РАЗРУБИ... или ПОРУБИ, ну, в общем, вы поняли."
         }
         return "Ничего не произошло.";
@@ -859,6 +874,9 @@ const encounters = {
                 return "У меня нет ничего, чем я могу сломать люк.";
             }
         }
+        if (!isItemInInventory(objects[0]) && !isItemInInventory(objects[1])) {
+            return "Нужно сначала взять это в руки.";
+        }
         return "Я не могу это сломать";
     },
 
@@ -881,7 +899,7 @@ const encounters = {
     },
 
     climb(objects) {
-        if (objects.includes(18) && getCurrentLocation() === 8) {
+        if (getCurrentLocation() === 8) {
             if (getFlag("isLadderLeanToTree")) {
                 setCurrentLocation(9);
                 return "Я залез на дерево по лестнице.";
@@ -891,6 +909,122 @@ const encounters = {
         }
         return "Я не могу туда залезть";
     },
+
+    go() {
+        return 'Используйте команды <span style="color: yellow;">С  Ю  З  В  ВВЕРХ  ВНИЗ</span> для передвижения.';
+    },
+
+    eat(objects) {
+        if (objects.includes(1)) {
+            if (isItemInInventory(1)) {
+                return "Я не буду есть эту тухлятину.";
+            } else {
+                return "У меня нет рыбы.";
+            }
+        }
+        return "Я не буду это есть.";
+    },
+
+    turnOn(objects) {
+        if (objects.includes(7) && isItemInInventory(7)) {
+            if (!getFlag("isLampEmpty")) {
+                setFlag("isLampEmpty");
+                if (getCurrentLocation() === 23 && getFlag("isWormKilled")) {
+                    setFlag("isWormKilled");
+                    return "Я включаю лампу, и её яркий свет озаряет шахту. Червь, привыкший к темноте, издаёт кошмарный вопль и уползает в глубины подземелья. Через несколько мгновений лампа тухнет.";
+                } else {
+                    return "Я включаю лампу, она ярко горит всего несколько мгновений, а потом тухнет.";
+                }
+            } else {
+                return "Я пробую включить лампу, но ничего не происходит. Надо бы её заправить чем-нибудь горючим.";
+            }
+        }
+        if (objects.includes(24) && getCurrentLocation() === 25) {
+            return "Может, лучше нажать на рычаг?";
+        }
+        return "У меня нет ничего такого, что можно было бы включить."
+    },
+
+    pour(objects) {
+        if (objects.includes(8) && isItemInInventory(8)) {
+            removeItemFromInventory(8);
+            if (getCurrentLocation() === 20 && !getFlag("isMonsterKilled")) {
+                setFlag("isMonsterKilled");
+                return "Я бросил мешочек с солью в монстра, и как только крупинки соли коснулись его поверхности, монстр превратился в лужу воды.";
+            } else {
+                return "Я высыпал всю соль. Непонятно, правда, зачем было так делать - вдруг она бы мне пригодилась?";
+            }
+        }
+        return "Решительно не понимаю, что мне тут рассыпать?";
+    },
+
+    fuel(objects) {
+        if (objects.includes(7) && isItemInInventory(7)) {
+            if (isItemInInventory(9)) {
+                if (getFlag("isLampEmpty")) {
+                    setFlag("isLampEmpty");
+                    return "Я залил немного масла в лампу.";
+                } else {
+                    return "В лампе достаточно масла, чтобы её включить.";
+                }
+            } else {
+                return "У меня нет ничего, чем я могу заправить лампу";
+            }
+        } else {
+           return "Не совсем понимаю, что вы хотите тут зарядить или заправить."; 
+        }
+    },
+
+    oil(objects) {
+        if (isItemInInventory(9)) {
+            if (objects.includes(24) && getCurrentLocation() === 25) {
+                if (getFlag("isLeverOiled")) {
+                    return "Рычаг уже смазан.";
+                } else {
+                    setFlag("isLeverOiled");
+                    removeItemFromInventory(9);
+                    return "Я аккуратно смазал рычаг и детали управляемого им механизма, потратив всё масло.";
+                }
+            }
+            return "Здесь смазка не нужна.";
+        } else {
+            return "Для этого мне понадобится масло.";
+        }
+    },
+
+    press(objects) {
+        if (objects.includes(24) && getCurrentLocation() === 25) {
+            if (getFlag("isLeverOiled")) {
+                setFlag("isPortcullisOpened");
+                return "Я нажал на рычаг. Вдали послышался какой-то лязг";
+            } else {
+                return "Я давлю на рычаг, но он не двигается с места. Слишком тут всё проржавело.";
+            }
+        }
+        return "Здесь нечего нажимать."
+    },
+
+    reflect(objects) {
+        return "Не понимаю, что вы хотите сделать.";
+    },
+
+    kiss(objects) {
+        if (objects.includes(26) && getCurrentLocation() === 28) {
+            return "Вы целуете принцессу в бледные губы, и её глаза открываются. Вы разбудили принцессу и выиграли игру!";
+            // TODO выход на экран победы в игре
+        }
+        if (objects.includes(21) && getCurrentLocation() === 5) {
+            return "А вы, батенька, шалун!";
+        }
+        return "Я не буду это целовать.";
+    },
+
+    wake(objects) {
+        if (objects.includes(26) && getCurrentLocation() === 28) {
+            return "Я бы рад разбудить её, но как? Есть конкретные предложения?";
+        }
+        return "Я не совсем понимаю, кого вы тут хотите разбудить.";
+    }
 }
 
 const gameDefaultTexts = {
