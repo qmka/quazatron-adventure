@@ -11,7 +11,7 @@ import {
 } from './functions.js'
 
 const inventory = {
-    _inventory: [10],
+    _inventory: [],
 
     addItem(item) {
         this._inventory.push(item)
@@ -33,7 +33,7 @@ const inventory = {
 // Объект с начальным состоянием игры
 const state = {
     // Текущая локация
-    currentLocation: 17,
+    currentLocation: 0,
 
     // Флаги и триггеры
     flags: {
@@ -42,7 +42,7 @@ const state = {
         isKeyRevealed: false,
         isDoorOpened: false,
         isTrollKilled: false,
-        isPortcullisOpened: true,
+        isPortcullisOpened: false,
         isTrapdoorOpened: false,
         isWormKilled: false,
         isLampEmpty: false,
