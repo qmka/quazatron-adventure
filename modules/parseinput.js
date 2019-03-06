@@ -35,6 +35,7 @@ const findAdjectiveProperty = (id) => {
 // Основная функция парсера. На входе - строка, введённая игроком.
 // На выходе 
 const parseInput = (input) => {
+    
     let isFirstItem = true;
     let verb = -1,
         object1 = -1,
@@ -50,7 +51,7 @@ const parseInput = (input) => {
             message: "Что мне делать?"
         }
     }
-
+    
     const words = input.toLowerCase().split(/[\s,]+/);
 
     // Ищем глагол

@@ -1,6 +1,9 @@
 import {
-    locations, vocabulary, inventory, encounters, state
+    locations, vocabulary, inventory, encounters, state, gameDefaultTexts
 } from './gamedata.js';
+import{
+    getFlag
+} from './functions.js'
 
 // Возвращает текст, который выводится как описание локации
 const makeLocation = () => {
@@ -70,7 +73,7 @@ const makeScreen = (actionText) => {
     document.getElementById("right-sidebar").innerHTML = makeInventory();
     document.getElementById("image").innerHTML = `<img src="img/${locations[state.currentLocation].img}">`
     document.getElementById("action").innerHTML = actionText;
-    document.getElementById("input-area").style.display = "block";
+    // document.getElementById("input-area").style.display = "block";
 };
 
 // Формирует статический экран, например, стартовый экран, экран победы в игре, экран game over и т.д.
@@ -79,10 +82,42 @@ const makeStaticScreen = (text, sidebar, action, image) => {
     document.getElementById("right-sidebar").innerHTML = sidebar;
     document.getElementById("image").innerHTML = image;
     document.getElementById("action").innerHTML = action;
-    document.getElementById("input-area").style.display = "none";
+    // document.getElementById("input-area").style.display = "none";
+}
+
+const makeStartScreen = () => {
+    const text = 'Это стартовый текст в основной области экрана';
+    const sidebar = 'Это текст в сайдбаре';
+    const action = 'Нажмите ENTER для начала игры';
+    const image = 'Здесь будет игровая картинка';
+    makeStaticScreen(text, sidebar, action, image);
+}
+
+const makeVictoryScreen = () => {
+    const text = 'Этот текст выводится, когда игрок побеждает';
+    const sidebar = 'Это текст в сайдбаре';
+    const action = 'Нажмите ENTER, если хотите начать сначала.';
+    const image = 'Здесь будет игровая картинка';
+    makeStaticScreen(text, sidebar, action, image);
+}
+
+const makeGameOverScreen = () => {
+    let text;
+    if (getFlag("isDiedFromFish")) {
+        text = 'Я почувствовал острую боль в животе и умер. Глупо, конечно, заканчивать это приключение, отравившись протухшей рыбой.'
+    } else {
+        text = 'Я умер, и моя игра закончилась';
+    }
+
+    const sidebar = 'Это текст в сайдбаре';
+    const action = 'Нажмите ENTER, если хотите начать сначала.';
+    const image = 'Здесь будет игровая картинка';
+    makeStaticScreen(text, sidebar, action, image);
 }
 
 export {
     makeScreen,
-    makeStaticScreen
+    makeStartScreen,
+    makeVictoryScreen,
+    makeGameOverScreen
 };

@@ -1,30 +1,67 @@
 import {
     ENTER_KEY_CODE
 } from './modules/constants.js';
-import * as screenCtrl from './modules/screenctrl.js';
+import {
+    state
+} from './modules/gamedata.js';
+import {
+    makeScreen,
+    makeStartScreen,
+    makeVictoryScreen,
+    makeGameOverScreen
+} from './modules/screenctrl.js';
 import inputProcessing from './modules/core.js';
 import parseInput from './modules/parseinput.js';
 
-// TODO: start and end screens
 const game = () => {
+
+    let gameState;
+
+    const resetGameState = () => {
+        state.resetGameState();
+    }
 
     // Реакция программы на ввод игрока
     const gameLoop = () => {
+        // Реакция на нажатие клавиши ENTER игроком в зависимости от того, на каком экране он находится
 
-        const inputField = document.getElementById("input-field");
+        if (gameState === "start") {
 
-        // 1. Получаем введённую игроком команду и очищаем поле ввода
-        const inputText = inputField.value;
-        inputField.value = "";
+            // Если он был на стартовом экране, то надо запустить игру
+            resetGameState();
+            gameState = "game";
+            makeScreen("Ваше приключение начинается. Что будете делать?");
+        } else if (gameState === "game") {
 
-        // 2. Отправляем команду в словоанализатор
-        const words = parseInput(inputText);
+            // Если он был внутри игры
+            const inputField = document.getElementById("input-field");
 
-        // 3. Выполняем действие игрока 
-        const outputText = inputProcessing(words);
+            // 1. Получаем введённую игроком команду и очищаем поле ввода
+            const inputText = inputField.value;
+            inputField.value = "";
 
-        // 4. Обновляем экран
-        screenCtrl.makeScreen(outputText);
+            // 2. Отправляем команду в словоанализатор
+            const words = parseInput(inputText);
+            
+            // 3. Выполняем действие игрока 
+            const output = inputProcessing(words);
+
+            // 4. Отрисовываем экран
+            if (output.gameFlag === "game") {
+                makeScreen(output.answer);
+            } else if (output.gameFlag === "victory") {
+                makeVictoryScreen();
+                gameState = "readyToStart";
+            } else if (output.gameFlag === "gameover") {
+                makeGameOverScreen();
+                gameState = "readyToStart";
+            }     
+        } else if (gameState === "readyToStart") {
+
+            // Если он был на экране победы или смерти
+            gameState = "start";
+            makeStartScreen();
+        }
     };
 
     const setupEventListeners = () => {
@@ -48,7 +85,11 @@ const game = () => {
     };
 
     console.log('Application has started.');
-    screenCtrl.makeScreen('Что будете делать?');
+
+    // выводим стартовый экран
+    gameState = "start";
+    makeStartScreen();
+    resetGameState();
     setupEventListeners();
 }
 

@@ -140,15 +140,21 @@ const inputProcessing = (userInput) => {
     const verb = userInput.verb;
     let answer = userInput.message;
     const objects = [object1, object2];
+    let gameFlag = "game";
 
     // Обрабатываем особые игровые ситуации. Так, в комнате с ведьмой игрок может только отразить заклятье, и если не делает этого, то его выкидывает в предыдущую комнату
     const uniqueEncounter = encounters.uniqueEncounter(verb, objects);
-    console.log(uniqueEncounter);
     if (uniqueEncounter.flag) {
-        return uniqueEncounter.answer;
+        return {
+            answer: uniqueEncounter.answer,
+            gameFlag
+        };
     } else {
         // Выдаём игроку сообщение об ошибке, если парсер выдал сообщение об ошибке
-        if (answer !== "Ок") return answer;
+        if (answer !== "Ок") return {
+            answer,
+            gameFlag
+        };
         // Дефолтное значение answer на случай, если программа не понимает введённый игроком глагол
         answer = "Я не понимаю";
         // Обрабатываем команду игрока (по глаголу)
@@ -172,8 +178,18 @@ const inputProcessing = (userInput) => {
             answer = encounters[vocabulary.verbs[verb].method](objects);
         }
 
+        // Проверяем, победил ли игрок?
+        if (getFlag("isVictory")) {
+            gameFlag = "victory";
+        }
+        if (getFlag("isGameOver")) {
+            gameFlag = "gameover";
+        }
         // Возвращаем реакцию программы на действие игрока
-        return answer
+        return {
+            answer,
+            gameFlag
+        }
     }
 };
 

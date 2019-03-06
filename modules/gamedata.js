@@ -27,11 +27,37 @@ const inventory = {
 
     allItems() {
         return this._inventory;
+    },
+
+    resetInventory() {
+        this._inventory = [];
     }
 }
 
 // Объект с начальным состоянием игры
 const state = {
+
+    resetGameState() {
+        this.currentLocation = 0;
+        for (let key in this.flags) {
+            this.flags[key] = false;
+        }
+        this.itemPlaces[0] = 0;
+        this.itemPlaces[1] = 3;
+        this.itemPlaces[2] = 9;
+        this.itemPlaces[3] = -1;
+        this.itemPlaces[4] = 13;
+        this.itemPlaces[5] = -1;
+        this.itemPlaces[6] = -1;
+        this.itemPlaces[7] = -1;
+        this.itemPlaces[8] = 24;
+        this.itemPlaces[9] = 22;
+        this.itemPlaces[10] = 26;
+        this.itemPlaces[11] = 19;
+        this.itemPlaces[12] = 2;
+        inventory.resetInventory();
+    },
+
     // Текущая локация
     currentLocation: 0,
 
@@ -48,9 +74,14 @@ const state = {
         isLampEmpty: false,
         isMonsterKilled: false,
         isLeverOiled: false,
-        isWitchKilled: false
+        isWitchKilled: false,
+        isDiedFromFish: false,
+        isVictory: false,
+        isGameOver: false
     },
 
+    itemPlaces: {}
+    /*
     // Массив с расположением предметов
     itemPlaces: {
         0: 0,
@@ -67,6 +98,7 @@ const state = {
         11: 19,
         12: 2
     },
+    */
 };
 
 // Словарь - существительные, глаголы и прилагательные, которые понимает игра
@@ -917,7 +949,9 @@ const encounters = {
     eat(objects) {
         if (objects.includes(1)) {
             if (isItemInInventory(1)) {
-                return "Я не буду есть эту тухлятину.";
+                setFlag("isGameOver");
+                setFlag("isDiedFromFish");
+                return "";
             } else {
                 return "У меня нет рыбы.";
             }
@@ -971,7 +1005,7 @@ const encounters = {
                 return "У меня нет ничего, чем я могу заправить лампу";
             }
         } else {
-           return "Не совсем понимаю, что вы хотите тут зарядить или заправить."; 
+            return "Не совсем понимаю, что вы хотите тут зарядить или заправить.";
         }
     },
 
@@ -1010,8 +1044,9 @@ const encounters = {
 
     kiss(objects) {
         if (objects.includes(26) && getCurrentLocation() === 28) {
+            setFlag("isVictory");
             return "Вы целуете принцессу в бледные губы, и её глаза открываются. Вы разбудили принцессу и выиграли игру!";
-            // TODO выход на экран победы в игре
+            // Выход на экран победы в игре
         }
         if (objects.includes(21) && getCurrentLocation() === 5) {
             return "А вы, батенька, шалун!";
