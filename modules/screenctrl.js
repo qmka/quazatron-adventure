@@ -6,7 +6,7 @@ import{
 } from './functions.js'
 
 // Возвращает текст, который выводится как описание локации
-const makeLocation = () => {
+const constructLocation = () => {
     let description = "";
 
     // Берём из объекта с локациями описание текущей локации
@@ -22,7 +22,6 @@ const makeLocation = () => {
     // Если в локации лежат предметы, то добавляем их список к описанию локации
 
     description += "<br>";
-    let itemsInLoc = "";
     let itemsArray = [];
 
     for (let key in state.itemPlaces) {
@@ -31,34 +30,27 @@ const makeLocation = () => {
         };
     }
 
-    for (let i = 0; i < itemsArray.length; i += 1) {
-        itemsInLoc += '<span style="color: cyan;">';
-        itemsInLoc += vocabulary.objects[itemsArray[i]].name;
-        itemsInLoc += '</span>';
-        if (i === itemsArray.length - 1) {
-            itemsInLoc += ".";
-        } else {
-            itemsInLoc += ", ";
-        }
-    }
+    const itemsInLoc = itemsArray.map((item) => {
+        return `<span class="inventory-item">${vocabulary.objects[item].name}</span>`
+    }).join(', ').concat('.');
 
-    if (itemsInLoc !== "") {
+    if (itemsInLoc !== ".") {
         description += `<br>Здесь также есть: ${itemsInLoc}`;
     }
     return description;
 }
 
 // Возвращает текст, который выводится разделе инвентаря
-const makeInventory = () => {
+const constructInventory = () => {
     let inventoryText = "Инвентарь:<br><br>";
     let itemsInInventory = "";
 
-    inventory.allItems().forEach((item) => {
+    inventory.getAllItems().forEach((item) => {
         itemsInInventory += `${vocabulary.objects[item].name}<br>`;
     })
 
 
-    if (itemsInInventory !== "") {
+    if (itemsInInventory) {
         inventoryText += itemsInInventory;
     } else {
         inventoryText += "пусто";
@@ -68,56 +60,56 @@ const makeInventory = () => {
 }
 
 // Формирует экран, который выдаётся пользователю после совершённого им действия
-const makeScreen = (actionText) => {
-    document.getElementById("screen").innerHTML = makeLocation();
-    document.getElementById("right-sidebar").innerHTML = makeInventory();
+const renderScreen = (actionText) => {
+    document.getElementById("screen").innerHTML = constructLocation();
+    document.getElementById("right-sidebar").innerHTML = constructInventory();
     document.getElementById("image").innerHTML = `<img src="img/${locations[state.currentLocation].img}">`
     document.getElementById("action").innerHTML = actionText;
-    // document.getElementById("input-area").style.display = "block";
+    document.getElementById("input-area").style.opacity = 100;
 };
 
 // Формирует статический экран, например, стартовый экран, экран победы в игре, экран game over и т.д.
-const makeStaticScreen = (text, sidebar, action, image) => {
+const renderStaticScreen = (text, sidebar, action, image) => {
     document.getElementById("screen").innerHTML = text;
     document.getElementById("right-sidebar").innerHTML = sidebar;
     document.getElementById("image").innerHTML = image;
     document.getElementById("action").innerHTML = action;
-    // document.getElementById("input-area").style.display = "none";
+    document.getElementById("input-area").style.opacity = 0;
 }
 
-const makeStartScreen = () => {
+const renderStartScreen = () => {
     const text = 'Это стартовый текст в основной области экрана';
     const sidebar = 'Это текст в сайдбаре';
     const action = 'Нажмите ENTER для начала игры';
     const image = 'Здесь будет игровая картинка';
-    makeStaticScreen(text, sidebar, action, image);
+    renderStaticScreen(text, sidebar, action, image);
 }
 
-const makeVictoryScreen = () => {
+const renderVictoryScreen = () => {
     const text = 'Этот текст выводится, когда игрок побеждает';
     const sidebar = 'Это текст в сайдбаре';
     const action = 'Нажмите ENTER, если хотите начать сначала.';
     const image = 'Здесь будет игровая картинка';
-    makeStaticScreen(text, sidebar, action, image);
+    renderStaticScreen(text, sidebar, action, image);
 }
 
-const makeGameOverScreen = () => {
+const renderGameOverScreen = () => {
     let text;
     if (getFlag("isDiedFromFish")) {
         text = 'Я почувствовал острую боль в животе и умер. Глупо, конечно, заканчивать это приключение, отравившись протухшей рыбой.'
     } else {
-        text = 'Я умер, и моя игра закончилась';
+        text = 'Ваша игра закончилась.';
     }
 
     const sidebar = 'Это текст в сайдбаре';
     const action = 'Нажмите ENTER, если хотите начать сначала.';
     const image = 'Здесь будет игровая картинка';
-    makeStaticScreen(text, sidebar, action, image);
+    renderStaticScreen(text, sidebar, action, image);
 }
 
 export {
-    makeScreen,
-    makeStartScreen,
-    makeVictoryScreen,
-    makeGameOverScreen
+    renderScreen,
+    renderStartScreen,
+    renderVictoryScreen,
+    renderGameOverScreen
 };

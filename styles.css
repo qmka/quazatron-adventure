@@ -96,3 +96,7 @@ body {
 .input-wrapper .user-input:focus + label {
     color: white;
 }
+
+.inventory-item {
+    color: #f0e386;
+}

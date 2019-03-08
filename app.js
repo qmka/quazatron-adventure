@@ -5,12 +5,12 @@ import {
     state
 } from './modules/gamedata.js';
 import {
-    makeScreen,
-    makeStartScreen,
-    makeVictoryScreen,
-    makeGameOverScreen
+    renderScreen,
+    renderStartScreen,
+    renderVictoryScreen,
+    renderGameOverScreen
 } from './modules/screenctrl.js';
-import inputProcessing from './modules/core.js';
+import processInput from './modules/core.js';
 import parseInput from './modules/parseinput.js';
 
 const game = () => {
@@ -30,7 +30,7 @@ const game = () => {
             // Если он был на стартовом экране, то надо запустить игру
             resetGameState();
             gameState = "game";
-            makeScreen("Ваше приключение начинается. Что будете делать?");
+            renderScreen("Ваше приключение начинается. Что будете делать?");
         } else if (gameState === "game") {
 
             // Если он был внутри игры
@@ -44,23 +44,24 @@ const game = () => {
             const words = parseInput(inputText);
             
             // 3. Выполняем действие игрока 
-            const output = inputProcessing(words);
+            const output = processInput(words);
 
             // 4. Отрисовываем экран
-            if (output.gameFlag === "game") {
-                makeScreen(output.answer);
-            } else if (output.gameFlag === "victory") {
-                makeVictoryScreen();
-                gameState = "readyToStart";
-            } else if (output.gameFlag === "gameover") {
-                makeGameOverScreen();
-                gameState = "readyToStart";
-            }     
+            switch (output.gameFlag) {
+                case "game":
+                    renderScreen(output.answer);
+                    break;
+                case "victory":
+                    renderVictoryScreen();
+                    gameState = "readyToStart";
+                case "gameover":
+                    renderGameOverScreen();
+                    gameState = "readyToStart";
+            }
         } else if (gameState === "readyToStart") {
-
             // Если он был на экране победы или смерти
             gameState = "start";
-            makeStartScreen();
+            renderStartScreen();
         }
     };
 
@@ -88,7 +89,7 @@ const game = () => {
 
     // выводим стартовый экран
     gameState = "start";
-    makeStartScreen();
+    renderStartScreen();
     resetGameState();
     setupEventListeners();
 }

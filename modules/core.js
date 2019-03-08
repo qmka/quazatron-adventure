@@ -1,4 +1,5 @@
 import {
+    inventory,
     vocabulary,
     locations,
     encounters,
@@ -10,11 +11,7 @@ import {
     setCurrentLocation,
     getItemPlace,
     setItemPlace,
-    isItemInInventory,
-    addItemToInventory,
-    removeItemFromInventory,
-    getFlag,
-    setFlag
+    getFlag
 } from './functions.js';
 
 // Возвращаем описание предмета по его id
@@ -30,19 +27,17 @@ const canPlayerMove = (direction, newLocation) => {
 
     // Проверяем доступность в общем случае
     if (newLocation === -1) {
-        answer = "Я не могу туда пройти";
-        access = false;
         return {
-            access,
-            answer
+            access: false,
+            answer: "Я не могу туда пройти"
         }
     }
 
     // Проверяем частные случаи для определённых локаций
     // В объекте encounters указаны условия, по которым куда-то нельзя пройти
 
-    const result = encounters.playerCanNotMove(direction);
-    if (result !== undefined) {
+    const result = encounters.checkPlayerObstacles(direction);
+    if (result) {
         answer = result;
         access = false;
     }
@@ -75,75 +70,67 @@ const movePlayer = (direction) => {
     };
 }
 
-const action = {
-    takeItem(item) {
-        let answer = "Я не могу это взять.";
+const playerStandartActions = {
+    takeItem(itemId) {
+        let answer;
 
         // Особые случаи
-        const result = encounters.take(item);
-        if (result !== undefined) {
-            answer = result;
-        }
+        answer = encounters.take(itemId);
 
         // Общий случай
-        if (!isItemInInventory(item) && getItemPlace(item) === getCurrentLocation()) {
-
-            addItemToInventory(item);
-            setItemPlace(item, -1);
+        if (!inventory.isItemInInventory(itemId) && getItemPlace(itemId) === getCurrentLocation()) {
+            inventory.addItem(itemId);
+            setItemPlace(itemId, -1);
             answer = "Ок, взял.";
         }
 
         return answer;
     },
 
-    dropItem(item) {
-        let answer = "У меня нет этого.";
+    dropItem(itemId) {
+        let answer;
 
         // Особые случаи
-        // В демо-игре отсутствуют
-
-        const result = encounters.drop(item);
-        if (result !== undefined) answer = result;
+        answer = encounters.drop(itemId);
 
         // Общий случай
 
-        if (isItemInInventory(item)) {
-            removeItemFromInventory(item);
-            setItemPlace(item, getCurrentLocation());
+        if (inventory.isItemInInventory(itemId)) {
+            inventory.removeItem(itemId);
+            setItemPlace(itemId, getCurrentLocation());
             answer = "Ок, положил.";
         }
 
         return answer;
     },
 
-    examine(object) {
-        let answer = "Ничего необычного";
+    examine(objectId) {
+        let answer;
 
         // Особый случай наступает, когда в локации есть соотв. функция
-
-        const result = encounters.examine(object);
-        if (result !== undefined) answer = result;
+        const result = encounters.examine(objectId);
+        if (result !== "Ничего необычного.") answer = result;
 
         // Общий случай осмотра предмета
 
-        else if (getItemPlace(object) === getCurrentLocation()) answer = "Чтобы внимательно осмотреть предмет, нужно взять его в руки.";
-        else if (isItemInInventory(object)) answer = getItemDescriptionById(object);
+        else if (getItemPlace(objectId) === getCurrentLocation()) answer = "Чтобы внимательно осмотреть предмет, нужно взять его в руки.";
+        else if (inventory.isItemInInventory(objectId)) answer = getItemDescriptionById(objectId);
 
         return answer;
     },
 };
 
-const inputProcessing = (userInput) => {
-    // Разбираем полученный из парсера объект на item1, item2, object, verb; записываем в них соотв. id
-    const object1 = userInput.object1;
-    const object2 = userInput.object2;
-    const verb = userInput.verb;
+const processInput = (userInput) => {
+    // Разбираем полученный из парсера объект на object1Id, object2Id, verbId
+    const object1Id = userInput.object1;
+    const object2Id = userInput.object2;
+    const verbId = userInput.verb;
     let answer = userInput.message;
-    const objects = [object1, object2];
+    const objects = [object1Id, object2Id];
     let gameFlag = "game";
 
     // Обрабатываем особые игровые ситуации. Так, в комнате с ведьмой игрок может только отразить заклятье, и если не делает этого, то его выкидывает в предыдущую комнату
-    const uniqueEncounter = encounters.uniqueEncounter(verb, objects);
+    const uniqueEncounter = encounters.getUniqueEncounter(verbId, objects);
     if (uniqueEncounter.flag) {
         return {
             answer: uniqueEncounter.answer,
@@ -159,26 +146,39 @@ const inputProcessing = (userInput) => {
         answer = "Я не понимаю";
         // Обрабатываем команду игрока (по глаголу)
         // Если это глагол перемещения
-        if (verb <= 5) {
-            const resultOfMove = movePlayer(verb);
-            if (resultOfMove.canChangeLocation) {
-                setCurrentLocation(resultOfMove.newLocation);
-            }
-            answer = resultOfMove.answer;
-        } else if (verb === 6) {
-            // Глагол "ПОМОГИ" (6)
-            answer = gameDefaultTexts.help;
-        } else if (verb === 7) {
-            // TODO: сделать обработку команды выхода из игры "ВЫХОД" (7)
-        } else if (verb >= 8 && verb <= 10) {
-            // Отдельно обрабатываем глаголы "ВЗЯТЬ" (8), "ПОЛОЖИТЬ" (9), "ОСМОТРЕТЬ" (10), БРОСИТЬ (11)
-            answer = action[vocabulary.verbs[verb].method](object1);
-        } else {
-            // Все остальные глаголы обрабатываем по одной и той же схеме
-            answer = encounters[vocabulary.verbs[verb].method](objects);
+        switch (verbId) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                const resultOfMove = movePlayer(verbId);
+                if (resultOfMove.canChangeLocation) {
+                    setCurrentLocation(resultOfMove.newLocation);
+                }
+                answer = resultOfMove.answer;
+                break;
+            case 6:
+                // Глагол "ИНФО" (6)
+                answer = gameDefaultTexts.info;
+                break;
+            case 7:
+                // Выход из игры
+                gameFlag = "gameover";
+                break;
+            case 8:
+            case 9:
+            case 10:
+                // Отдельно обрабатываем глаголы "ВЗЯТЬ" (8), "ПОЛОЖИТЬ" (9), "ОСМОТРЕТЬ" (10)
+                answer = playerStandartActions[vocabulary.verbs[verbId].method](object1Id);
+                break;
+            default:
+                answer = encounters[vocabulary.verbs[verbId].method](objects);
+                break            
         }
 
-        // Проверяем, победил ли игрок?
+        // Проверяем, победил или проиграл ли игрок?
         if (getFlag("isVictory")) {
             gameFlag = "victory";
         }
@@ -193,4 +193,4 @@ const inputProcessing = (userInput) => {
     }
 };
 
-export default inputProcessing
+export default processInput
