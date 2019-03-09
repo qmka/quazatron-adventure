@@ -1,6 +1,11 @@
 import {
-    locations, vocabulary, inventory, encounters, state, gameDefaultTexts
+    locations, vocabulary, encounters, state, gameDefaultTexts
 } from './gamedata.js';
+
+import {
+    inventory
+} from './inventory.js'
+
 import{
     getFlag
 } from './functions.js'
@@ -62,7 +67,7 @@ const constructInventory = () => {
 // Формирует экран, который выдаётся пользователю после совершённого им действия
 const renderScreen = (actionText) => {
     document.getElementById("screen").innerHTML = constructLocation();
-    document.getElementById("right-sidebar").innerHTML = constructInventory();
+    // document.getElementById("right-sidebar").innerHTML = constructInventory();
     document.getElementById("image").innerHTML = `<img src="img/${locations[state.currentLocation].img}">`
     document.getElementById("action").innerHTML = actionText;
     document.getElementById("input-area").style.opacity = 100;
@@ -71,23 +76,23 @@ const renderScreen = (actionText) => {
 // Формирует статический экран, например, стартовый экран, экран победы в игре, экран game over и т.д.
 const renderStaticScreen = (text, sidebar, action, image) => {
     document.getElementById("screen").innerHTML = text;
-    document.getElementById("right-sidebar").innerHTML = sidebar;
+    // document.getElementById("right-sidebar").innerHTML = sidebar;
     document.getElementById("image").innerHTML = image;
     document.getElementById("action").innerHTML = action;
     document.getElementById("input-area").style.opacity = 0;
 }
 
 const renderStartScreen = () => {
-    const text = 'Это стартовый текст в основной области экрана';
-    const sidebar = 'Это текст в сайдбаре';
+    const text = gameDefaultTexts.startMainText;
+    // const sidebar = 'Это текст в сайдбаре';
     const action = 'Нажмите ENTER для начала игры';
-    const image = 'Здесь будет игровая картинка';
+    const image = '<img src="img/startscreen.png">';
     renderStaticScreen(text, sidebar, action, image);
 }
 
 const renderVictoryScreen = () => {
     const text = 'Этот текст выводится, когда игрок побеждает';
-    const sidebar = 'Это текст в сайдбаре';
+    // const sidebar = 'Это текст в сайдбаре';
     const action = 'Нажмите ENTER, если хотите начать сначала.';
     const image = 'Здесь будет игровая картинка';
     renderStaticScreen(text, sidebar, action, image);
@@ -101,7 +106,7 @@ const renderGameOverScreen = () => {
         text = 'Ваша игра закончилась.';
     }
 
-    const sidebar = 'Это текст в сайдбаре';
+    // const sidebar = 'Это текст в сайдбаре';
     const action = 'Нажмите ENTER, если хотите начать сначала.';
     const image = 'Здесь будет игровая картинка';
     renderStaticScreen(text, sidebar, action, image);

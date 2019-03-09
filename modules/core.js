@@ -1,10 +1,13 @@
 import {
-    inventory,
     vocabulary,
     locations,
     encounters,
     gameDefaultTexts
 } from './gamedata.js';
+
+import {
+    inventory
+} from './inventory.js'
 
 import {
     getCurrentLocation,
@@ -115,6 +118,7 @@ const playerStandartActions = {
 
         else if (getItemPlace(objectId) === getCurrentLocation()) answer = "Чтобы внимательно осмотреть предмет, нужно взять его в руки.";
         else if (inventory.isItemInInventory(objectId)) answer = getItemDescriptionById(objectId);
+        else answer = result;
 
         return answer;
     },
@@ -168,9 +172,13 @@ const processInput = (userInput) => {
                 gameFlag = "gameover";
                 break;
             case 8:
+                // Инвентарь
+                answer = inventory.getItemsTextList();
+                break;
             case 9:
             case 10:
-                // Отдельно обрабатываем глаголы "ВЗЯТЬ" (8), "ПОЛОЖИТЬ" (9), "ОСМОТРЕТЬ" (10)
+            case 11:
+                // Отдельно обрабатываем глаголы "ВЗЯТЬ" (9), "ПОЛОЖИТЬ" (10), "ОСМОТРЕТЬ" (11)
                 answer = playerStandartActions[vocabulary.verbs[verbId].method](object1Id);
                 break;
             default:

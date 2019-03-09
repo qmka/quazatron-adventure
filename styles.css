@@ -10,8 +10,8 @@ body {
 }
 
 .container {
-    max-width: 1024px;
-    min-width: 800px;
+    max-width: 760px;
+    min-width: 760px;
     height: 640px;
     width: 85%;
     margin: 10px auto 0;
@@ -25,24 +25,13 @@ body {
     color: white;
     padding: 15px 15px 20px;
     border: 5px solid white;
-    font-size: 20px;
-}
-
-.row {
-    display: flex;
-}
-
-.inventory {
-    flex: 1 0 180px;
-    border-left-width: 0;
-    border-bottom-width: 0;
+    font-size: 18px;
 }
 
 .image {
-    flex: 0 1 760px;
     border-bottom-width: 0;
     padding: 0;
-    min-width: 620px;
+    width: 760px;
     height: 300px;
     overflow: hidden;
 }
@@ -60,7 +49,6 @@ body {
 .action-ask {
     min-height: 110px;
     border-top-width: 0;
-    border-bottom-width: 0;
     color: #f0e386;
 }
 
@@ -68,6 +56,7 @@ body {
     padding: 5px 30px;
     position: relative;
     margin-top: auto;
+    border-top-width: 0;
 }
 
 .input-wrapper label {

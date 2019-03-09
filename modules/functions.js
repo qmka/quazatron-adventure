@@ -1,5 +1,5 @@
 import {
-    state, inventory
+    state
 } from './gamedata.js';
 
 // Функции для манипуляций с игровыми данными
