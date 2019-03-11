@@ -942,7 +942,7 @@ const encounters = {
         if (objectIds.includes(7) && inventory.isItemInInventory(7)) {
             if (!getFlag("isLampEmpty")) {
                 setFlag("isLampEmpty");
-                if (getCurrentLocation() === 23 && getFlag("isWormKilled")) {
+                if (getCurrentLocation() === 23 && !getFlag("isWormKilled")) {
                     setFlag("isWormKilled");
                     return "Я включаю лампу, и её яркий свет озаряет шахту. Червь, привыкший к темноте, издаёт кошмарный вопль и уползает в глубины подземелья. Через несколько мгновений лампа тухнет.";
                 } else {
