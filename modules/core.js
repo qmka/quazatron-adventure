@@ -75,12 +75,10 @@ const movePlayer = (direction) => {
     };
 }
 
-const playerStandartActions = {
+const playerStandardActions = {
     takeItem(itemId) {
-        let answer;
-
         // Особые случаи
-        answer = encounters.take(itemId);
+        let answer = encounters.take(itemId);
 
         // Общий случай
         if (!inventory.isItemInInventory(itemId) && getItemPlace(itemId) === getCurrentLocation()) {
@@ -93,10 +91,8 @@ const playerStandartActions = {
     },
 
     dropItem(itemId) {
-        let answer;
-
         // Особые случаи
-        answer = encounters.drop(itemId);
+        let answer = encounters.drop(itemId);
 
         // Общий случай
 
@@ -114,7 +110,7 @@ const playerStandartActions = {
 
         // Особый случай наступает, когда в локации есть соотв. функция
         const result = encounters.examine(objectId);
-        if (result !== "Ничего необычного.") answer = result;
+        if (result !== gameDefaultTexts.defaultDescription) answer = result;
 
         // Общий случай осмотра предмета
 
@@ -181,7 +177,7 @@ const processInput = (userInput) => {
             case 10:
             case 11:
                 // Отдельно обрабатываем глаголы "ВЗЯТЬ" (9), "ПОЛОЖИТЬ" (10), "ОСМОТРЕТЬ" (11)
-                answer = playerStandartActions[vocabulary.verbs[verbId].method](object1Id);
+                answer = playerStandardActions[vocabulary.verbs[verbId].method](object1Id);
                 break;
             default:
                 answer = encounters[vocabulary.verbs[verbId].method](objects);

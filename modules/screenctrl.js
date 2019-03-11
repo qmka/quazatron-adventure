@@ -21,7 +21,6 @@ const constructLocation = () => {
     description += encounters.addDescription();
 
     // Если в локации лежат предметы, то добавляем их список к описанию локации
-    description += "<br>";
     let itemsArray = [];
 
     for (let key in state.itemPlaces) {
@@ -34,8 +33,8 @@ const constructLocation = () => {
         return `<span class="inventory-item">${vocabulary.objects[item].name}</span>`
     }).join(', ').concat('.');
 
-    if (itemsInLoc !== ".") {
-        description += `<br>Здесь также есть: ${itemsInLoc}`;
+    if (itemsArray.length) {
+        description += `<br><br>Здесь также есть: ${itemsInLoc}`;
     }
 
     return description;

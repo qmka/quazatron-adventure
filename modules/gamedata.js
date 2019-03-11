@@ -524,7 +524,7 @@ const encounters = {
         const currentLocation = getCurrentLocation();
         let description = "";
 
-        if (getFlag("isLadderLeanToTree") && currentLocation === 8) description += "<br>К дереву приставлена лестница.";
+        if (currentLocation === 8 && getFlag("isLadderLeanToTree")) description += "<br>К дереву приставлена лестница.";
         if (currentLocation === 11 && getFlag("isDoorOpened")) description += "<br>Дверь открыта.";
         if (currentLocation === 7 && !getFlag("isTrollKilled")) description += "<br>Путь на восток преграждает толстый тролль.";
         if (currentLocation === 17 && !getFlag("isPortcullisOpened")) description += "<br>Решётка опущена - не пройти.";
@@ -1051,7 +1051,9 @@ const gameDefaultTexts = {
 
     startMainText: '<span style="color: lime;">❀⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱СПЯЩАЯ КРАСАВИЦА⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱❀</span><br><br>В этом приключении вам нужно пробраться в заброшенный замок, найти волшебный меч и спасти спящую беспробудным сном красавицу, которую усыпила злая ведьма. Исследуйте мир игры, отдавая компьютеру текстовые команды. Если не знаете, как это делается, введите команду-подсказку <span style="color: yellow;">ИНФО</span>.',
 
-    helpMessage: 'Используйте команды <span style="color: yellow;">С (север), Ю (юг), З (запад), В (восток), Х (вверх), Н (вниз)</span> для передвижения.'
+    helpMessage: 'Используйте команды <span style="color: yellow;">С (север), Ю (юг), З (запад), В (восток), Х (вверх), Н (вниз)</span> для передвижения.',
+
+    defaultDescription: 'Ничего необычного.'
 }
 
 export {

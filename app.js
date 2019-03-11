@@ -76,9 +76,7 @@ const launchGame = () => {
             }
 
             if (code === "Enter" || code === ENTER_KEY_CODE) {
-                {
                     handleEnter();
-                }
             }
         });
     };
