@@ -8,7 +8,7 @@ import {
 } from './functions.js'
 
 import {
-    inventory
+    Inventory as inventory
 } from './inventory.js'
 
 const initialItemPlaces = {
@@ -523,7 +523,8 @@ const encounters = {
     addDescription() {
         const currentLocation = getCurrentLocation();
         let description = "";
-        if (getFlag("isLadderLeanToTree") && getCurrentLocation() === 8) description += "<br>К дереву приставлена лестница.";
+
+        if (getFlag("isLadderLeanToTree") && currentLocation === 8) description += "<br>К дереву приставлена лестница.";
         if (currentLocation === 11 && getFlag("isDoorOpened")) description += "<br>Дверь открыта.";
         if (currentLocation === 7 && !getFlag("isTrollKilled")) description += "<br>Путь на восток преграждает толстый тролль.";
         if (currentLocation === 17 && !getFlag("isPortcullisOpened")) description += "<br>Решётка опущена - не пройти.";
@@ -533,12 +534,14 @@ const encounters = {
         if (currentLocation === 23 && !getFlag("isWormKilled")) description += "<br>Вход в южный тоннель преграждает огромный скальный червь.";
         if (currentLocation === 20 && !getFlag("isMonsterKilled")) description += "<br>Северный проход охраняет страшный ледяной монстр.";
         if (currentLocation === 27 && !getFlag("isWitchKilled")) description += "<br>В противоположном конце комнаты вы видите ведьму. Её заклятье летит прямо в вашу сторону, нужно быстро что-то делать!";
+
         return description;
     },
 
     // Проверяем, мешает ли игроку что-либо двигаться в выбранном им направлении
     checkPlayerObstacles(direction) {
         const currentLocation = getCurrentLocation();
+
         if (currentLocation === 7 && !getFlag("isTrollKilled") && direction === 1) {
             return "Тролль рычит и не даёт мне пройти.";
         }
@@ -560,11 +563,15 @@ const encounters = {
         if (currentLocation === 23 && !getFlag("isWormKilled") && direction === 2) {
             return "Скальный червь мешает мне пройти.";
         }
+
         return "";
     },
 
+    // Функция проверяет, действует ли в локации какое-либо условие, не укладывающееся в общую логику игры.
     getUniqueEncounter(verbId, objectIds) {
         let answer, flag = false;
+
+        // В локации с ведьмой у игрока только один ход, чтобы отразить заклятье, иначе его выбрасывает в предыдущую комнату
         if (getCurrentLocation() === 27 && !getFlag("isWitchKilled")) {
             flag = true;
             if (verbId === 29 && objectIds.includes(25)) {
@@ -581,6 +588,7 @@ const encounters = {
                 answer = "Я не успеваю ничего сделать. Заклятье ударяет мне в грудь и выкидывает из этой комнаты в комнату с решёткой.";
             }
         }
+
         return {
             answer,
             flag
@@ -588,25 +596,32 @@ const encounters = {
     },
 
     take(itemId) {
+        // Если предмет - лестница, и она прислонена к дереву, то можно её забрать в инвентарь
         if (itemId === 0 && getFlag("isLadderLeanToTree")) {
             setFlag("isLadderLeanToTree");
             inventory.addItem(0);
             return "Я забрал лестницу.";
         }
+
         return "Я не могу это взять.";
     },
 
     drop(itemId) {
-        return "У меня нет этого.";
+        if ((itemId === 11 || itemId === 12) && inventory.isItemInInventory(itemId) && (getCurrentLocation() === 6 || getCurrentLocation() === 12)) {
+            inventory.removeItem(itemId);
+            return "Я бросил монетку на землю, и она укатилась в пропасть.";
+        }
 
+        return "У меня нет этого.";
     },
 
     examine(objectId) {
         const currentLocation = getCurrentLocation();
+
         if (currentLocation === 8 && objectId === 18) {
             return "Это невысокое, но широкое в обхвате дерево, превратившееся в камень под действием неизвестного колдовства. Ствол дерева гол словно столб, а на вершине в два моих роста ветви хитро переплетаются, образуя что-то вроде гнезда.";
         }
-        if (currentLocation === 8 && objectId === 0 && getFlag("isLadderLeanToTree") === true) {
+        if (currentLocation === 8 && objectId === 0 && getFlag("isLadderLeanToTree")) {
             return "Лестница приставлена к дереву. Я могу залезть наверх.";
         }
         if ((currentLocation === 6 || currentLocation === 12) && objectId === 13) {
@@ -657,6 +672,7 @@ const encounters = {
             }
             return answer;
         }
+
         return "Ничего необычного.";
     },
 
@@ -680,6 +696,7 @@ const encounters = {
             inventory.removeItem(7);
             return "Я бросаю лампу, и она разбивается на осколки. И зачем нужно было это делать?";
         }
+
         return "Не сработает. А если вы хотите положить предмет на землю, то лучше введите команду ПОЛОЖИ.";
 
     },
@@ -697,6 +714,7 @@ const encounters = {
         if (objectIds.includes(26) && getCurrentLocation() === 28) {
             return "Чтобы с ней пообщаться, нужно её разбудить.";
         }
+
         return "Здесь не с кем говорить.";
     },
 
@@ -712,6 +730,7 @@ const encounters = {
                 return "У меня нет денег."
             }
         }
+
         return "Я не могу это купить";
     },
 
@@ -730,6 +749,7 @@ const encounters = {
         if (getCurrentLocation() === 7 && !getFlag("isTrollKilled")) {
             return "Тролль злобно рычит на меня.";
         }
+
         return "Похоже, здесь никому не нужны деньги.";
     },
 
@@ -769,6 +789,7 @@ const encounters = {
         if (inventory.isItemInInventory(5) && objectIds.includes(5)) {
             return "Ничего не произошло. Подсказка: если хотите что-то порубить топором, то лучше скажите мне РУБИ или РАЗРУБИ... или ПОРУБИ, ну, в общем, вы поняли."
         }
+
         return "Ничего не произошло.";
     },
 
@@ -791,7 +812,7 @@ const encounters = {
             return "Вы когда-нибудь пробовали рубить топором кусты? Попробуйте на досуге. Здесь пригодился бы секатор, ну, или штыковая лопата, но уж точно не топор";
         }
         if (inventory.isItemInInventory(3) && objectIds.includes(3)) {
-            inventory.removeItem(5);
+            inventory.removeItem(3);
             return "В ярости я накинулся на шест и порубил его в труху.";
         }
         if (getItemPlace(3) === getCurrentLocation() && objectIds.includes(3)) {
@@ -809,6 +830,11 @@ const encounters = {
         if (getCurrentLocation() === 5 && objectIds.includes(21)) {
             return "Вам не кажется, что эта ситуация со старушкой и топором - немного из другого произведения?";
         }
+        if ((getCurrentLocation() === 6 || getCurrentLocation() === 12) && objectIds.includes(13)) {
+            inventory.removeItem(5);
+            return "Я нагнулся, чтобы перерубить верёвку, но моя рука дрогнула, и топор улетел в пропасть...";
+        }
+
         return "Это делу не поможет."
     },
 
@@ -827,6 +853,7 @@ const encounters = {
         if (getCurrentLocation() === 18 && objectIds.includes(20) && !getFlag("isTrapdoorOpened")) {
             return "Я не представляю, как его открыть. Здесь нет никакой ручки, не за что зацепиться.";
         }
+
         return "Тут нечего открывать.";
     },
 
@@ -836,6 +863,7 @@ const encounters = {
             inventory.removeItem(0);
             return "Я прислонил лестницу к дереву.";
         }
+
         return "Хм, это делу не поможет.";
     },
 
@@ -856,6 +884,7 @@ const encounters = {
         if (!inventory.isItemInInventory(objectIds[0]) && !inventory.isItemInInventory(objectIds[1])) {
             return "Нужно сначала взять это в руки.";
         }
+
         return "Я не могу это сломать";
     },
 
@@ -874,6 +903,7 @@ const encounters = {
             }
             return answer;
         }
+
         return "Решительно не понимаю, что вы хотите сделать.";
     },
 
@@ -886,11 +916,12 @@ const encounters = {
                 return "Я не могу залезть на дерево, его ствол гладкий, не за что зацепиться.";
             }
         }
+
         return "Я не могу туда залезть";
     },
 
     go() {
-        return 'Используйте команды <span style="color: yellow;">С  Ю  З  В  ВВЕРХ  ВНИЗ</span> для передвижения.';
+        return gameDefaultTexts.helpMessage;
     },
 
     eat(objectIds) {
@@ -903,6 +934,7 @@ const encounters = {
                 return "У меня нет рыбы.";
             }
         }
+
         return "Я не буду это есть.";
     },
 
@@ -923,6 +955,7 @@ const encounters = {
         if (objectIds.includes(24) && getCurrentLocation() === 25) {
             return "Может, лучше нажать на рычаг?";
         }
+
         return "У меня нет ничего такого, что можно было бы включить."
     },
 
@@ -936,6 +969,7 @@ const encounters = {
                 return "Я высыпал всю соль. Непонятно, правда, зачем было так делать - вдруг она бы мне пригодилась?";
             }
         }
+
         return "Решительно не понимаю, что мне тут рассыпать?";
     },
 
@@ -982,6 +1016,7 @@ const encounters = {
                 return "Я давлю на рычаг, но он не двигается с места. Слишком тут всё проржавело.";
             }
         }
+
         return "Здесь нечего нажимать."
     },
 
@@ -998,6 +1033,7 @@ const encounters = {
         if (objectIds.includes(21) && getCurrentLocation() === 5) {
             return "А вы, батенька, шалун!";
         }
+
         return "Я не буду это целовать.";
     },
 
@@ -1005,6 +1041,7 @@ const encounters = {
         if (objectIds.includes(26) && getCurrentLocation() === 28) {
             return "Я бы рад разбудить её, но как? Есть конкретные предложения?";
         }
+
         return "Я не совсем понимаю, кого вы тут хотите разбудить.";
     }
 }
@@ -1012,7 +1049,9 @@ const encounters = {
 const gameDefaultTexts = {
     info: 'Я понимаю команды в формате ГЛАГОЛ + ОБЪЕКТ (+ ОБЪЕКТ), например, <span style="color: yellow;">ВОЗЬМИ ЛЕСТНИЦУ</span> или <span style="color: yellow;">НАБЕРИ ВОДЫ В КУВШИН.</span> Язык игры - русский, регистр букв не имеет значения.<br>Используйте команды <span style="color: yellow;">С (север), Ю (юг), З (запад), В (восток), Х (вверх), Н (вниз)</span> для передвижения. <span style="color: yellow;">ОСМОТРИ</span> помогает получить больше информации об игровых объектах. <span style="color: yellow;">И</span> - ваш инвентарь. <span style="color: yellow;">ВЫХОД</span> позволяет вернуться на стартовый экран. Остальные команды вам предстоит открыть самостоятельно. Удачной игры!',
 
-    startMainText: '<span style="color: lime;">❀⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱СПЯЩАЯ КРАСАВИЦА⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱❀</span><br><br>В этом приключении вам нужно пробраться в заброшенный замок, найти волшебный меч и спасти спящую беспробудным сном красавицу, которую усыпила злая ведьма.<br>Исследуйте мир игры, отдавая компьютеру текстовые команды. Если не знаете, как это делается, введите команду-подсказку <span style="color: yellow;">ИНФО</span>.'
+    startMainText: '<span style="color: lime;">❀⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱СПЯЩАЯ КРАСАВИЦА⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱❀</span><br><br>В этом приключении вам нужно пробраться в заброшенный замок, найти волшебный меч и спасти спящую беспробудным сном красавицу, которую усыпила злая ведьма. Исследуйте мир игры, отдавая компьютеру текстовые команды. Если не знаете, как это делается, введите команду-подсказку <span style="color: yellow;">ИНФО</span>.',
+
+    helpMessage: 'Используйте команды <span style="color: yellow;">С (север), Ю (юг), З (запад), В (восток), Х (вверх), Н (вниз)</span> для передвижения.'
 }
 
 export {

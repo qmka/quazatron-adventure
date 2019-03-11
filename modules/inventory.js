@@ -2,7 +2,7 @@ import {
     vocabulary
 } from './gamedata.js';
 
-const inventory = {
+const Inventory = {
     _inventory: [],
 
     addItem(itemId) {
@@ -34,5 +34,5 @@ const inventory = {
 }
 
 export {
-    inventory
+    Inventory
 } 

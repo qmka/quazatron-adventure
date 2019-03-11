@@ -30,7 +30,7 @@ const getFlag = (flag) => {
 
 // Переключает игровой флаг
 const setFlag = (flag) => {
-    state.flags[flag] = state.flags[flag] === true ? false : true;
+    state.flags[flag] = !state.flags[flag];
 }
 
 export {

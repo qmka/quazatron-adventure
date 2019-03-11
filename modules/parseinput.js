@@ -8,8 +8,10 @@ import {
 // Ищем id слова word в словаре type
 const findWordId = (type, word) => {
     let key = `${type}s`;
+
     if (!type in vocabulary || !key in vocabulary) return -1;
     const result = vocabulary[key].find((item) => item.forms.includes(word));
+
     return result !== undefined ? result.id : -1;
 }
 
@@ -17,25 +19,28 @@ const findWordId = (type, word) => {
 // Возвращаем массив этих id или -1, если не нашли ничего
 const findObjectId = (word) => {
     let arrayOfWordsIds = [];
+
     vocabulary.objects.forEach(e => {
         if (e.forms.includes(word)) {
             arrayOfWordsIds.push(e.id);
         }
     })
+
     return arrayOfWordsIds.length !== 0 ? arrayOfWordsIds : -1;
 }
 
 // Возвращаем свойство adjective объекта с соответствующим id
 const findAdjectiveProperty = (id) => {
     const object = vocabulary.objects[id];
+
     if (object === undefined) return -1;
+
     return object.adjective;
 }
 
 // Основная функция парсера. На входе - строка, введённая игроком.
-// На выходе 
+// На выходе объект, содержащий id глагола и двух существительных, которые ввёл игрок, и сервисное сообщение
 const parseInput = (input) => {
-    
     let isFirstItem = true;
     let verb = -1,
         object1 = -1,

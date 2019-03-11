@@ -6,7 +6,7 @@ import {
 } from './gamedata.js';
 
 import {
-    inventory
+    Inventory as inventory
 } from './inventory.js'
 
 import {
@@ -20,6 +20,7 @@ import {
 // Возвращаем описание предмета по его id
 const getItemDescriptionById = (id) => {
     const item = vocabulary.objects.find((e) => e.id === id);
+
     return item.desc;
 }
 
@@ -53,10 +54,10 @@ const canPlayerMove = (direction, newLocation) => {
 
 // Перемещение игрока из одной локации в другую
 const movePlayer = (direction) => {
-    let newLocation = -1;
-    let canChangeLocation = false;
     const gameDirections = locations[getCurrentLocation()].dir;
     const indexOfTransitionLocation = gameDirections[direction];
+    let newLocation = -1;
+    let canChangeLocation = false;
 
     // Проверяем, можно ли туда пройти
     const canMove = canPlayerMove(direction, indexOfTransitionLocation);
@@ -66,6 +67,7 @@ const movePlayer = (direction) => {
         newLocation = indexOfTransitionLocation;
         canChangeLocation = true;
     }
+
     return {
         answer: canMove.answer,
         newLocation,
@@ -128,13 +130,13 @@ const processInput = (userInput) => {
     // Разбираем полученный из парсера объект на object1Id, object2Id, verbId
     const object1Id = userInput.object1;
     const object2Id = userInput.object2;
-    const verbId = userInput.verb;
-    let answer = userInput.message;
     const objects = [object1Id, object2Id];
+    const verbId = userInput.verb;
+    const uniqueEncounter = encounters.getUniqueEncounter(verbId, objects);
+    let answer = userInput.message;
     let gameFlag = "game";
 
     // Обрабатываем особые игровые ситуации. Так, в комнате с ведьмой игрок может только отразить заклятье, и если не делает этого, то его выкидывает в предыдущую комнату
-    const uniqueEncounter = encounters.getUniqueEncounter(verbId, objects);
     if (uniqueEncounter.flag) {
         return {
             answer: uniqueEncounter.answer,

@@ -13,55 +13,53 @@ import {
 import processInput from './modules/core.js';
 import parseInput from './modules/parseinput.js';
 
-const game = () => {
-
+const launchGame = () => {
     let gameState;
 
-    const resetGameState = () => {
-        state.resetGameState();
-    }
-
     // Реакция программы на ввод игрока
-    const gameLoop = () => {
+    const handleEnter = () => {
         // Реакция на нажатие клавиши ENTER игроком в зависимости от того, на каком экране он находится
+        switch (gameState) {
+            case "start":
+                // Если он был на стартовом экране, то надо запустить игру
+                state.resetGameState();
+                gameState = "game";
+                renderScreen("Ваше приключение начинается. Что будете делать?");
+                break;
+            case "game":
+                // Если он был внутри игры
+                const inputField = document.getElementById("input-field");
 
-        if (gameState === "start") {
+                // 1. Получаем введённую игроком команду и очищаем поле ввода
+                const inputText = inputField.value;
+                inputField.value = "";
 
-            // Если он был на стартовом экране, то надо запустить игру
-            resetGameState();
-            gameState = "game";
-            renderScreen("Ваше приключение начинается. Что будете делать?");
-        } else if (gameState === "game") {
+                // 2. Отправляем команду в словоанализатор
+                const words = parseInput(inputText);
 
-            // Если он был внутри игры
-            const inputField = document.getElementById("input-field");
+                // 3. Выполняем действие игрока 
+                const output = processInput(words);
 
-            // 1. Получаем введённую игроком команду и очищаем поле ввода
-            const inputText = inputField.value;
-            inputField.value = "";
-
-            // 2. Отправляем команду в словоанализатор
-            const words = parseInput(inputText);
-            
-            // 3. Выполняем действие игрока 
-            const output = processInput(words);
-
-            // 4. Отрисовываем экран
-            switch (output.gameFlag) {
-                case "game":
-                    renderScreen(output.answer);
-                    break;
-                case "victory":
-                    renderVictoryScreen();
-                    gameState = "readyToStart";
-                case "gameover":
-                    renderGameOverScreen();
-                    gameState = "readyToStart";
-            }
-        } else if (gameState === "readyToStart") {
-            // Если он был на экране победы или смерти
-            gameState = "start";
-            renderStartScreen();
+                // 4. Отрисовываем экран
+                switch (output.gameFlag) {
+                    case "game":
+                        renderScreen(output.answer);
+                        break;
+                    case "victory":
+                        renderVictoryScreen();
+                        gameState = "readyToStart";
+                        break;
+                    case "gameover":
+                        renderGameOverScreen();
+                        gameState = "readyToStart";
+                        break;
+                }
+                break;
+            case "readyToStart":
+                // Если он был на экране победы или смерти
+                gameState = "start";
+                renderStartScreen();
+                break;
         }
     };
 
@@ -79,7 +77,7 @@ const game = () => {
 
             if (code === "Enter" || code === ENTER_KEY_CODE) {
                 {
-                    gameLoop();
+                    handleEnter();
                 }
             }
         });
@@ -90,8 +88,8 @@ const game = () => {
     // выводим стартовый экран
     gameState = "start";
     renderStartScreen();
-    resetGameState();
+    state.resetGameState();
     setupEventListeners();
 }
 
-game();
+launchGame();

@@ -2,10 +2,6 @@ import {
     locations, vocabulary, encounters, state, gameDefaultTexts
 } from './gamedata.js';
 
-import {
-    inventory
-} from './inventory.js'
-
 import{
     getFlag
 } from './functions.js'
@@ -25,7 +21,6 @@ const constructLocation = () => {
     description += encounters.addDescription();
 
     // Если в локации лежат предметы, то добавляем их список к описанию локации
-
     description += "<br>";
     let itemsArray = [];
 
@@ -42,74 +37,57 @@ const constructLocation = () => {
     if (itemsInLoc !== ".") {
         description += `<br>Здесь также есть: ${itemsInLoc}`;
     }
+
     return description;
-}
-
-// Возвращает текст, который выводится разделе инвентаря
-const constructInventory = () => {
-    let inventoryText = "Инвентарь:<br><br>";
-    let itemsInInventory = "";
-
-    inventory.getAllItems().forEach((item) => {
-        itemsInInventory += `${vocabulary.objects[item].name}<br>`;
-    })
-
-
-    if (itemsInInventory) {
-        inventoryText += itemsInInventory;
-    } else {
-        inventoryText += "пусто";
-    }
-
-    return inventoryText;
 }
 
 // Формирует экран, который выдаётся пользователю после совершённого им действия
 const renderScreen = (actionText) => {
     document.getElementById("screen").innerHTML = constructLocation();
-    // document.getElementById("right-sidebar").innerHTML = constructInventory();
     document.getElementById("image").innerHTML = `<img src="img/${locations[state.currentLocation].img}">`
     document.getElementById("action").innerHTML = actionText;
     document.getElementById("input-area").style.opacity = 100;
 };
 
 // Формирует статический экран, например, стартовый экран, экран победы в игре, экран game over и т.д.
-const renderStaticScreen = (text, sidebar, action, image) => {
+const renderStaticScreen = (text, action, image) => {
     document.getElementById("screen").innerHTML = text;
-    // document.getElementById("right-sidebar").innerHTML = sidebar;
     document.getElementById("image").innerHTML = image;
     document.getElementById("action").innerHTML = action;
     document.getElementById("input-area").style.opacity = 0;
 }
 
+// Формирует стартовый экран
 const renderStartScreen = () => {
     const text = gameDefaultTexts.startMainText;
-    // const sidebar = 'Это текст в сайдбаре';
     const action = 'Нажмите ENTER для начала игры';
     const image = '<img src="img/startscreen.png">';
-    renderStaticScreen(text, sidebar, action, image);
+
+    renderStaticScreen(text, action, image);
 }
 
+// Формирует экран, выводящийся при победе в игре
 const renderVictoryScreen = () => {
     const text = 'Этот текст выводится, когда игрок побеждает';
-    // const sidebar = 'Это текст в сайдбаре';
     const action = 'Нажмите ENTER, если хотите начать сначала.';
     const image = 'Здесь будет игровая картинка';
-    renderStaticScreen(text, sidebar, action, image);
+
+    renderStaticScreen(text, action, image);
 }
 
+// Формирует экран, выводящийся при выходе из игры или при поражении
 const renderGameOverScreen = () => {
+    const action = 'Нажмите ENTER, если хотите начать сначала.';
+    const image = 'Здесь будет игровая картинка';
     let text;
+
     if (getFlag("isDiedFromFish")) {
         text = 'Я почувствовал острую боль в животе и умер. Глупо, конечно, заканчивать это приключение, отравившись протухшей рыбой.'
     } else {
         text = 'Ваша игра закончилась.';
     }
 
-    // const sidebar = 'Это текст в сайдбаре';
-    const action = 'Нажмите ENTER, если хотите начать сначала.';
-    const image = 'Здесь будет игровая картинка';
-    renderStaticScreen(text, sidebar, action, image);
+    renderStaticScreen(text, action, image);
 }
 
 export {
