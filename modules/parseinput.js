@@ -1,5 +1,5 @@
 import {
-    vocabulary
+    vocabulary, gameDefaultTexts
 } from './gamedata.js';
 import {
     WORD_TYPES
@@ -45,7 +45,7 @@ const parseInput = (input) => {
     let verb = -1,
         object1 = -1,
         object2 = -1,
-        message = "Ок";
+        message = gameDefaultTexts.okMessage;
 
     // Если игрок не ввёл ничего и нажал Enter
     if (!input.length) {
@@ -53,7 +53,7 @@ const parseInput = (input) => {
             verb,
             object1,
             object2,
-            message: "Что мне делать?"
+            message: gameDefaultTexts.defaultQuestion
         }
     }
     
@@ -68,7 +68,7 @@ const parseInput = (input) => {
             verb,
             object1,
             object2,
-            message: "Я не понимаю."
+            message: gameDefaultTexts.defaultAnswer
         }
     }
 
@@ -117,7 +117,7 @@ const parseInput = (input) => {
                                 verb,
                                 object1,
                                 object2,
-                                message: "Пожалуйста, уточните прилагательное для этого объекта."
+                                message: gameDefaultTexts.specifyAdjective
                             }
                         }
 
@@ -134,7 +134,7 @@ const parseInput = (input) => {
                         verb,
                         object1,
                         object2,
-                        message: "Уточните, какой конкретно из объектов вы имеете в виду?"
+                        message: gameDefaultTexts.specifyObject
                     }
                 }
             }
@@ -148,8 +148,6 @@ const parseInput = (input) => {
             }
         }
     }
-
-    console.log(`verb = ${verb}; obj1 = ${object1}; obj2 = ${object2}; message = ${message}`);
 
     return {
         verb,
