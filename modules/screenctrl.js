@@ -1,10 +1,14 @@
 import {
-    locations, vocabulary, encounters, state, gameDefaultTexts
+    locations, vocabulary, encounters, gameDefaultTexts, gameDefaultImages
 } from './gamedata.js';
 
-import{
-    getFlag
-} from './functions.js'
+import {
+    Location as location
+} from './location.js'
+
+import {
+    ItemPlaces as itemPlaces
+} from './itemplaces.js'
 
 // Возвращает текст, который выводится как описание локации
 const constructLocation = () => {
@@ -12,7 +16,7 @@ const constructLocation = () => {
 
     // Берём из объекта с локациями описание текущей локации
     locations.forEach((e) => {
-        if (e.id === state.currentLocation) {
+        if (e.id === location.get()) {
             description += e.desc;
         }
     })
@@ -21,10 +25,11 @@ const constructLocation = () => {
     description += encounters.addDescription();
 
     // Если в локации лежат предметы, то добавляем их список к описанию локации
+    const allItemPlaces = itemPlaces.getAll();
     let itemsArray = [];
 
-    for (let key in state.itemPlaces) {
-        if (state.itemPlaces[key] === state.currentLocation) {
+    for (let key in allItemPlaces) {
+        if (allItemPlaces[key] === location.get()) {
             itemsArray.push(key);
         };
     }
@@ -34,64 +39,49 @@ const constructLocation = () => {
     }).join(', ').concat('.');
 
     if (itemsArray.length) {
-        description += `<br><br>Здесь также есть: ${itemsInLoc}`;
+        description += `<br><br>${gameDefaultTexts.itemsInLocation} ${itemsInLoc}`;
     }
 
     return description;
 }
 
-// Формирует экран, который выдаётся пользователю после совершённого им действия
-const renderScreen = (actionText) => {
-    document.getElementById("screen").innerHTML = constructLocation();
-    document.getElementById("image").innerHTML = `<img src="img/${locations[state.currentLocation].img}">`
+const renderScreen = (mainText, image, actionText, isInputAreaVisible) => {
+    document.getElementById("screen").innerHTML = mainText;
+    document.getElementById("image").innerHTML = image;
     document.getElementById("action").innerHTML = actionText;
-    document.getElementById("input-area").style.opacity = 100;
+    document.getElementById("input-area").style.opacity = isInputAreaVisible ? 100 : 0;
+}
+
+// Формирует экран, который выдаётся пользователю после совершённого им действия
+const renderGameScreen = (actionText) => {
+    const imageTag = `<img src="img/${locations[location.get()].img}">`;
+    renderScreen(constructLocation(), imageTag, actionText, true)
 };
 
 // Формирует статический экран, например, стартовый экран, экран победы в игре, экран game over и т.д.
-const renderStaticScreen = (text, action, image) => {
-    document.getElementById("screen").innerHTML = text;
-    document.getElementById("image").innerHTML = image;
-    document.getElementById("action").innerHTML = action;
-    document.getElementById("input-area").style.opacity = 0;
-}
-
-// Формирует стартовый экран
-const renderStartScreen = () => {
-    const text = gameDefaultTexts.startMainText;
-    const action = 'Нажмите ENTER для начала игры';
-    const image = '<img src="img/startscreen.png">';
-
-    renderStaticScreen(text, action, image);
-}
-
-// Формирует экран, выводящийся при победе в игре
-const renderVictoryScreen = () => {
-    const text = 'Этот текст выводится, когда игрок побеждает';
-    const action = 'Нажмите ENTER, если хотите начать сначала.';
-    const image = 'Здесь будет игровая картинка';
-
-    renderStaticScreen(text, action, image);
-}
-
-// Формирует экран, выводящийся при выходе из игры или при поражении
-const renderGameOverScreen = () => {
-    const action = 'Нажмите ENTER, если хотите начать сначала.';
-    const image = 'Здесь будет игровая картинка';
-    let text;
-
-    if (getFlag("isDiedFromFish")) {
-        text = 'Я почувствовал острую боль в животе и умер. Глупо, конечно, заканчивать это приключение, отравившись протухшей рыбой.'
-    } else {
-        text = 'Ваша игра закончилась.';
+const renderNonGameScreen = (type) => {
+    let text, image, action;
+    switch(type) {
+        case "start":
+            text = gameDefaultTexts.startMainText;
+            action = gameDefaultTexts.pressEnterToStart;
+            image = gameDefaultImages.startImage;
+            break;
+        case "gameover":
+            text = encounters.getGameOverText();
+            action = gameDefaultTexts.pressEnterToStartAgain;
+            image = gameDefaultImages.gameOverImage;
+            break;
+        case "victory":
+            text = gameDefaultTexts.victoryText;
+            action = gameDefaultTexts.pressEnterToStartAgain;
+            image = gameDefaultImages.victoryImage;
+            break;
     }
-
-    renderStaticScreen(text, action, image);
+    renderScreen(text, image, action, false);
 }
 
 export {
-    renderScreen,
-    renderStartScreen,
-    renderVictoryScreen,
-    renderGameOverScreen
+    renderGameScreen,
+    renderNonGameScreen
 };

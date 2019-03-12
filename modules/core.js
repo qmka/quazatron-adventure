@@ -10,12 +10,16 @@ import {
 } from './inventory.js'
 
 import {
-    getCurrentLocation,
-    setCurrentLocation,
-    getItemPlace,
-    setItemPlace,
-    getFlag
-} from './functions.js';
+    Location as location
+} from './location.js'
+
+import {
+    Flags as flags
+} from './flags.js'
+
+import {
+    ItemPlaces as itemPlaces
+} from './itemplaces.js'
 
 // Возвращаем описание предмета по его id
 const getItemDescriptionById = (id) => {
@@ -27,13 +31,13 @@ const getItemDescriptionById = (id) => {
 // Проверяем, может ли игрок пройти в указанном направлении
 const canPlayerMove = (direction, newLocation) => {
     let access = true,
-        answer = "Что будете делать?";
+        answer = gameDefaultTexts.defaultQuestion;
 
     // Проверяем доступность в общем случае
     if (newLocation === -1) {
         return {
             access: false,
-            answer: "Я не могу туда пройти"
+            answer: gameDefaultTexts.playerCantGo
         }
     }
 
@@ -54,7 +58,7 @@ const canPlayerMove = (direction, newLocation) => {
 
 // Перемещение игрока из одной локации в другую
 const movePlayer = (direction) => {
-    const gameDirections = locations[getCurrentLocation()].dir;
+    const gameDirections = locations[location.get()].dir;
     const indexOfTransitionLocation = gameDirections[direction];
     let newLocation = -1;
     let canChangeLocation = false;
@@ -81,10 +85,10 @@ const playerStandardActions = {
         let answer = encounters.take(itemId);
 
         // Общий случай
-        if (!inventory.isItemInInventory(itemId) && getItemPlace(itemId) === getCurrentLocation()) {
+        if (!inventory.isItemInInventory(itemId) && itemPlaces.get(itemId) === location.get()) {
             inventory.addItem(itemId);
-            setItemPlace(itemId, -1);
-            answer = "Ок, взял.";
+            itemPlaces.set(itemId, -1);
+            answer = gameDefaultTexts.defaultAnswerToTake;
         }
 
         return answer;
@@ -98,8 +102,8 @@ const playerStandardActions = {
 
         if (inventory.isItemInInventory(itemId)) {
             inventory.removeItem(itemId);
-            setItemPlace(itemId, getCurrentLocation());
-            answer = "Ок, положил.";
+            itemPlaces.set(itemId, location.get());
+            answer = gameDefaultTexts.defaultAnswerToDrop;
         }
 
         return answer;
@@ -114,7 +118,7 @@ const playerStandardActions = {
 
         // Общий случай осмотра предмета
 
-        else if (getItemPlace(objectId) === getCurrentLocation()) answer = "Чтобы внимательно осмотреть предмет, нужно взять его в руки.";
+        else if (itemPlaces.get(objectId) === location.get()) answer = gameDefaultTexts.itemNotInInventory;
         else if (inventory.isItemInInventory(objectId)) answer = getItemDescriptionById(objectId);
         else answer = result;
 
@@ -140,12 +144,12 @@ const processInput = (userInput) => {
         };
     } else {
         // Выдаём игроку сообщение об ошибке, если парсер выдал сообщение об ошибке
-        if (answer !== "Ок") return {
+        if (answer !== gameDefaultTexts.okMessage) return {
             answer,
             gameFlag
         };
         // Дефолтное значение answer на случай, если программа не понимает введённый игроком глагол
-        answer = "Я не понимаю";
+        answer = gameDefaultTexts.defaultAnswer;
         // Обрабатываем команду игрока (по глаголу)
         // Если это глагол перемещения
         switch (verbId) {
@@ -157,7 +161,7 @@ const processInput = (userInput) => {
             case 5:
                 const resultOfMove = movePlayer(verbId);
                 if (resultOfMove.canChangeLocation) {
-                    setCurrentLocation(resultOfMove.newLocation);
+                    location.set(resultOfMove.newLocation);
                 }
                 answer = resultOfMove.answer;
                 break;
@@ -183,12 +187,12 @@ const processInput = (userInput) => {
                 answer = encounters[vocabulary.verbs[verbId].method](objects);
                 break            
         }
-
+        console.log(flags.get("isGameOver"));
         // Проверяем, победил или проиграл ли игрок?
-        if (getFlag("isVictory")) {
+        if (flags.get("isVictory")) {
             gameFlag = "victory";
         }
-        if (getFlag("isGameOver")) {
+        if (flags.get("isGameOver")) {
             gameFlag = "gameover";
         }
         // Возвращаем реакцию программы на действие игрока

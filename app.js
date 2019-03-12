@@ -2,13 +2,11 @@ import {
     ENTER_KEY_CODE
 } from './modules/constants.js';
 import {
-    state
+    resetGameState, gameDefaultTexts
 } from './modules/gamedata.js';
 import {
-    renderScreen,
-    renderStartScreen,
-    renderVictoryScreen,
-    renderGameOverScreen
+    renderGameScreen,
+    renderNonGameScreen
 } from './modules/screenctrl.js';
 import processInput from './modules/core.js';
 import parseInput from './modules/parseinput.js';
@@ -22,9 +20,9 @@ const launchGame = () => {
         switch (gameState) {
             case "start":
                 // Если он был на стартовом экране, то надо запустить игру
-                state.resetGameState();
+                resetGameState();
                 gameState = "game";
-                renderScreen("Ваше приключение начинается. Что будете делать?");
+                renderGameScreen(gameDefaultTexts.firstGameMessage);
                 break;
             case "game":
                 // Если он был внутри игры
@@ -43,14 +41,10 @@ const launchGame = () => {
                 // 4. Отрисовываем экран
                 switch (output.gameFlag) {
                     case "game":
-                        renderScreen(output.answer);
+                        renderGameScreen(output.answer);
                         break;
-                    case "victory":
-                        renderVictoryScreen();
-                        gameState = "readyToStart";
-                        break;
-                    case "gameover":
-                        renderGameOverScreen();
+                    default:
+                        renderNonGameScreen(output.gameFlag);
                         gameState = "readyToStart";
                         break;
                 }
@@ -58,7 +52,7 @@ const launchGame = () => {
             case "readyToStart":
                 // Если он был на экране победы или смерти
                 gameState = "start";
-                renderStartScreen();
+                renderNonGameScreen(gameState);
                 break;
         }
     };
@@ -85,8 +79,8 @@ const launchGame = () => {
 
     // выводим стартовый экран
     gameState = "start";
-    renderStartScreen();
-    state.resetGameState();
+    renderNonGameScreen(gameState);
+    resetGameState();
     setupEventListeners();
 }
 
