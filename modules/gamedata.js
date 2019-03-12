@@ -268,14 +268,14 @@ const vocabulary = {
         name: "серебряная монета",
         forms: ["монета", "монету", "монете", "монетой"],
         canHold: true,
-        desc: "Это старая серебряная монета.",
+        desc: "Это старая серебряная монета с профилем короля.",
         adjective: 0,
     }, {
         id: 12,
         name: "медная монета",
         forms: ["монета", "монету", "монете", "монетой"],
         canHold: true,
-        desc: "Это старая медная монета.",
+        desc: "Это старая медная монета с профилем короля.",
         adjective: 1,
     }, {
         id: 13,
@@ -573,7 +573,7 @@ const encounters = {
         // В локации с ведьмой у игрока только один ход, чтобы отразить заклятье, иначе его выбрасывает в предыдущую комнату
         if (location.get() === 27 && !flags.get("isWitchKilled")) {
             flag = true;
-            if (verbId === 29 && objectIds.includes(25)) {
+            if (verbId === 30 && objectIds.includes(25)) {
                 if (inventory.isItemInInventory(10)) {
                     flags.set("isWitchKilled");
                     inventory.removeItem(10);
