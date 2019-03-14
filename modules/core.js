@@ -2,24 +2,12 @@ import {
     vocabulary,
     locations,
     encounters,
-    gameDefaultTexts
+    defaultTexts
 } from './gamedata.js';
-
-import {
-    Inventory as inventory
-} from './inventory.js'
-
-import {
-    Location as location
-} from './location.js'
-
-import {
-    Flags as flags
-} from './flags.js'
-
-import {
-    ItemPlaces as itemPlaces
-} from './itemplaces.js'
+import Inventory from './inventory.js'
+import CurrentLocation from './location.js'
+import Flags from './flags.js'
+import ItemPlaces from './itemplaces.js'
 
 // Возвращаем описание предмета по его id
 const getItemDescriptionById = (id) => {
@@ -31,13 +19,13 @@ const getItemDescriptionById = (id) => {
 // Проверяем, может ли игрок пройти в указанном направлении
 const canPlayerMove = (direction, newLocation) => {
     let access = true,
-        answer = gameDefaultTexts.defaultQuestion;
+        answer = defaultTexts.defaultQuestion;
 
     // Проверяем доступность в общем случае
     if (newLocation === -1) {
         return {
             access: false,
-            answer: gameDefaultTexts.playerCantGo
+            answer: defaultTexts.playerCantGo
         }
     }
 
@@ -58,7 +46,7 @@ const canPlayerMove = (direction, newLocation) => {
 
 // Перемещение игрока из одной локации в другую
 const movePlayer = (direction) => {
-    const gameDirections = locations[location.get()].dir;
+    const gameDirections = locations[CurrentLocation.get()].dir;
     const indexOfTransitionLocation = gameDirections[direction];
     let newLocation = -1;
     let canChangeLocation = false;
@@ -85,10 +73,10 @@ const playerStandardActions = {
         let answer = encounters.take(itemId);
 
         // Общий случай
-        if (!inventory.isItemInInventory(itemId) && itemPlaces.get(itemId) === location.get()) {
-            inventory.addItem(itemId);
-            itemPlaces.set(itemId, -1);
-            answer = gameDefaultTexts.defaultAnswerToTake;
+        if (!Inventory.isItemInInventory(itemId) && ItemPlaces.get(itemId) === CurrentLocation.get()) {
+            Inventory.addItem(itemId);
+            ItemPlaces.set(itemId, -1);
+            answer = defaultTexts.defaultAnswerToTake;
         }
 
         return answer;
@@ -100,10 +88,10 @@ const playerStandardActions = {
 
         // Общий случай
 
-        if (inventory.isItemInInventory(itemId)) {
-            inventory.removeItem(itemId);
-            itemPlaces.set(itemId, location.get());
-            answer = gameDefaultTexts.defaultAnswerToDrop;
+        if (Inventory.isItemInInventory(itemId)) {
+            Inventory.removeItem(itemId);
+            ItemPlaces.set(itemId, CurrentLocation.get());
+            answer = defaultTexts.defaultAnswerToDrop;
         }
 
         return answer;
@@ -114,12 +102,12 @@ const playerStandardActions = {
 
         // Особый случай наступает, когда в локации есть соотв. функция
         const result = encounters.examine(objectId);
-        if (result !== gameDefaultTexts.defaultDescription) answer = result;
+        if (result !== defaultTexts.defaultDescription) answer = result;
 
         // Общий случай осмотра предмета
 
-        else if (itemPlaces.get(objectId) === location.get()) answer = gameDefaultTexts.itemNotInInventory;
-        else if (inventory.isItemInInventory(objectId)) answer = getItemDescriptionById(objectId);
+        else if (ItemPlaces.get(objectId) === CurrentLocation.get()) answer = defaultTexts.itemNotInInventory;
+        else if (Inventory.isItemInInventory(objectId)) answer = getItemDescriptionById(objectId);
         else answer = result;
 
         return answer;
@@ -144,12 +132,12 @@ const processInput = (userInput) => {
         };
     } else {
         // Выдаём игроку сообщение об ошибке, если парсер выдал сообщение об ошибке
-        if (answer !== gameDefaultTexts.okMessage) return {
+        if (answer !== defaultTexts.okMessage) return {
             answer,
             gameFlag
         };
         // Дефолтное значение answer на случай, если программа не понимает введённый игроком глагол
-        answer = gameDefaultTexts.defaultAnswer;
+        answer = defaultTexts.defaultAnswer;
         // Обрабатываем команду игрока (по глаголу)
         // Если это глагол перемещения
         switch (verbId) {
@@ -161,13 +149,13 @@ const processInput = (userInput) => {
             case 5:
                 const resultOfMove = movePlayer(verbId);
                 if (resultOfMove.canChangeLocation) {
-                    location.set(resultOfMove.newLocation);
+                    CurrentLocation.set(resultOfMove.newLocation);
                 }
                 answer = resultOfMove.answer;
                 break;
             case 6:
                 // Глагол "ИНФО" (6)
-                answer = gameDefaultTexts.info;
+                answer = defaultTexts.info;
                 break;
             case 7:
                 // Выход из игры
@@ -175,7 +163,7 @@ const processInput = (userInput) => {
                 break;
             case 8:
                 // Инвентарь
-                answer = inventory.getItemsTextList();
+                answer = Inventory.getItemsTextList();
                 break;
             case 9:
             case 10:
@@ -187,12 +175,12 @@ const processInput = (userInput) => {
                 answer = encounters[vocabulary.verbs[verbId].method](objects);
                 break            
         }
-        console.log(flags.get("isGameOver"));
+
         // Проверяем, победил или проиграл ли игрок?
-        if (flags.get("isVictory")) {
+        if (Flags.get("isVictory")) {
             gameFlag = "victory";
         }
-        if (flags.get("isGameOver")) {
+        if (Flags.get("isGameOver")) {
             gameFlag = "gameover";
         }
         // Возвращаем реакцию программы на действие игрока

@@ -18,6 +18,4 @@ const ItemPlaces = {
     }
 }
 
-export {
-    ItemPlaces
-}
+export default ItemPlaces

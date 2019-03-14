@@ -1,5 +1,5 @@
 import {
-    vocabulary, gameDefaultTexts
+    vocabulary, defaultTexts
 } from './gamedata.js';
 import {
     WORD_TYPES
@@ -45,7 +45,7 @@ const parseInput = (input) => {
     let verb = -1,
         object1 = -1,
         object2 = -1,
-        message = gameDefaultTexts.okMessage;
+        message = defaultTexts.okMessage;
 
     // Если игрок не ввёл ничего и нажал Enter
     if (!input.length) {
@@ -53,7 +53,7 @@ const parseInput = (input) => {
             verb,
             object1,
             object2,
-            message: gameDefaultTexts.defaultQuestion
+            message: defaultTexts.defaultQuestion
         }
     }
     
@@ -68,7 +68,7 @@ const parseInput = (input) => {
             verb,
             object1,
             object2,
-            message: gameDefaultTexts.defaultAnswer
+            message: defaultTexts.defaultAnswer
         }
     }
 
@@ -117,7 +117,7 @@ const parseInput = (input) => {
                                 verb,
                                 object1,
                                 object2,
-                                message: gameDefaultTexts.specifyAdjective
+                                message: defaultTexts.specifyAdjective
                             }
                         }
 
@@ -134,7 +134,7 @@ const parseInput = (input) => {
                         verb,
                         object1,
                         object2,
-                        message: gameDefaultTexts.specifyObject
+                        message: defaultTexts.specifyObject
                     }
                 }
             }

@@ -33,6 +33,4 @@ const Inventory = {
     },
 }
 
-export {
-    Inventory
-} 
+export default Inventory

@@ -1,4 +1,4 @@
-const Location = {
+const CurrentLocation = {
     _location: 0,
 
     get() {
@@ -10,6 +10,4 @@ const Location = {
     }
 }
 
-export {
-    Location
-}
+export default CurrentLocation
