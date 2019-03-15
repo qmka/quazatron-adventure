@@ -2,7 +2,7 @@ import {
     ENTER_KEY_CODE
 } from './modules/constants.js';
 import {
-    resetGameState, gameDefaultTexts
+    resetGameState, defaultTexts
 } from './modules/gamedata.js';
 import {
     renderGameScreen,
@@ -22,7 +22,7 @@ const launchGame = () => {
                 // Если он был на стартовом экране, то надо запустить игру
                 resetGameState();
                 gameState = "game";
-                renderGameScreen(gameDefaultTexts.firstGameMessage);
+                renderGameScreen(defaultTexts.firstGameMessage);
                 break;
             case "game":
                 // Если он был внутри игры

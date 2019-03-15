@@ -4,10 +4,10 @@ import {
     encounters,
     defaultTexts
 } from './gamedata.js';
-import Inventory from './inventory.js'
-import CurrentLocation from './location.js'
-import Flags from './flags.js'
-import ItemPlaces from './itemplaces.js'
+import Inventory from '../classes/inventory.js'
+import CurrentLocation from '../classes/location.js'
+import Flags from '../classes/flags.js'
+import ItemPlaces from '../classes/itemplaces.js'
 
 // Возвращаем описание предмета по его id
 const getItemDescriptionById = (id) => {

@@ -1,8 +1,8 @@
 import {
     locations, vocabulary, encounters, defaultTexts, defaultImages
 } from './gamedata.js';
-import CurrentLocation from './location.js';
-import ItemPlaces from './itemplaces.js';
+import CurrentLocation from '../classes/location.js';
+import ItemPlaces from '../classes/itemplaces.js';
 
 // Возвращает текст, который выводится как описание локации
 const constructLocation = () => {
@@ -33,7 +33,7 @@ const constructLocation = () => {
     }).join(', ').concat('.');
 
     if (itemsArray.length) {
-        description += `<br><br>${defaultTexts.itemsInLocation} ${itemsInLoc}`;
+        description += `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;
     }
 
     return description;

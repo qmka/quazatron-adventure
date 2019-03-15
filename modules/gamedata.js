@@ -1,7 +1,7 @@
-import Inventory from './inventory.js'
-import CurrentLocation from './location.js'
-import Flags from './flags.js'
-import ItemPlaces from './itemplaces.js'
+import Inventory from '../classes/inventory.js'
+import CurrentLocation from '../classes/location.js'
+import Flags from '../classes/flags.js'
+import ItemPlaces from '../classes/itemplaces.js'
 
 const initialItemPlaces = {
     0: 0,
@@ -1037,7 +1037,7 @@ const encounters = {
 const defaultTexts = {
     info: 'Я понимаю команды в формате ГЛАГОЛ + ОБЪЕКТ (+ ОБЪЕКТ), например, <span style="color: yellow;">ВОЗЬМИ ЛЕСТНИЦУ</span> или <span style="color: yellow;">НАБЕРИ ВОДЫ В КУВШИН.</span> Язык игры - русский, регистр букв не имеет значения.<br>Используйте команды <span style="color: yellow;">С (север), Ю (юг), З (запад), В (восток), Х (вверх), Н (вниз)</span> для передвижения. <span style="color: yellow;">ОСМОТРИ</span> помогает получить больше информации об игровых объектах. <span style="color: yellow;">И</span> - ваш инвентарь. <span style="color: yellow;">ВЫХОД</span> позволяет вернуться на стартовый экран. Остальные команды вам предстоит открыть самостоятельно. Удачной игры!',
 
-    startMainText: '<span style="color: lime;">❀⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱СПЯЩАЯ КРАСАВИЦА⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱❀</span><br><br>В этом приключении вам нужно пробраться в заброшенный замок, найти волшебный меч и спасти спящую беспробудным сном красавицу, которую усыпила злая ведьма. Исследуйте мир игры, отдавая компьютеру текстовые команды. Если не знаете, как это делается, введите команду-подсказку <span style="color: yellow;">ИНФО</span>.',
+    startMainText: '<span style="color: lime;">❀⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱СПЯЩАЯ КРАСАВИЦА⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱❀</span><div class="new-paragraph">В этом приключении вам нужно пробраться в заброшенный замок, найти волшебный меч и спасти спящую беспробудным сном красавицу, которую усыпила злая ведьма. Исследуйте мир игры, отдавая компьютеру текстовые команды. Если не знаете, как это делается, введите команду-подсказку <span style="color: yellow;">ИНФО</span>.</div>',
 
     victoryText: 'Этот текст выводится когда игрок побеждает!',
 

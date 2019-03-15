@@ -89,3 +89,8 @@ body {
 .inventory-item {
     color: #f0e386;
 }
+
+.new-paragraph {
+    display: block;
+    padding-top: 1rem;
+}
