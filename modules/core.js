@@ -9,6 +9,24 @@ import CurrentLocation from '../classes/location.js'
 import Flags from '../classes/flags.js'
 import ItemPlaces from '../classes/itemplaces.js'
 
+// Сохраняем игровое состояние
+const saveGameState = () => {
+    localStorage.setItem('currentLocation', CurrentLocation.get());
+    localStorage.setItem('inventory', JSON.stringify(Inventory.getAll()));
+    localStorage.setItem('flags', JSON.stringify(Flags.getAll()));
+    localStorage.setItem('itemPlaces', JSON.stringify(ItemPlaces.getAll()));
+}
+
+// Загружаем игровое состояние
+const loadGameState = () => {
+    if (localStorage.length !== 0) {
+        CurrentLocation.set(parseInt(localStorage.getItem('currentLocation')));
+        Inventory.init(JSON.parse(localStorage.getItem('inventory')));
+        Flags.init(JSON.parse(localStorage.getItem('flags')));
+        ItemPlaces.init(JSON.parse(localStorage.getItem('itemPlaces')));
+    }
+}
+
 // Возвращаем описание предмета по его id
 const getItemDescriptionById = (id) => {
     const item = vocabulary.objects.find((e) => e.id === id);
@@ -166,9 +184,19 @@ const processInput = (userInput) => {
                 answer = Inventory.getItemsTextList();
                 break;
             case 9:
+                // Сохранить игру
+                saveGameState();
+                answer = defaultTexts.saveGame;
+                break;
             case 10:
+                // Загрузить игру
+                loadGameState();
+                answer = defaultTexts.loadGame;
+                break;
             case 11:
-                // Отдельно обрабатываем глаголы "ВЗЯТЬ" (9), "ПОЛОЖИТЬ" (10), "ОСМОТРЕТЬ" (11)
+            case 12:
+            case 13:
+                // Отдельно обрабатываем глаголы "ВЗЯТЬ" (11), "ПОЛОЖИТЬ" (12), "ОСМОТРЕТЬ" (13)
                 answer = playerStandardActions[vocabulary.verbs[verbId].method](object1Id);
                 break;
             default:

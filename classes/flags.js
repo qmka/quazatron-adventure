@@ -9,6 +9,10 @@ const Flags = {
         }
     },
 
+    getAll() {
+        return this._flags;
+    },
+
     set(flag, value) {
         if (typeof flag === 'string') {
             if (flag in this._flags) {

@@ -31,7 +31,7 @@ const Inventory = {
         }
     },
 
-    getAllItems() {
+    getAll() {
         return this._inventory;
     },
 
@@ -45,6 +45,12 @@ const Inventory = {
     clear() {
         this._inventory = [];
     },
+
+    init(itemsArray) {
+        if (typeof itemsArray === 'object' || typeof itemsArray === 'array') {
+            this._inventory = itemsArray;
+        }
+    }
 }
 
 export default Inventory
