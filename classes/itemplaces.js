@@ -10,7 +10,7 @@ const ItemPlaces = {
     _itemPlaces: {},
 
     get(itemId) {
-        if (!isNan(itemId) && isFinite(itemId) && itemId in this._itemPlaces) {
+        if (isNumber(itemId) && itemId in this._itemPlaces) {
             return this._itemPlaces[itemId];
         }
     },

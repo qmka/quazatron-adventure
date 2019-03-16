@@ -1,5 +1,5 @@
 const isNumber = (data) => {
-    return !isNan(data) && isFinite(data);
+    return !isNaN(data) && isFinite(data);
 }
 
 export { isNumber };
