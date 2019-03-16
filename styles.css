@@ -86,7 +86,7 @@ body {
     color: white;
 }
 
-.inventory-item {
+.inventory-item, .location-item {
     color: #f0e386;
 }
 

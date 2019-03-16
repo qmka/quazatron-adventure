@@ -1,10 +1,10 @@
 import {
-    locations
-} from "../modules/gamedata.js";
-
-import {
     isNumber
 } from '../modules/utils.js';
+
+import {
+    vocabulary, locations, defaultTexts
+}  from '../modules/gamedata.js';
 
 const ItemPlaces = {
     _itemPlaces: {},
@@ -17,6 +17,28 @@ const ItemPlaces = {
 
     getAll() {
         return this._itemPlaces;
+    },
+
+    getLocationItemsList(locationId) {
+        if (isNumber(locationId) && locations[locationId]) {
+            let itemsArray = [];
+        
+            for (let key in this._itemPlaces) {
+                if (this._itemPlaces[key] === locationId) {
+                    itemsArray.push(key);
+                };
+            }
+        
+            const itemsInLoc = itemsArray.map((item) => {
+                return `<span class="location-item">${vocabulary.objects[item].name}</span>`
+            }).join(', ').concat('.');
+        
+            if (itemsArray.length) {
+                return `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;
+            } else {
+                return ''
+            }
+        }
     },
 
     set(itemId, locationId) {

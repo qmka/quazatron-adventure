@@ -30,10 +30,11 @@ const Inventory = {
     },
 
     getItemsTextList() {
+        if (!this._inventory.length) return "У меня ничего нет."; 
         const list = this._inventory.map((item) => {
             return `<span class="inventory-item">${vocabulary.objects[item].name}</span>`
         }).join(', ').concat('.');
-        return list === '.' ? "У меня ничего нет." : `У меня есть: ${list}`;
+        return `У меня есть: ${list}`;
     },
 
     clear() {

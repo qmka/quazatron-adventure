@@ -15,23 +15,8 @@ const constructLocation = () => {
     description += encounters.addDescription();
 
     // Если в локации лежат предметы, то добавляем их список к описанию локации
-    const allItemPlaces = ItemPlaces.getAll();
-    let itemsArray = [];
-
-    for (let key in allItemPlaces) {
-        if (allItemPlaces[key] === location) {
-            itemsArray.push(key);
-        };
-    }
-
-    const itemsInLoc = itemsArray.map((item) => {
-        return `<span class="inventory-item">${vocabulary.objects[item].name}</span>`
-    }).join(', ').concat('.');
-
-    if (itemsArray.length) {
-        description += `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;
-    }
-
+    description += ItemPlaces.getLocationItemsList(location);
+    
     return description;
 }
 
