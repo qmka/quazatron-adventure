@@ -12,30 +12,28 @@ const findWordId = (type, word) => {
     if (!type in vocabulary || !key in vocabulary) return -1;
     const result = vocabulary[key].find((item) => item.forms.includes(word));
 
-    return result !== undefined ? result.id : -1;
+    return result ? result.id : -1;
 }
 
 // Ищем id объектов, в массиве forms которых встречается слово word. 
 // Возвращаем массив этих id или -1, если не нашли ничего
-const findObjectId = (word) => {
-    let arrayOfWordsIds = [];
+const findObjectsByWord = (word) => {
+    let words = [];
 
     vocabulary.objects.forEach(e => {
         if (e.forms.includes(word)) {
-            arrayOfWordsIds.push(e.id);
+            words.push(e.id);
         }
     })
 
-    return arrayOfWordsIds.length !== 0 ? arrayOfWordsIds : -1;
+    return words.length ? words : -1;
 }
 
 // Возвращаем свойство adjective объекта с соответствующим id
 const findAdjectiveProperty = (id) => {
     const object = vocabulary.objects[id];
 
-    if (object === undefined) return -1;
-
-    return object.adjective;
+    return object && object.adjective ? object.adjective : -1; 
 }
 
 // Основная функция парсера. На входе - строка, введённая игроком.
@@ -82,7 +80,7 @@ const parseInput = (input) => {
 
         // Поэтому, когда парсер видит слово "монета", он выдаёт массив, содержащий id и той, и другой монет.
         // А дальше уже перебором по массиву мы определяем, о какой конкретно монете идёт речь.
-        const wordIds = findObjectId(words[i]);
+        const wordIds = findObjectsByWord(words[i]);
 
         // Если нашли id в словаре
         if (wordIds !== -1) {

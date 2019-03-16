@@ -43,7 +43,7 @@ const resetGameState = () => {
     CurrentLocation.set(0);
     Flags.init(initialFlags);
     ItemPlaces.init(initialItemPlaces);
-    Inventory.init([]);
+    Inventory.clear();
 }
 
 // Словарь - существительные, глаголы и прилагательные, которые понимает игра
@@ -569,7 +569,7 @@ const encounters = {
         if (CurrentLocation.get() === 27 && !Flags.get("isWitchKilled")) {
             flag = true;
             if (verbId === 30 && objectIds.includes(25)) {
-                if (Inventory.isItemInInventory(10)) {
+                if (Inventory.includes(10)) {
                     Flags.toggle("isWitchKilled");
                     Inventory.removeItem(10);
                     answer = "Я отразил заклятье мечом, и оно ударило прямо в ведьму! Издав истошный крик, ведьма рассыпалась в пыль. К сожалению, меч тоже не уцелел.";
@@ -601,7 +601,7 @@ const encounters = {
     },
 
     drop(itemId) {
-        if ((itemId === 11 || itemId === 12) && Inventory.isItemInInventory(itemId) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
+        if ((itemId === 11 || itemId === 12) && Inventory.includes(itemId) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
             Inventory.removeItem(itemId);
             return "Я бросил монетку на землю, и она укатилась в пропасть.";
         }
@@ -657,7 +657,7 @@ const encounters = {
         if (currentLocation === 28 && objectId === 26) {
             return "Прекрасная, но очень бледная. Её грудь медленно поднимается и опускается: принцесса крепко спит.";
         }
-        if (objectId === 4 && Inventory.isItemInInventory(4)) {
+        if (objectId === 4 && Inventory.includes(4)) {
             let answer = vocabulary.objects[4].desc;
             if (!Flags.get("isAxeRevealed")) {
                 Flags.toggle("isAxeRevealed");
@@ -671,7 +671,7 @@ const encounters = {
     },
 
     throw (objectIds) {
-        if (objectIds.includes(8) && Inventory.isItemInInventory(8)) {
+        if (objectIds.includes(8) && Inventory.includes(8)) {
             Inventory.removeItem(8);
             if (CurrentLocation.get() === 20 && !Flags.get("isMonsterKilled")) {
                 Flags.toggle("isMonsterKilled");
@@ -680,13 +680,13 @@ const encounters = {
                 return "Я высыпал всю соль. Непонятно, правда, зачем было так делать - вдруг она бы мне пригодилась?";
             }
         }
-        if (objectIds.includes(5) && Inventory.isItemInInventory(5)) {
+        if (objectIds.includes(5) && Inventory.includes(5)) {
             return "Это явно не метательный топорик. Давайте попробуем что-то другое.";
         }
-        if (objectIds.includes(2) && Inventory.isItemInInventory(2)) {
+        if (objectIds.includes(2) && Inventory.includes(2)) {
             return "Слишком тяжёлая, чтобы метать. Ей надо бить, желательно промеж глаз.";
         }
-        if (objectIds.includes(7) && Inventory.isItemInInventory(7)) {
+        if (objectIds.includes(7) && Inventory.includes(7)) {
             Inventory.removeItem(7);
             return "Я бросаю лампу, и она разбивается на осколки. И зачем нужно было это делать?";
         }
@@ -714,11 +714,11 @@ const encounters = {
 
     buy(objectIds) {
         if (objectIds.includes(7) && CurrentLocation.get() === 5) {
-            if (Inventory.isItemInInventory(11)) {
+            if (Inventory.includes(11)) {
                 Inventory.removeItem(11);
                 Inventory.addItem(7);
                 return "Я купил у старушки лампу за серебряную монету";
-            } else if (Inventory.isItemInInventory(12)) {
+            } else if (Inventory.includes(12)) {
                 return 'Старушка пробует монету на зуб и говорит: "Нет, это не серебро!"';
             } else {
                 return "У меня нет денег."
@@ -730,11 +730,11 @@ const encounters = {
 
     pay(objectIds) {
         if (CurrentLocation.get() === 5) {
-            if (objectIds.includes(11) && Inventory.isItemInInventory(11)) {
+            if (objectIds.includes(11) && Inventory.includes(11)) {
                 Inventory.removeItem(11);
                 Inventory.addItem(7);
                 return "Я купил у старушки лампу за серебряную монету";
-            } else if (Inventory.isItemInInventory(12)) {
+            } else if (Inventory.includes(12)) {
                 return 'Старушка пробует монету на зуб и говорит: "Нет, это не серебро!"';
             } else {
                 return "Мне нужны деньги, чтобы заплатить."
@@ -749,24 +749,24 @@ const encounters = {
 
     hit(objectIds) {
         if (CurrentLocation.get() === 7 && !Flags.get("isTrollKilled") && objectIds.includes(17)) {
-            if (Inventory.isItemInInventory(2)) {
+            if (Inventory.includes(2)) {
                 Flags.toggle("isTrollKilled");
                 Inventory.removeItem(2);
                 return "Я бросился на тролля и вломил ему булавой прямо по макушке! Дико заревев, искалеченный тролль с торчащей в черепе булавой убежал в лес. Теперь путь на восток свободен.";
             }
-            if (Inventory.isItemInInventory(5) && objectIds.includes(5)) {
+            if (Inventory.includes(5) && objectIds.includes(5)) {
                 return "Не стоит с маленьким топориком лезть на большого тролля. Нужно что-то посерьёзнее.";
             }
-            if (Inventory.isItemInInventory(3) && objectIds.includes(3)) {
+            if (Inventory.includes(3) && objectIds.includes(3)) {
                 return "Я похож на черепашку-ниндзя, чтобы нападать с деревянным шестом на толстого тролля?";
             }
-            if (!Inventory.isItemInInventory(3) && !Inventory.isItemInInventory(5)) {
+            if (!Inventory.includes(3) && !Inventory.includes(5)) {
                 return "Нападать на тролля с голыми руками? Нет уж!";
             }
             return "Уточните, чем это вы собираетесь убивать тролля?";
         }
         if (CurrentLocation.get() === 5 && objectIds.includes(21)) {
-            if (Inventory.isItemInInventory(5)) {
+            if (Inventory.includes(5)) {
                 return "Вам не кажется, что эта ситуация со старушкой и топором - из другого произведения?";
             }
             return "Эээ, я не стану нападать на добрую беззащитную старушку!";
@@ -780,7 +780,7 @@ const encounters = {
         if (CurrentLocation.get() === 20 && !Flags.get("isMonsterKilled") && objectIds.includes(23)) {
             return "На такого монстра идти разве что с боевым ледорубом. Но такого у меня точно нет, придётся искать какую-нибудь хитрость.";
         }
-        if (Inventory.isItemInInventory(5) && objectIds.includes(5)) {
+        if (Inventory.includes(5) && objectIds.includes(5)) {
             return "Ничего не произошло. Подсказка: если хотите что-то порубить топором, то лучше скажите мне РУБИ или РАЗРУБИ... или ПОРУБИ, ну, в общем, вы поняли."
         }
 
@@ -788,7 +788,7 @@ const encounters = {
     },
 
     chop(objectIds) {
-        if (!Inventory.isItemInInventory(5)) {
+        if (!Inventory.includes(5)) {
             return "У меня нет топора."
         }
         if (CurrentLocation.get() === 18 && objectIds.includes(20) && !Flags.get("isTrapdoorOpened")) {
@@ -805,7 +805,7 @@ const encounters = {
         if (CurrentLocation.get() === 14 && objectIds.includes(14)) {
             return "Вы когда-нибудь пробовали рубить топором кусты? Попробуйте на досуге. Здесь пригодился бы секатор, ну, или штыковая лопата, но уж точно не топор";
         }
-        if (Inventory.isItemInInventory(3) && objectIds.includes(3)) {
+        if (Inventory.includes(3) && objectIds.includes(3)) {
             Inventory.removeItem(3);
             return "В ярости я накинулся на шест и порубил его в труху.";
         }
@@ -813,7 +813,7 @@ const encounters = {
             ItemPlaces.set(3, -1);
             return "В ярости я накинулся на шест и порубил его в труху.";
         }
-        if (Inventory.isItemInInventory(4) && objectIds.includes(4)) {
+        if (Inventory.includes(4) && objectIds.includes(4)) {
             Inventory.removeItem(4);
             return "Я бросил на землю дрова и порубил их в труху.";
         }
@@ -834,7 +834,7 @@ const encounters = {
 
     open(objectIds) {
         if (CurrentLocation.get() === 11 && objectIds.includes(16)) {
-            if (Inventory.isItemInInventory(6) && !Flags.get("isDoorOpened")) {
+            if (Inventory.includes(6) && !Flags.get("isDoorOpened")) {
                 Flags.toggle("isDoorOpened");
                 Inventory.removeItem(6);
                 return "Я открыл дверь ключом и теперь могу пройти в замок. Правда, ключ намертво застрял в замочной скважине, но вряд ли теперь он мне понадобится.";
@@ -852,7 +852,7 @@ const encounters = {
     },
 
     lean(objectIds) {
-        if (objectIds.includes(0) && !Flags.get("isLadderLeanToTree") && Inventory.isItemInInventory(0) && CurrentLocation.get() === 8) {
+        if (objectIds.includes(0) && !Flags.get("isLadderLeanToTree") && Inventory.includes(0) && CurrentLocation.get() === 8) {
             Flags.toggle("isLadderLeanToTree");
             Inventory.removeItem(0);
             return "Я прислонил лестницу к дереву.";
@@ -862,20 +862,20 @@ const encounters = {
     },
 
     destroy(objectIds) {
-        if (objectIds.includes(0) && Inventory.isItemInInventory(0)) {
+        if (objectIds.includes(0) && Inventory.includes(0)) {
             Inventory.removeItem(0);
             ItemPlaces.set(3, CurrentLocation.get());
             return "Я разломал лестницу на куски и получил неплохой длинный шест.";
         }
         if (objectIds.includes(20) && CurrentLocation.get() === 18 && !Flags.get("isTrapdoorOpened")) {
-            if (Inventory.isItemInInventory(5)) {
+            if (Inventory.includes(5)) {
                 Flags.toggle("isTrapdoorOpened");
                 return "Я разломал топором деревянный люк. Теперь путь вниз открыт.";
             } else {
                 return "У меня нет ничего, чем я могу сломать люк.";
             }
         }
-        if (!Inventory.isItemInInventory(objectIds[0]) && !Inventory.isItemInInventory(objectIds[1])) {
+        if (!Inventory.includes(objectIds[0]) && !Inventory.includes(objectIds[1])) {
             return "Нужно сначала взять это в руки.";
         }
 
@@ -885,7 +885,7 @@ const encounters = {
     cross(objectIds) {
         if (objectIds.includes(13) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
             let answer;
-            if (Inventory.isItemInInventory(3)) {
+            if (Inventory.includes(3)) {
                 answer = "Балансируя с помощью шеста, я пересёк расщелину по верёвке.";
                 if (CurrentLocation.get() === 6) {
                     CurrentLocation.set(12);
@@ -920,7 +920,7 @@ const encounters = {
 
     eat(objectIds) {
         if (objectIds.includes(1)) {
-            if (Inventory.isItemInInventory(1)) {
+            if (Inventory.includes(1)) {
                 Flags.toggle("isGameOver");
                 Flags.toggle("isDiedFromFish");
                 return "";
@@ -933,7 +933,7 @@ const encounters = {
     },
 
     turnOn(objectIds) {
-        if (objectIds.includes(7) && Inventory.isItemInInventory(7)) {
+        if (objectIds.includes(7) && Inventory.includes(7)) {
             if (!Flags.get("isLampEmpty")) {
                 Flags.toggle("isLampEmpty");
                 if (CurrentLocation.get() === 23 && !Flags.get("isWormKilled")) {
@@ -954,7 +954,7 @@ const encounters = {
     },
 
     pour(objectIds) {
-        if (objectIds.includes(8) && Inventory.isItemInInventory(8)) {
+        if (objectIds.includes(8) && Inventory.includes(8)) {
             Inventory.removeItem(8);
             if (CurrentLocation.get() === 20 && !Flags.get("isMonsterKilled")) {
                 Flags.toggle("isMonsterKilled");
@@ -968,8 +968,8 @@ const encounters = {
     },
 
     fuel(objectIds) {
-        if (objectIds.includes(7) && Inventory.isItemInInventory(7)) {
-            if (Inventory.isItemInInventory(9)) {
+        if (objectIds.includes(7) && Inventory.includes(7)) {
+            if (Inventory.includes(9)) {
                 if (Flags.get("isLampEmpty")) {
                     Flags.toggle("isLampEmpty");
                     return "Я залил немного масла в лампу.";
@@ -985,7 +985,7 @@ const encounters = {
     },
 
     oil(objectIds) {
-        if (Inventory.isItemInInventory(9)) {
+        if (Inventory.includes(9)) {
             if (objectIds.includes(24) && CurrentLocation.get() === 25) {
                 if (Flags.get("isLeverOiled")) {
                     return "Рычаг уже смазан.";

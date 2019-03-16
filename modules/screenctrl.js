@@ -6,14 +6,10 @@ import ItemPlaces from '../classes/itemplaces.js';
 
 // Возвращает текст, который выводится как описание локации
 const constructLocation = () => {
-    let description = "";
 
     // Берём из объекта с локациями описание текущей локации
-    locations.forEach((e) => {
-        if (e.id === CurrentLocation.get()) {
-            description += e.desc;
-        }
-    })
+    let location = CurrentLocation.get();
+    let description = locations[location].desc; 
 
     // Добавляем пояснение для особых игровых ситуаций
     description += encounters.addDescription();
@@ -23,7 +19,7 @@ const constructLocation = () => {
     let itemsArray = [];
 
     for (let key in allItemPlaces) {
-        if (allItemPlaces[key] === CurrentLocation.get()) {
+        if (allItemPlaces[key] === location) {
             itemsArray.push(key);
         };
     }

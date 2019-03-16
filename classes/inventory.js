@@ -10,7 +10,7 @@ const Inventory = {
     _inventory: [],
 
     addItem(itemId) {
-        if (isNumber(itemId && vocabulary.objects[itemId] && vocabulary.objects[itemId].canHold)) {
+        if (isNumber(itemId) && vocabulary.objects[itemId] && vocabulary.objects[itemId].canHold) {
             this._inventory.push(itemId);
         }
     },
@@ -21,10 +21,8 @@ const Inventory = {
         }
     },
 
-    isItemInInventory(itemId) {
-        if (isNumber(itemId)) {
-            return this._inventory.includes(itemId);
-        }
+    includes(itemId) {
+        return this._inventory.includes(itemId);
     },
 
     getAll() {

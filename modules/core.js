@@ -95,7 +95,7 @@ const playerStandardActions = {
         let answer = encounters.take(itemId);
 
         // Общий случай
-        if (!Inventory.isItemInInventory(itemId) && ItemPlaces.get(itemId) === CurrentLocation.get()) {
+        if (!Inventory.includes(itemId) && ItemPlaces.get(itemId) === CurrentLocation.get()) {
             Inventory.addItem(itemId);
             ItemPlaces.set(itemId, -1);
             answer = defaultTexts.defaultAnswerToTake;
@@ -110,7 +110,7 @@ const playerStandardActions = {
 
         // Общий случай
 
-        if (Inventory.isItemInInventory(itemId)) {
+        if (Inventory.includes(itemId)) {
             Inventory.removeItem(itemId);
             ItemPlaces.set(itemId, CurrentLocation.get());
             answer = defaultTexts.defaultAnswerToDrop;
@@ -129,7 +129,7 @@ const playerStandardActions = {
         // Общий случай осмотра предмета
 
         else if (ItemPlaces.get(objectId) === CurrentLocation.get()) answer = defaultTexts.itemNotInInventory;
-        else if (Inventory.isItemInInventory(objectId)) answer = getItemDescriptionById(objectId);
+        else if (Inventory.includes(objectId)) answer = getItemDescriptionById(objectId);
         else answer = result;
 
         return answer;

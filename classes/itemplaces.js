@@ -10,7 +10,7 @@ const ItemPlaces = {
     _itemPlaces: {},
 
     get(itemId) {
-        if (isNumber(itemId) && itemId in this._itemPlaces) {
+        if (itemId in this._itemPlaces) {
             return this._itemPlaces[itemId];
         }
     },
@@ -20,7 +20,7 @@ const ItemPlaces = {
     },
 
     set(itemId, locationId) {
-        if (isNumber(itemId) && isNumber(locationId) && itemId in this._itemPlaces && locationId < locations.length) {
+        if (isNumber(locationId) && itemId in this._itemPlaces) {
             this._itemPlaces[itemId] = locationId;
         }
     },

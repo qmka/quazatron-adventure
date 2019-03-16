@@ -12,7 +12,7 @@ const CurrentLocation = {
     },
 
     set(locationId) {
-        if (isNumber(locationId) && locationId < locations.length) {
+        if (isNumber(locationId) && locations[locationId]) {
             this._location = locationId;
         }
     }
