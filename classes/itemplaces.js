@@ -1,10 +1,16 @@
-import { locations } from "../modules/gamedata.js";
+import {
+    locations
+} from "../modules/gamedata.js";
+
+import {
+    isNumber
+} from '../modules/utils.js';
 
 const ItemPlaces = {
     _itemPlaces: {},
 
     get(itemId) {
-        if (typeof itemId === 'number' && itemId in this._itemPlaces) {
+        if (!isNan(itemId) && isFinite(itemId) && itemId in this._itemPlaces) {
             return this._itemPlaces[itemId];
         }
     },
@@ -13,14 +19,14 @@ const ItemPlaces = {
         return this._itemPlaces;
     },
 
-    set(itemId, location) {
-        if (typeof itemId === 'number' && itemId in this._itemPlaces && location < locations.length) {
-            this._itemPlaces[itemId] = location;
+    set(itemId, locationId) {
+        if (isNumber(itemId) && isNumber(locationId) && itemId in this._itemPlaces && locationId < locations.length) {
+            this._itemPlaces[itemId] = locationId;
         }
     },
 
     init(initialState) {
-        if (typeof initialState === 'object') {
+        if (initialState && Object.keys(initialState).length) {
             this._itemPlaces = Object.assign({}, initialState);
         }
     }

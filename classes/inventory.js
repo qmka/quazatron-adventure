@@ -2,31 +2,27 @@ import {
     vocabulary
 } from '../modules/gamedata.js';
 
+import {
+    isNumber
+} from '../modules/utils.js';
+
 const Inventory = {
     _inventory: [],
 
     addItem(itemId) {
-        if (typeof itemId === 'number') {
-            if (itemId < vocabulary.objects.length) {
-                if (vocabulary.objects[itemId].canHold === true) {
-                    this._inventory.push(itemId);
-                }
-            }
+        if (isNumber(itemId && vocabulary.objects[itemId] && vocabulary.objects[itemId].canHold)) {
+            this._inventory.push(itemId);
         }
     },
 
     removeItem(itemId) {
-        if (typeof itemId === 'number') {
-            if (itemId < vocabulary.objects.length) {
-                if (this._inventory.includes(itemId)) {
-                    this._inventory = this._inventory.filter((e) => e !== itemId);
-                }
-            }
+        if (isNumber(itemId) && vocabulary.objects[itemId] && this._inventory.includes(itemId)) {
+            this._inventory = this._inventory.filter((e) => e !== itemId);
         }
     },
 
     isItemInInventory(itemId) {
-        if (typeof itemId === 'number') {
+        if (isNumber(itemId)) {
             return this._inventory.includes(itemId);
         }
     },
@@ -36,7 +32,7 @@ const Inventory = {
     },
 
     getItemsTextList() {
-        const list =  this._inventory.map((item) => {
+        const list = this._inventory.map((item) => {
             return `<span class="inventory-item">${vocabulary.objects[item].name}</span>`
         }).join(', ').concat('.');
         return list === '.' ? "У меня ничего нет." : `У меня есть: ${list}`;
@@ -47,7 +43,7 @@ const Inventory = {
     },
 
     init(itemsArray) {
-        if (typeof itemsArray === 'object' || typeof itemsArray === 'array') {
+        if (Array.isArray(itemsArray)) {
             this._inventory = itemsArray;
         }
     }

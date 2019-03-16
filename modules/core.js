@@ -15,6 +15,7 @@ const saveGameState = () => {
     localStorage.setItem('inventory', JSON.stringify(Inventory.getAll()));
     localStorage.setItem('flags', JSON.stringify(Flags.getAll()));
     localStorage.setItem('itemPlaces', JSON.stringify(ItemPlaces.getAll()));
+    return defaultTexts.saveGame;
 }
 
 // Загружаем игровое состояние
@@ -24,6 +25,9 @@ const loadGameState = () => {
         Inventory.init(JSON.parse(localStorage.getItem('inventory')));
         Flags.init(JSON.parse(localStorage.getItem('flags')));
         ItemPlaces.init(JSON.parse(localStorage.getItem('itemPlaces')));
+        return defaultTexts.loadGame;
+    } else {
+        return defaultTexts.cantLoadGame;
     }
 }
 
@@ -185,13 +189,11 @@ const processInput = (userInput) => {
                 break;
             case 9:
                 // Сохранить игру
-                saveGameState();
-                answer = defaultTexts.saveGame;
+                answer = saveGameState();
                 break;
             case 10:
                 // Загрузить игру
-                loadGameState();
-                answer = defaultTexts.loadGame;
+                answer = loadGameState();
                 break;
             case 11:
             case 12:

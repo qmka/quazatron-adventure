@@ -1,4 +1,10 @@
-import { locations } from "../modules/gamedata.js";
+import {
+    locations
+} from "../modules/gamedata.js";
+
+import {
+    isNumber
+} from '../modules/utils.js';
 
 const CurrentLocation = {
     get() {
@@ -6,7 +12,7 @@ const CurrentLocation = {
     },
 
     set(locationId) {
-        if (typeof locationId === 'number' && locationId < locations.length) {
+        if (isNumber(locationId) && locationId < locations.length) {
             this._location = locationId;
         }
     }
