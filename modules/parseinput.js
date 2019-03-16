@@ -25,7 +25,6 @@ const findObjectsByWord = (word) => {
             words.push(e.id);
         }
     })
-
     return words.length ? words : -1;
 }
 
@@ -33,7 +32,9 @@ const findObjectsByWord = (word) => {
 const findAdjectiveProperty = (id) => {
     const object = vocabulary.objects[id];
 
-    return object && object.adjective ? object.adjective : -1; 
+    if (object === undefined) return -1;
+
+    return object.adjective;
 }
 
 // Основная функция парсера. На входе - строка, введённая игроком.
@@ -81,7 +82,6 @@ const parseInput = (input) => {
         // Поэтому, когда парсер видит слово "монета", он выдаёт массив, содержащий id и той, и другой монет.
         // А дальше уже перебором по массиву мы определяем, о какой конкретно монете идёт речь.
         const wordIds = findObjectsByWord(words[i]);
-
         // Если нашли id в словаре
         if (wordIds !== -1) {
             // В currentObjectId будем хранить итоговый id объекта (после проверок с прилагательными)
@@ -99,7 +99,7 @@ const parseInput = (input) => {
                 for (let wordId of wordIds) {
                     // У объекта с этим id есть свойство adjective?
                     const wordAdjective = findAdjectiveProperty(wordId);
-
+                    console.log(wordId + ' ' + wordAdjective);
                     // Если есть, то значит это объект, который нужно называть только с прилагательным ("Красная кнопка")
                     // Переходим подпрограмму сопоставления объекта и соответствуюшего ему прилагательного
                     if (wordAdjective !== -1) {
@@ -128,6 +128,7 @@ const parseInput = (input) => {
 
                 // Если правильного слова мы не нашли
                 if (currentObjectId === -1) {
+                    console.log(verb + ' ' + object1 + ' ' + object2 + ' ' + message);
                     return {
                         verb,
                         object1,
@@ -146,7 +147,7 @@ const parseInput = (input) => {
             }
         }
     }
-
+    console.log(verb + ' ' + object1 + ' ' + object2 + ' ' + message);
     return {
         verb,
         object1,
