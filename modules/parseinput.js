@@ -4,6 +4,9 @@ import {
 import {
     WORD_TYPES
 } from './constants.js';
+import {
+    isNumber
+} from './utils.js';
 
 // Ищем id слова word в словаре type
 const findWordId = (type, word) => {
@@ -32,9 +35,7 @@ const findObjectsByWord = (word) => {
 const findAdjectiveProperty = (id) => {
     const object = vocabulary.objects[id];
 
-    if (object === undefined) return -1;
-
-    return object.adjective;
+    return object && isNumber(object.adjective) ? object.adjective : -1; 
 }
 
 // Основная функция парсера. На входе - строка, введённая игроком.
@@ -99,7 +100,7 @@ const parseInput = (input) => {
                 for (let wordId of wordIds) {
                     // У объекта с этим id есть свойство adjective?
                     const wordAdjective = findAdjectiveProperty(wordId);
-                    console.log(wordId + ' ' + wordAdjective);
+
                     // Если есть, то значит это объект, который нужно называть только с прилагательным ("Красная кнопка")
                     // Переходим подпрограмму сопоставления объекта и соответствуюшего ему прилагательного
                     if (wordAdjective !== -1) {
@@ -128,7 +129,6 @@ const parseInput = (input) => {
 
                 // Если правильного слова мы не нашли
                 if (currentObjectId === -1) {
-                    console.log(verb + ' ' + object1 + ' ' + object2 + ' ' + message);
                     return {
                         verb,
                         object1,
@@ -147,7 +147,6 @@ const parseInput = (input) => {
             }
         }
     }
-    console.log(verb + ' ' + object1 + ' ' + object2 + ' ' + message);
     return {
         verb,
         object1,
