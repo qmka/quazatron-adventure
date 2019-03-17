@@ -718,19 +718,20 @@ const encounters = {
     // Добавляем дополнительную информацию к описанию локации в зависимости от различных условий
     addDescription() {
         const currentLocation = CurrentLocation.get();
-        let description = "";
+        let description = '<div class="new-paragraph">';
 
-        if (currentLocation === 8 && Flags.get("isLadderLeanToTree")) description += "<br>К дереву приставлена лестница.";
-        if (currentLocation === 11 && Flags.get("isDoorOpened")) description += "<br>Дверь открыта.";
-        if (currentLocation === 7 && !Flags.get("isTrollKilled")) description += "<br>Путь на восток преграждает толстый тролль.";
-        if (currentLocation === 17 && !Flags.get("isPortcullisOpened")) description += "<br>Решётка опущена - не пройти.";
-        if (currentLocation === 17 && Flags.get("isPortcullisOpened")) description += "<br>Решётка поднята к потолку.";
-        if (currentLocation === 18 && Flags.get("isTrapdoorOpened")) description += "<br>В полу комнаты дыра, через которую можно спуститься вниз.";
-        if (currentLocation === 18 && !Flags.get("isTrapdoorOpened")) description += "<br>В полу есть закрытый люк.";
-        if (currentLocation === 23 && !Flags.get("isWormKilled")) description += "<br>Вход в южный тоннель преграждает огромный скальный червь.";
-        if (currentLocation === 20 && !Flags.get("isMonsterKilled")) description += "<br>Северный проход охраняет страшный ледяной монстр.";
-        if (currentLocation === 27 && !Flags.get("isWitchKilled")) description += "<br>В противоположном конце комнаты вы видите ведьму. Её заклятье летит прямо в вашу сторону, нужно быстро что-то делать!";
+        if (currentLocation === 8 && Flags.get("isLadderLeanToTree")) description += "К дереву приставлена лестница.";
+        if (currentLocation === 11 && Flags.get("isDoorOpened")) description += "Дверь открыта.";
+        if (currentLocation === 7 && !Flags.get("isTrollKilled")) description += "Путь на восток преграждает толстый тролль.";
+        if (currentLocation === 17 && !Flags.get("isPortcullisOpened")) description += "Решётка опущена - не пройти.";
+        if (currentLocation === 17 && Flags.get("isPortcullisOpened")) description += "Решётка поднята к потолку.";
+        if (currentLocation === 18 && Flags.get("isTrapdoorOpened")) description += "В полу комнаты дыра, через которую можно спуститься вниз.";
+        if (currentLocation === 18 && !Flags.get("isTrapdoorOpened")) description += "В полу есть закрытый люк.";
+        if (currentLocation === 23 && !Flags.get("isWormKilled")) description += "Вход в южный тоннель преграждает огромный скальный червь.";
+        if (currentLocation === 20 && !Flags.get("isMonsterKilled")) description += "Северный проход охраняет страшный ледяной монстр.";
+        if (currentLocation === 27 && !Flags.get("isWitchKilled")) description += "В противоположном конце комнаты вы видите ведьму. Её заклятье летит прямо в вашу сторону, нужно быстро что-то делать!";
 
+        description += '</div>';
         return description;
     },
 
