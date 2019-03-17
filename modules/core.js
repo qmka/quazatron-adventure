@@ -8,6 +8,9 @@ import Inventory from '../classes/inventory.js'
 import CurrentLocation from '../classes/location.js'
 import Flags from '../classes/flags.js'
 import ItemPlaces from '../classes/itemplaces.js'
+import {
+    GAME_STATES
+} from './constants.js';
 
 // Сохраняем игровое состояние
 const saveGameState = () => {
@@ -146,7 +149,7 @@ const processInput = (userInput) => {
     const verbId = userInput.verb;
     const uniqueEncounter = encounters.getUniqueEncounter(verbId, objects);
     let answer = userInput.message;
-    let gameFlag = "game";
+    let gameFlag = GAME_STATES.game;
 
     // Обрабатываем особые игровые ситуации. Так, в комнате с ведьмой игрок может только отразить заклятье, и если не делает этого, то его выкидывает в предыдущую комнату
     if (uniqueEncounter.flag) {
@@ -183,7 +186,7 @@ const processInput = (userInput) => {
                 break;
             case 7:
                 // Выход из игры
-                gameFlag = "gameover";
+                gameFlag = GAME_STATES.gameover;
                 break;
             case 8:
                 // Инвентарь
@@ -210,10 +213,10 @@ const processInput = (userInput) => {
 
         // Проверяем, победил или проиграл ли игрок?
         if (Flags.get("isVictory")) {
-            gameFlag = "victory";
+            gameFlag = GAME_STATES.victory;
         }
         if (Flags.get("isGameOver")) {
-            gameFlag = "gameover";
+            gameFlag = GAME_STATES.gameover;
         }
         // Возвращаем реакцию программы на действие игрока
         return {

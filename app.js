@@ -1,8 +1,12 @@
 import {
-    ENTER_KEY_CODE
+    ENTER_KEY_CODE,
+    GAME_STATES
 } from './modules/constants.js';
 import {
-    defaultTexts, initialFlags, initialItemPlaces
+    defaultTexts,
+    initialFlags,
+    initialItemPlaces,
+    defaultLocation
 } from './modules/gamedata.js';
 import {
     renderGameScreen,
@@ -22,7 +26,7 @@ const launchGame = () => {
 
     // Сброс игрового состояния к первоначальным настройкам
     const resetGameState = () => {
-        CurrentLocation.set(0);
+        CurrentLocation.set(defaultLocation);
         Flags.init(initialFlags);
         ItemPlaces.init(initialItemPlaces);
         Inventory.clear();
@@ -32,13 +36,13 @@ const launchGame = () => {
     const handleEnter = () => {
         // Реакция на нажатие клавиши ENTER игроком в зависимости от того, на каком экране он находится
         switch (gameState) {
-            case "start":
+            case GAME_STATES.start:
                 // Если он был на стартовом экране, то надо запустить игру
                 resetGameState();
-                gameState = "game";
+                gameState = GAME_STATES.game;
                 renderGameScreen(defaultTexts.firstGameMessage);
                 break;
-            case "game":
+            case GAME_STATES.game:
                 // Если он был внутри игры
                 // 1. Получаем введённую игроком команду и очищаем поле ввода
                 const inputText = getUserInput();
@@ -51,18 +55,18 @@ const launchGame = () => {
 
                 // 4. Отрисовываем экран
                 switch (output.gameFlag) {
-                    case "game":
+                    case GAME_STATES.game:
                         renderGameScreen(output.answer);
                         break;
                     default:
                         renderNonGameScreen(output.gameFlag);
-                        gameState = "readyToStart";
+                        gameState = GAME_STATES.readyToStart;
                         break;
                 }
                 break;
-            case "readyToStart":
+            case GAME_STATES.readyToStart:
                 // Если он был на экране победы или смерти
-                gameState = "start";
+                gameState = GAME_STATES.start;
                 renderNonGameScreen(gameState);
                 break;
         }
@@ -81,7 +85,7 @@ const launchGame = () => {
             }
 
             if (code === "Enter" || code === ENTER_KEY_CODE) {
-                    handleEnter();
+                handleEnter();
             }
         });
     };
@@ -89,7 +93,7 @@ const launchGame = () => {
     console.log('Application has started.');
 
     // выводим стартовый экран
-    gameState = "start";
+    gameState = GAME_STATES.start;
     renderNonGameScreen(gameState);
     resetGameState();
     setupEventListeners();

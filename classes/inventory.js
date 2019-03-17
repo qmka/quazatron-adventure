@@ -3,7 +3,7 @@ import {
 } from '../modules/gamedata.js';
 
 import {
-    isNumber
+    isNumber, log
 } from '../modules/utils.js';
 
 const Inventory = {
@@ -12,12 +12,16 @@ const Inventory = {
     addItem(itemId) {
         if (isNumber(itemId) && vocabulary.objects[itemId] && vocabulary.objects[itemId].canHold) {
             this._inventory.push(itemId);
+        } else {
+            log(`Inventory.addItem: передаётся некорректный id предмета: ${itemId}.`);
         }
     },
 
     removeItem(itemId) {
         if (isNumber(itemId) && vocabulary.objects[itemId] && this._inventory.includes(itemId)) {
             this._inventory = this._inventory.filter((e) => e !== itemId);
+        } else {
+            log(`Inventory.removeItem: передаётся некорректный id предмета: ${itemId}.`);
         }
     },
 
@@ -44,6 +48,8 @@ const Inventory = {
     init(itemsArray) {
         if (Array.isArray(itemsArray)) {
             this._inventory = itemsArray;
+        } else {
+            log('Inventory.init: для инициализации инвентаря используйте массив с ID предметов.');
         }
     }
 }

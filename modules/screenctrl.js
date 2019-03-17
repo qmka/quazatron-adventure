@@ -1,8 +1,11 @@
 import {
-    locations, vocabulary, encounters, defaultTexts, defaultImages
+    locations, encounters, defaultTexts, defaultImages
 } from './gamedata.js';
 import CurrentLocation from '../classes/location.js';
 import ItemPlaces from '../classes/itemplaces.js';
+import {
+    GAME_STATES
+} from './constants.js';
 
 const getUserInput = () => {
     const inputField = document.getElementById("input-field");
@@ -44,17 +47,17 @@ const renderGameScreen = (actionText) => {
 const renderNonGameScreen = (type) => {
     let text, image, action;
     switch(type) {
-        case "start":
+        case GAME_STATES.start:
             text = defaultTexts.startMainText;
             action = defaultTexts.pressEnterToStart;
             image = defaultImages.startImage;
             break;
-        case "gameover":
+        case GAME_STATES.gameover:
             text = encounters.getGameOverText();
             action = defaultTexts.pressEnterToStartAgain;
             image = defaultImages.gameOverImage;
             break;
-        case "victory":
+        case GAME_STATES.victory:
             text = defaultTexts.victoryText;
             action = defaultTexts.pressEnterToStartAgain;
             image = defaultImages.victoryImage;

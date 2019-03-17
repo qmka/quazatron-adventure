@@ -3,6 +3,8 @@ import CurrentLocation from '../classes/location.js'
 import Flags from '../classes/flags.js'
 import ItemPlaces from '../classes/itemplaces.js'
 
+const defaultLocation = 0;
+
 const initialItemPlaces = {
     0: 0,
     1: 3,
@@ -1287,6 +1289,7 @@ const defaultImages = {
 }
 
 export {
+    defaultLocation,
     vocabulary,
     locations,
     encounters,

@@ -3,7 +3,7 @@ import {
 } from "../modules/gamedata.js";
 
 import {
-    isNumber
+    isNumber, log
 } from '../modules/utils.js';
 
 const CurrentLocation = {
@@ -14,6 +14,8 @@ const CurrentLocation = {
     set(locationId) {
         if (isNumber(locationId) && locations[locationId]) {
             this._location = locationId;
+        } else {
+            log(`Location.set: передаётся некорректный номер локации: ${locationId}.`);
         }
     }
 }
