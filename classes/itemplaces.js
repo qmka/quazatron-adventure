@@ -28,16 +28,16 @@ const ItemPlaces = {
                     itemsArray.push(key);
                 };
             }
+
+            if (!itemsArray.length) {
+                return ''
+            }
         
             const itemsInLoc = itemsArray.map((item) => {
                 return `<span class="location-item">${vocabulary.objects[item].name}</span>`
             }).join(', ').concat('.');
         
-            if (itemsArray.length) {
-                return `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;
-            } else {
-                return ''
-            }
+            return `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;
         }
     },
 

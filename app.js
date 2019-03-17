@@ -2,17 +2,31 @@ import {
     ENTER_KEY_CODE
 } from './modules/constants.js';
 import {
-    resetGameState, defaultTexts
+    defaultTexts, initialFlags, initialItemPlaces
 } from './modules/gamedata.js';
 import {
     renderGameScreen,
-    renderNonGameScreen
+    renderNonGameScreen,
+    getUserInput
 } from './modules/screenctrl.js';
 import processInput from './modules/core.js';
 import parseInput from './modules/parseinput.js';
 
+import Inventory from './classes/inventory.js'
+import CurrentLocation from './classes/location.js'
+import Flags from './classes/flags.js'
+import ItemPlaces from './classes/itemplaces.js'
+
 const launchGame = () => {
     let gameState;
+
+    // Сброс игрового состояния к первоначальным настройкам
+    const resetGameState = () => {
+        CurrentLocation.set(0);
+        Flags.init(initialFlags);
+        ItemPlaces.init(initialItemPlaces);
+        Inventory.clear();
+    }
 
     // Реакция программы на ввод игрока
     const handleEnter = () => {
@@ -26,11 +40,8 @@ const launchGame = () => {
                 break;
             case "game":
                 // Если он был внутри игры
-                const inputField = document.getElementById("input-field");
-
                 // 1. Получаем введённую игроком команду и очищаем поле ввода
-                const inputText = inputField.value;
-                inputField.value = "";
+                const inputText = getUserInput();
 
                 // 2. Отправляем команду в словоанализатор
                 const words = parseInput(inputText);

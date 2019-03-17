@@ -67,7 +67,9 @@ const canPlayerMove = (direction, newLocation) => {
 }
 
 // Перемещение игрока из одной локации в другую
-const movePlayer = (direction) => {
+const movePlayer = (verbId) => {
+    const directions = ['n', 'e', 's', 'w', 'u', 'd'];
+    const direction = directions[verbId];
     const gameDirections = locations[CurrentLocation.get()].dir;
     const indexOfTransitionLocation = gameDirections[direction];
     let newLocation = -1;

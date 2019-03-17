@@ -4,6 +4,13 @@ import {
 import CurrentLocation from '../classes/location.js';
 import ItemPlaces from '../classes/itemplaces.js';
 
+const getUserInput = () => {
+    const inputField = document.getElementById("input-field");
+    const inputText = inputField.value;
+    inputField.value = "";
+    return inputText;
+}
+
 // Возвращает текст, который выводится как описание локации
 const constructLocation = () => {
 
@@ -58,5 +65,6 @@ const renderNonGameScreen = (type) => {
 
 export {
     renderGameScreen,
-    renderNonGameScreen
+    renderNonGameScreen,
+    getUserInput
 };
