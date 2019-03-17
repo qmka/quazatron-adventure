@@ -6,6 +6,8 @@ import {
     defaultTexts,
     initialFlags,
     initialItemPlaces,
+    initialCounters,
+    initialInventory,
     defaultLocation
 } from './modules/gamedata.js';
 import {
@@ -20,6 +22,7 @@ import Inventory from './classes/inventory.js'
 import CurrentLocation from './classes/location.js'
 import Flags from './classes/flags.js'
 import ItemPlaces from './classes/itemplaces.js'
+import Counters from './classes/counters.js';
 
 const launchGame = () => {
     let gameState;
@@ -29,7 +32,8 @@ const launchGame = () => {
         CurrentLocation.set(defaultLocation);
         Flags.init(initialFlags);
         ItemPlaces.init(initialItemPlaces);
-        Inventory.clear();
+        Counters.init(initialCounters);
+        Inventory.init(initialInventory);
     }
 
     // Реакция программы на ввод игрока

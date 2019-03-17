@@ -11,6 +11,7 @@ import ItemPlaces from '../classes/itemplaces.js'
 import {
     GAME_STATES
 } from './constants.js';
+import Counters from '../classes/counters.js';
 
 // Сохраняем игровое состояние
 const saveGameState = () => {
@@ -165,6 +166,8 @@ const processInput = (userInput) => {
         };
         // Дефолтное значение answer на случай, если программа не понимает введённый игроком глагол
         answer = defaultTexts.defaultAnswer;
+        // Прокручиваем все нужные счётчики
+        encounters.setCounters();
         // Обрабатываем команду игрока (по глаголу)
         // Если это глагол перемещения
         switch (verbId) {
@@ -183,6 +186,7 @@ const processInput = (userInput) => {
             case 6:
                 // Глагол "ИНФО" (6)
                 answer = defaultTexts.info;
+                answer += `Количество потраченных ходов: ${Counters.get('gameTurns')}.`;
                 break;
             case 7:
                 // Выход из игры

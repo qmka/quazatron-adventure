@@ -2,8 +2,9 @@ import Inventory from '../classes/inventory.js'
 import CurrentLocation from '../classes/location.js'
 import Flags from '../classes/flags.js'
 import ItemPlaces from '../classes/itemplaces.js'
+import Counters from '../classes/counters.js';
 
-const defaultLocation = 0;
+const defaultLocation = 28;
 
 const initialItemPlaces = {
     0: 0,
@@ -18,7 +19,8 @@ const initialItemPlaces = {
     9: 22,
     10: 26,
     11: 19,
-    12: 2
+    12: 2,
+    27: -1
 }
 
 const initialFlags = {
@@ -38,6 +40,12 @@ const initialFlags = {
     isVictory: false,
     isGameOver: false
 }
+
+const initialCounters = {
+    gameTurns: 0
+}
+
+const initialInventory = [27];
 
 // Словарь - существительные, глаголы и прилагательные, которые понимает игра
 const vocabulary = {
@@ -334,6 +342,13 @@ const vocabulary = {
         id: 26,
         forms: ["принцесса", "принцессу", "принцессе", "принцессой", "принцессы"],
         canHold: false,
+        adjective: -1
+    }, {
+        id: 27,
+        forms: ["часы", "часов", "часами", "часам"],
+        name: "часы",
+        canHold: true,
+        desc: "Это волшебные часы, которые показывают, сколько ходов в игре вы уже сделали.",
         adjective: -1
     }],
 
@@ -719,6 +734,11 @@ const encounters = {
         return description;
     },
 
+    // Прокручиваем все заданные игрой счётчики
+    setCounters() {
+        Counters.increase('gameTurns');
+    },
+
     // Проверяем, мешает ли игроку что-либо двигаться в выбранном им направлении
     checkPlayerObstacles(direction) {
         const currentLocation = CurrentLocation.get();
@@ -861,6 +881,9 @@ const encounters = {
                 answer += " Осматривая вязанку, я обнаружил спрятанный в ней топор.";
             }
             return answer;
+        }
+        if (objectId === 27 && Inventory.includes(27)) {
+            return vocabulary.objects[27].desc + ` Они показывают число ${Counters.get('gameTurns')}.`;
         }
 
         return "Ничего необычного.";
@@ -1241,7 +1264,7 @@ const defaultTexts = {
 
     startMainText: '<span style="color: lime;">❀⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱СПЯЩАЯ КРАСАВИЦА⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱─⊰✫⊱❀</span><div class="new-paragraph">В этом приключении вам нужно пробраться в заброшенный замок, найти волшебный меч и спасти спящую беспробудным сном красавицу, которую усыпила злая ведьма. Исследуйте мир игры, отдавая компьютеру текстовые команды. Если не знаете, как это делается, введите команду-подсказку <span style="color: yellow;">ИНФО</span>.</div>',
 
-    victoryText: 'Этот текст выводится когда игрок побеждает!',
+    victoryText: `Этот текст выводится когда игрок побеждает!`,
 
     helpMessage: 'Используйте команды <span style="color: yellow;">С (север), Ю (юг), З (запад), В (восток), Х (вверх), Н (вниз)</span> для передвижения.',
 
@@ -1296,5 +1319,7 @@ export {
     defaultTexts,
     defaultImages,
     initialFlags,
-    initialItemPlaces
+    initialItemPlaces,
+    initialCounters,
+    initialInventory
 };
