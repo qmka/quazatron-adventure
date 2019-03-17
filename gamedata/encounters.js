@@ -5,24 +5,41 @@ import ItemPlaces from '../classes/itemplaces.js'
 import Counters from '../classes/counters.js';
 
 import vocabulary from '../gamedata/vocabulary.js';
+import { defaultTexts } from '../gamedata/default-data.js';
 
 const encounters = {
     // Добавляем дополнительную информацию к описанию локации в зависимости от различных условий
     addDescription() {
         const currentLocation = CurrentLocation.get();
-        let description = '<div class="new-paragraph">';
-
-        if (currentLocation === 8 && Flags.get("isLadderLeanToTree")) description += "К дереву приставлена лестница.";
-        if (currentLocation === 11 && Flags.get("isDoorOpened")) description += "Дверь открыта.";
-        if (currentLocation === 7 && !Flags.get("isTrollKilled")) description += "Путь на восток преграждает толстый тролль.";
-        if (currentLocation === 17 && !Flags.get("isPortcullisOpened")) description += "Решётка опущена - не пройти.";
-        if (currentLocation === 17 && Flags.get("isPortcullisOpened")) description += "Решётка поднята к потолку.";
-        if (currentLocation === 18 && Flags.get("isTrapdoorOpened")) description += "В полу комнаты дыра, через которую можно спуститься вниз.";
-        if (currentLocation === 18 && !Flags.get("isTrapdoorOpened")) description += "В полу есть закрытый люк.";
-        if (currentLocation === 23 && !Flags.get("isWormKilled")) description += "Вход в южный тоннель преграждает огромный скальный червь.";
-        if (currentLocation === 20 && !Flags.get("isMonsterKilled")) description += "Северный проход охраняет страшный ледяной монстр.";
-        if (currentLocation === 27 && !Flags.get("isWitchKilled")) description += "В противоположном конце комнаты вы видите ведьму. Её заклятье летит прямо в вашу сторону, нужно быстро что-то делать!";
-
+        let description = '<div class="new-paragraph encounter">';
+        switch (currentLocation) {
+            case 7:
+                if (!Flags.get("isTrollKilled")) description += "Путь на восток преграждает толстый тролль.";
+                break;
+            case 8:
+                if (Flags.get("isLadderLeanToTree")) description += "К дереву приставлена лестница.";
+                break;
+            case 11:
+                if (Flags.get("isDoorOpened")) description += "Дверь открыта.";
+                break;
+            case 17:
+                if (!Flags.get("isPortcullisOpened")) description += "Решётка опущена - не пройти.";
+                else description += "Решётка поднята к потолку.";
+                break;
+            case 18:
+                if (Flags.get("isTrapdoorOpened")) description += "В полу комнаты дыра, через которую можно спуститься вниз.";
+                else description += "В полу есть закрытый люк.";
+                break;
+            case 20:
+                if (!Flags.get("isMonsterKilled")) description += "Северный проход охраняет страшный ледяной монстр.";
+                break;
+            case 23:
+                if (!Flags.get("isWormKilled")) description += "Вход в южный тоннель преграждает огромный скальный червь.";
+                break;
+            case 27:
+                if (!Flags.get("isWitchKilled")) description += "В противоположном конце комнаты вы видите ведьму. Её заклятье летит прямо в вашу сторону, нужно быстро что-то делать!";
+                break;
+        }
         description += '</div>';
         return description;
     },
@@ -35,26 +52,27 @@ const encounters = {
     // Проверяем, мешает ли игроку что-либо двигаться в выбранном им направлении
     checkPlayerObstacles(direction) {
         const currentLocation = CurrentLocation.get();
+        console.log(direction);
 
-        if (currentLocation === 7 && !Flags.get("isTrollKilled") && direction === 1) {
+        if (currentLocation === 7 && !Flags.get("isTrollKilled") && direction === 'e') {
             return "Тролль рычит и не даёт мне пройти.";
         }
-        if (currentLocation === 8 && !Flags.get("isLadderLeanToTree") && direction === 4) {
+        if (currentLocation === 8 && !Flags.get("isLadderLeanToTree") && direction === 'u') {
             return "Я не могу залезть на дерево. Ствол очень гладкий, не за что зацепиться";
         }
-        if (currentLocation === 11 && !Flags.get("isDoorOpened") && direction === 1) {
+        if (currentLocation === 11 && !Flags.get("isDoorOpened") && direction === 'e') {
             return "Дверь закрыта, я не могу туда пройти.";
         }
-        if (currentLocation === 17 && !Flags.get("isPortcullisOpened") && direction === 0) {
+        if (currentLocation === 17 && !Flags.get("isPortcullisOpened") && direction === 'n') {
             return "Решётка опущена до пола, она мешает мне пройти.";
         }
-        if (currentLocation === 18 && !Flags.get("isTrapdoorOpened") && direction === 5) {
+        if (currentLocation === 18 && !Flags.get("isTrapdoorOpened") && direction === 'd') {
             return "Путь вниз мне преграждает закрытый люк.";
         }
-        if (currentLocation === 20 && !Flags.get("isMonsterKilled") && direction === 0) {
+        if (currentLocation === 20 && !Flags.get("isMonsterKilled") && direction === 'n') {
             return "Ледяной монстр мешает мне пройти.";
         }
-        if (currentLocation === 23 && !Flags.get("isWormKilled") && direction === 2) {
+        if (currentLocation === 23 && !Flags.get("isWormKilled") && direction === 's') {
             return "Скальный червь мешает мне пройти.";
         }
 
@@ -66,7 +84,7 @@ const encounters = {
         if (Flags.get("isDiedFromFish")) {
             return 'Я почувствовал острую боль в животе и умер. Глупо, конечно, заканчивать это приключение, отравившись протухшей рыбой.';
         }
-        
+
         return defaultTexts.defaultGameOverText;
     },
 

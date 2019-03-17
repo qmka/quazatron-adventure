@@ -2,7 +2,7 @@ import vocabulary from '../gamedata/vocabulary.js';
 
 import {
     defaultTexts
-} from '../gamedata/defaultmedia.js';
+} from '../gamedata/default-data.js';
 
 import {
     WORD_TYPES

@@ -86,7 +86,7 @@ body {
     color: white;
 }
 
-.inventory-item, .location-item {
+.inventory-item, .location-item, .encounter {
     color: #f0e386;
 }
 

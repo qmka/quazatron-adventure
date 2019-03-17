@@ -4,7 +4,7 @@ import locations from '../gamedata/locations.js';
 
 import {
     defaultTexts
-} from '../gamedata/defaultmedia.js';
+} from '../gamedata/default-data.js';
 
 import Inventory from '../classes/inventory.js';
 import CurrentLocation from '../classes/location.js';
@@ -62,6 +62,7 @@ const canPlayerMove = (direction, newLocation) => {
     // В объекте encounters указаны условия, по которым куда-то нельзя пройти
 
     const result = encounters.checkPlayerObstacles(direction);
+    console.log(result);
     if (result) {
         answer = result;
         access = false;

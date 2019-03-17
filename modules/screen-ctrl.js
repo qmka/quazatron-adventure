@@ -3,7 +3,7 @@ import locations from '../gamedata/locations.js';
 
 import {
     defaultTexts, defaultImages
-} from '../gamedata/defaultmedia.js';
+} from '../gamedata/default-data.js';
 
 import CurrentLocation from '../classes/location.js';
 import ItemPlaces from '../classes/itemplaces.js';

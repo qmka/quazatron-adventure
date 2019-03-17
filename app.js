@@ -4,25 +4,29 @@ import {
 } from './modules/constants.js';
 
 import {
+    log
+} from './modules/utils.js';
+
+import {
     initialFlags,
     initialItemPlaces,
     initialCounters,
     initialInventory,
     defaultLocation
-} from './gamedata/initialdata.js';
+} from './gamedata/initial-data.js';
 
 import {
     defaultTexts
-} from './gamedata/defaultmedia.js';
+} from './gamedata/default-data.js';
 
 import {
     renderGameScreen,
     renderNonGameScreen,
     getUserInput
-} from './modules/screenctrl.js';
+} from './modules/screen-ctrl.js';
 
 import processInput from './modules/core.js';
-import parseInput from './modules/parseinput.js';
+import parseInput from './modules/parse-input.js';
 
 import Inventory from './classes/inventory.js'
 import CurrentLocation from './classes/location.js'
@@ -30,7 +34,7 @@ import Flags from './classes/flags.js'
 import ItemPlaces from './classes/itemplaces.js'
 import Counters from './classes/counters.js';
 
-const launchGame = () => {
+{
     let gameState;
 
     // Сброс игрового состояния к первоначальным настройкам
@@ -100,7 +104,7 @@ const launchGame = () => {
         });
     };
 
-    console.log('Application has started.');
+    log('Application has started.');
 
     // выводим стартовый экран
     gameState = GAME_STATES.start;
@@ -108,5 +112,3 @@ const launchGame = () => {
     resetGameState();
     setupEventListeners();
 }
-
-launchGame();
