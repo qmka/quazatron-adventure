@@ -1,10 +1,14 @@
-import {
-    isNumber, log
-} from '../modules/utils.js';
+import vocabulary from '../gamedata/vocabulary.js';
+import locations from '../gamedata/locations.js';
 
 import {
-    vocabulary, locations, defaultTexts
-}  from '../modules/gamedata.js';
+    defaultTexts
+} from '../gamedata/defaultmedia.js';
+
+import {
+    isNumber,
+    log
+} from '../modules/utils.js';
 
 const ItemPlaces = {
     _itemPlaces: {},
@@ -24,7 +28,7 @@ const ItemPlaces = {
     getLocationItemsList(locationId) {
         if (isNumber(locationId) && locations[locationId]) {
             let itemsArray = [];
-        
+
             for (let key in this._itemPlaces) {
                 if (this._itemPlaces[key] === locationId) {
                     itemsArray.push(key);
@@ -34,11 +38,11 @@ const ItemPlaces = {
             if (!itemsArray.length) {
                 return ''
             }
-        
+
             const itemsInLoc = itemsArray.map((item) => {
                 return `<span class="location-item">${vocabulary.objects[item].name}</span>`
             }).join(', ').concat('.');
-        
+
             return `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;
         } else {
             log(`ItemPlaces.getLocationItemsList: передаётся некорректный ID локации: ${locationId}.`);

@@ -2,19 +2,25 @@ import {
     ENTER_KEY_CODE,
     GAME_STATES
 } from './modules/constants.js';
+
 import {
-    defaultTexts,
     initialFlags,
     initialItemPlaces,
     initialCounters,
     initialInventory,
     defaultLocation
-} from './modules/gamedata.js';
+} from './gamedata/initialdata.js';
+
+import {
+    defaultTexts
+} from './gamedata/defaultmedia.js';
+
 import {
     renderGameScreen,
     renderNonGameScreen,
     getUserInput
 } from './modules/screenctrl.js';
+
 import processInput from './modules/core.js';
 import parseInput from './modules/parseinput.js';
 

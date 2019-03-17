@@ -1,6 +1,4 @@
-import {
-    vocabulary
-} from '../modules/gamedata.js';
+import vocabulary from '../gamedata/vocabulary.js';
 
 import {
     isNumber, log

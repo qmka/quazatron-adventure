@@ -1,17 +1,20 @@
+import vocabulary from '../gamedata/vocabulary.js';
+import encounters from '../gamedata/encounters.js';
+import locations from '../gamedata/locations.js';
+
 import {
-    vocabulary,
-    locations,
-    encounters,
     defaultTexts
-} from './gamedata.js';
-import Inventory from '../classes/inventory.js'
-import CurrentLocation from '../classes/location.js'
-import Flags from '../classes/flags.js'
-import ItemPlaces from '../classes/itemplaces.js'
+} from '../gamedata/defaultmedia.js';
+
+import Inventory from '../classes/inventory.js';
+import CurrentLocation from '../classes/location.js';
+import Flags from '../classes/flags.js';
+import ItemPlaces from '../classes/itemplaces.js';
+import Counters from '../classes/counters.js';
+
 import {
     GAME_STATES
 } from './constants.js';
-import Counters from '../classes/counters.js';
 
 // Сохраняем игровое состояние
 const saveGameState = () => {

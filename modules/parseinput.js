@@ -1,9 +1,13 @@
+import vocabulary from '../gamedata/vocabulary.js';
+
 import {
-    vocabulary, defaultTexts
-} from './gamedata.js';
+    defaultTexts
+} from '../gamedata/defaultmedia.js';
+
 import {
     WORD_TYPES
 } from './constants.js';
+
 import {
     isNumber
 } from './utils.js';

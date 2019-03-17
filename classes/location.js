@@ -1,6 +1,4 @@
-import {
-    locations
-} from "../modules/gamedata.js";
+import locations from '../gamedata/locations.js';
 
 import {
     isNumber, log

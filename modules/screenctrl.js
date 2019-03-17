@@ -1,8 +1,13 @@
+import encounters from '../gamedata/encounters.js';
+import locations from '../gamedata/locations.js';
+
 import {
-    locations, encounters, defaultTexts, defaultImages
-} from './gamedata.js';
+    defaultTexts, defaultImages
+} from '../gamedata/defaultmedia.js';
+
 import CurrentLocation from '../classes/location.js';
 import ItemPlaces from '../classes/itemplaces.js';
+
 import {
     GAME_STATES
 } from './constants.js';
