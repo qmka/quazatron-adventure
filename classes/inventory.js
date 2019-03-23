@@ -45,7 +45,7 @@ const Inventory = {
 
     init(itemsArray) {
         if (Array.isArray(itemsArray)) {
-            this._inventory = itemsArray;
+            this._inventory = [].concat(itemsArray);
         } else {
             log('Inventory.init: для инициализации инвентаря используйте массив с ID предметов.');
         }

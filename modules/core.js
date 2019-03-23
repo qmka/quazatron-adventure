@@ -62,7 +62,6 @@ const canPlayerMove = (direction, newLocation) => {
     // В объекте encounters указаны условия, по которым куда-то нельзя пройти
 
     const result = encounters.checkPlayerObstacles(direction);
-    console.log(result);
     if (result) {
         answer = result;
         access = false;

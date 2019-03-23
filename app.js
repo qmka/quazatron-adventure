@@ -48,6 +48,7 @@ import Counters from './classes/counters.js';
 
     // Реакция программы на ввод игрока
     const handleEnter = () => {
+        console.log(Inventory.getAll());
         // Реакция на нажатие клавиши ENTER игроком в зависимости от того, на каком экране он находится
         switch (gameState) {
             case GAME_STATES.start:

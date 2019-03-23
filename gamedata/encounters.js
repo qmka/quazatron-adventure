@@ -55,7 +55,6 @@ const encounters = {
     // Проверяем, мешает ли игроку что-либо двигаться в выбранном им направлении
     checkPlayerObstacles(direction) {
         const currentLocation = CurrentLocation.get();
-        console.log(direction);
 
         if (currentLocation === 7 && !Flags.get("isTrollKilled") && direction === 'e') {
             return "Тролль рычит и не даёт мне пройти.";
