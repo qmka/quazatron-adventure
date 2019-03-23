@@ -36,9 +36,8 @@ const constructLocation = () => {
 }
 
 const renderScreen = (mainText, image, actionText, isInputAreaVisible) => {
-    document.getElementById("screen").innerHTML = mainText;
+    document.getElementById("screen").innerHTML = `${mainText}<div class="new-paragraph action-ask">${actionText}</div>`;
     document.getElementById("image").innerHTML = image;
-    document.getElementById("action").innerHTML = actionText;
     document.getElementById("input-area").style.opacity = isInputAreaVisible ? '100' : '0';
 }
 

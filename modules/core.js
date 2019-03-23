@@ -190,7 +190,6 @@ const processInput = (userInput) => {
             case 6:
                 // Глагол "ИНФО" (6)
                 answer = defaultTexts.info;
-                answer += `Количество потраченных ходов: ${Counters.get('gameTurns')}.`;
                 break;
             case 7:
                 // Выход из игры

@@ -42,13 +42,10 @@ body {
 }
 
 .screen {
-    border-bottom-width: 0;
     flex-grow: 1;
 }
 
 .action-ask {
-    min-height: 110px;
-    border-top-width: 0;
     color: #f0e386;
 }
 
@@ -87,7 +84,7 @@ body {
 }
 
 .inventory-item, .location-item, .encounter {
-    color: #f0e386;
+    color: greenyellow;
 }
 
 .new-paragraph {
