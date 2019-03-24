@@ -1,4 +1,4 @@
-import vocabulary from '../gamedata/vocabulary.js';
+import objects from '../gamedata/objects.js';
 
 import {
     isNumber, log
@@ -8,7 +8,7 @@ const Inventory = {
     _inventory: [],
 
     addItem(itemId) {
-        if (isNumber(itemId) && vocabulary.objects[itemId] && vocabulary.objects[itemId].canHold) {
+        if (isNumber(itemId) && objects[itemId] && objects[itemId].canHold) {
             this._inventory.push(itemId);
         } else {
             log(`Inventory.addItem: передаётся некорректный id предмета: ${itemId}.`);
@@ -16,7 +16,7 @@ const Inventory = {
     },
 
     removeItem(itemId) {
-        if (isNumber(itemId) && vocabulary.objects[itemId] && this._inventory.includes(itemId)) {
+        if (isNumber(itemId) && objects[itemId] && this._inventory.includes(itemId)) {
             this._inventory = this._inventory.filter((e) => e !== itemId);
         } else {
             log(`Inventory.removeItem: передаётся некорректный id предмета: ${itemId}.`);
@@ -34,7 +34,7 @@ const Inventory = {
     getItemsTextList() {
         if (!this._inventory.length) return "У меня ничего нет."; 
         const list = this._inventory.map((item) => {
-            return `<span class="inventory-item">${vocabulary.objects[item].name}</span>`
+            return `<span class="inventory-item">${objects[item].name}</span>`
         }).join(', ').concat('.');
         return `У меня есть: ${list}`;
     },

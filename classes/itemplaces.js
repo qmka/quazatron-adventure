@@ -1,5 +1,5 @@
-import vocabulary from '../gamedata/vocabulary.js';
 import locations from '../gamedata/locations.js';
+import objects from '../gamedata/objects.js';
 
 import {
     defaultTexts
@@ -40,7 +40,7 @@ const ItemPlaces = {
             }
 
             const itemsInLoc = itemsArray.map((item) => {
-                return `<span class="location-item">${vocabulary.objects[item].name}</span>`
+                return `<span class="location-item">${objects[item].name}</span>`
             }).join(', ').concat('.');
 
             return `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;

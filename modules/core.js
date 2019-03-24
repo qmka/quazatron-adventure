@@ -1,4 +1,5 @@
-import vocabulary from '../gamedata/vocabulary.js';
+import objects from '../gamedata/objects.js';
+import verbs from '../gamedata/verbs.js';
 import encounters from '../gamedata/encounters.js';
 import locations from '../gamedata/locations.js';
 
@@ -40,7 +41,7 @@ const loadGameState = () => {
 
 // Возвращаем описание предмета по его id
 const getItemDescriptionById = (id) => {
-    const item = vocabulary.objects.find((e) => e.id === id);
+    const item = objects.find((e) => e.id === id);
 
     return item.desc;
 }
@@ -149,9 +150,9 @@ const processInput = (userInput) => {
     // Разбираем полученный из парсера объект на object1Id, object2Id, verbId
     const object1Id = userInput.object1;
     const object2Id = userInput.object2;
-    const objects = [object1Id, object2Id];
+    const objectIds = [object1Id, object2Id];
     const verbId = userInput.verb;
-    const uniqueEncounter = encounters.getUniqueEncounter(verbId, objects);
+    const uniqueEncounter = encounters.getUniqueEncounter(verbId, objectIds);
     let answer = userInput.message;
     let gameFlag = GAME_STATES.game;
 
@@ -210,10 +211,10 @@ const processInput = (userInput) => {
             case 12:
             case 13:
                 // Отдельно обрабатываем глаголы "ВЗЯТЬ" (11), "ПОЛОЖИТЬ" (12), "ОСМОТРЕТЬ" (13)
-                answer = playerStandardActions[vocabulary.verbs[verbId].method](object1Id);
+                answer = playerStandardActions[verbs[verbId].method](object1Id);
                 break;
             default:
-                answer = encounters[vocabulary.verbs[verbId].method](objects);
+                answer = encounters[verbs[verbId].method](objectIds);
                 break            
         }
 

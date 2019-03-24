@@ -4,7 +4,7 @@ import Flags from '../classes/flags.js'
 import ItemPlaces from '../classes/itemplaces.js'
 import Counters from '../classes/counters.js';
 
-import vocabulary from '../gamedata/vocabulary.js';
+import objects from '../gamedata/objects.js';
 import { defaultTexts } from '../gamedata/default-data.js';
 
 const encounters = {
@@ -187,7 +187,7 @@ const encounters = {
             return "Прекрасная, но очень бледная. Её грудь медленно поднимается и опускается: принцесса крепко спит.";
         }
         if (objectId === 4 && Inventory.includes(4)) {
-            let answer = vocabulary.objects[4].desc;
+            let answer = objects[4].desc;
             if (!Flags.get("isAxeRevealed")) {
                 Flags.toggle("isAxeRevealed");
                 ItemPlaces.set(5, currentLocation);
@@ -196,7 +196,7 @@ const encounters = {
             return answer;
         }
         if (objectId === 27 && Inventory.includes(27)) {
-            return vocabulary.objects[27].desc + ` Они показывают число ${Counters.get('gameTurns')}.`;
+            return objects[27].desc + ` Они показывают число ${Counters.get('gameTurns')}.`;
         }
 
         return "Ничего необычного.";

@@ -1,4 +1,6 @@
-import vocabulary from '../gamedata/vocabulary.js';
+import objects from '../gamedata/objects.js';
+import adjectives from '../gamedata/adjectives.js';
+import verbs from '../gamedata/verbs.js';
 
 import {
     defaultTexts
@@ -14,11 +16,14 @@ import {
 
 // Ищем id слова word в словаре type
 const findWordId = (type, word) => {
+    let vocabulary;
     let key = `${type}s`;
 
-    if (!type in vocabulary || !key in vocabulary) return -1;
-    const result = vocabulary[key].find((item) => item.forms.includes(word));
-
+    if (key === 'objects') vocabulary = objects;
+    else if (key === 'adjectives') vocabulary = adjectives;
+    else vocabulary = verbs;
+    
+    const result = vocabulary.find((item) => item.forms.includes(word));
     return result ? result.id : -1;
 }
 
@@ -27,7 +32,7 @@ const findWordId = (type, word) => {
 const findObjectsByWord = (word) => {
     let words = [];
 
-    vocabulary.objects.forEach(e => {
+    objects.forEach(e => {
         if (e.forms.includes(word)) {
             words.push(e.id);
         }
@@ -37,7 +42,7 @@ const findObjectsByWord = (word) => {
 
 // Возвращаем свойство adjective объекта с соответствующим id
 const findAdjectiveProperty = (id) => {
-    const object = vocabulary.objects[id];
+    const object = objects[id];
 
     return object && isNumber(object.adjective) ? object.adjective : -1; 
 }
