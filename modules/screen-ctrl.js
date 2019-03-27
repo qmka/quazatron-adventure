@@ -40,7 +40,7 @@ const constructLocation = () => {
 }
 
 const renderScreen = (mainText, image, actionText, isInputAreaVisible) => {
-    $("#screen").html(`${mainText}<div class="new-paragraph action-ask">${actionText}</div>`);
+    $("#screen").html(`${mainText}<p class="action-ask">${actionText}</p>`);
     $("#image").html(image);
     $("#input-area").css("opacity", isInputAreaVisible ? '100' : '0');
 }

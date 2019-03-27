@@ -87,7 +87,7 @@ body {
     color: greenyellow;
 }
 
-.new-paragraph {
-    display: block;
+.screen p {
+    margin: 0;
     padding-top: 1rem;
 }

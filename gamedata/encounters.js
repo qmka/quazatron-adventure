@@ -41,7 +41,7 @@ const encounters = {
                 break;
         }
         if (encounter) {
-            return `<div class="new-paragraph">${encounter}</div>`;
+            return `<p>${encounter}</p>`;
         } else {
             return '';
         }
