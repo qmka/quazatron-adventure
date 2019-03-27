@@ -166,6 +166,11 @@ const objects = [{
     canHold: true,
     desc: "Это волшебные часы, которые показывают, сколько ходов в игре вы уже сделали.",
     adjective: -1
+}, {
+    id: 28,
+    forms: ["все", "всё"],
+    canHold: false,
+    adjective: -1
 }]
 
 export default objects

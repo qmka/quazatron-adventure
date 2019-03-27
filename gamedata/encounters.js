@@ -119,6 +119,20 @@ const encounters = {
     },
 
     take(itemId) {
+        // Если игрок хочет взять всё
+        if (itemId === 28) {
+            // Проверяем, есть ли предметы в локации
+            const itemsArray = ItemPlaces.getLocationItemsArray(CurrentLocation.get());
+            if (itemsArray.length !== 0) {
+                itemsArray.forEach((item) => {
+                    Inventory.addItem(item);
+                    ItemPlaces.set(item, -1);
+                });
+                return "Я всё взял.";
+            };
+            return "Здесь ничего нет.";
+        }
+
         // Если предмет - лестница, и она прислонена к дереву, то можно её забрать в инвентарь
         if (itemId === 0 && Flags.get("isLadderLeanToTree")) {
             Flags.toggle("isLadderLeanToTree");
@@ -130,6 +144,21 @@ const encounters = {
     },
 
     drop(itemId) {
+        // Положить всё
+        if (itemId === 28) {
+            // Проверяем, есть ли предметы в локации
+            const itemsArray = Inventory.getAll();
+            if (itemsArray.length !== 0) {
+                itemsArray.forEach((item) => {
+                    Inventory.removeItem(item);
+                    ItemPlaces.set(item, CurrentLocation.get());
+                });
+                return "Я всё положил.";
+            };
+            return "У меня ничего нет.";
+        }
+
+        //
         if ((itemId === 11 || itemId === 12) && Inventory.includes(itemId) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
             Inventory.removeItem(itemId);
             return "Вы бросили монетку на землю, и она укатилась в пропасть.";

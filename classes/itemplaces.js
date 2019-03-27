@@ -27,13 +27,7 @@ const ItemPlaces = {
 
     getLocationItemsList(locationId) {
         if (isNumber(locationId) && locations[locationId]) {
-            let itemsArray = [];
-
-            for (let key in this._itemPlaces) {
-                if (this._itemPlaces[key] === locationId) {
-                    itemsArray.push(key);
-                };
-            }
+            const itemsArray = this.getLocationItemsArray(locationId);
 
             if (!itemsArray.length) {
                 return ''
@@ -46,6 +40,22 @@ const ItemPlaces = {
             return `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;
         } else {
             log(`ItemPlaces.getLocationItemsList: передаётся некорректный ID локации: ${locationId}.`);
+        }
+    },
+
+    getLocationItemsArray(locationId) {
+        if (isNumber(locationId) && locations[locationId]) {
+            const itemsArray = [];
+
+            for (let key in this._itemPlaces) {
+                if (this._itemPlaces[key] === locationId) {
+                    itemsArray.push(key);
+                };
+            }
+            
+            return itemsArray;
+        } else {
+            log(`ItemPlaces.getLocationItemsArray: передаётся некорректный ID локации: ${locationId}.`);
         }
     },
 

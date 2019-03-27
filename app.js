@@ -92,7 +92,7 @@ import Counters from './classes/counters.js';
         $(document).on("keypress", function (event) {
             let code;
             setFocusOnInput();
-            
+            console.log(event.key);
             if (event.key !== undefined) {
                 code = event.key;
             } else if (event.keyIdentifier !== undefined) {
