@@ -22,7 +22,8 @@ import {
 import {
     renderGameScreen,
     renderNonGameScreen,
-    getUserInput
+    getUserInput,
+    setFocusOnInput
 } from './modules/screen-ctrl.js';
 
 import processInput from './modules/core.js';
@@ -48,7 +49,7 @@ import Counters from './classes/counters.js';
 
     // Реакция программы на ввод игрока
     const handleEnter = () => {
-        console.log(Inventory.getAll());
+        
         // Реакция на нажатие клавиши ENTER игроком в зависимости от того, на каком экране он находится
         switch (gameState) {
             case GAME_STATES.start:
@@ -88,9 +89,10 @@ import Counters from './classes/counters.js';
     };
 
     const setupEventListeners = () => {
-        document.addEventListener('keypress', function (event) {
+        $(document).on("keypress", function (event) {
             let code;
-
+            setFocusOnInput();
+            
             if (event.key !== undefined) {
                 code = event.key;
             } else if (event.keyIdentifier !== undefined) {
@@ -108,10 +110,10 @@ import Counters from './classes/counters.js';
     log('Application has started.');
 
     $(document).ready(function () {
-    // выводим стартовый экран
-    gameState = GAME_STATES.start;
-    renderNonGameScreen(gameState);
-    resetGameState();
-    setupEventListeners();
+        gameState = GAME_STATES.start;
+        renderNonGameScreen(gameState);
+        resetGameState();
+        setFocusOnInput();
+        setupEventListeners();
     });
 }

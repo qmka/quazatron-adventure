@@ -19,6 +19,10 @@ const getUserInput = () => {
     return inputText;
 }
 
+const setFocusOnInput = () => {
+    $("#input-field").focus();
+}
+
 // Возвращает текст, который выводится как описание локации
 const constructLocation = () => {
 
@@ -73,5 +77,6 @@ const renderNonGameScreen = (type) => {
 export {
     renderGameScreen,
     renderNonGameScreen,
-    getUserInput
+    getUserInput,
+    setFocusOnInput
 };
