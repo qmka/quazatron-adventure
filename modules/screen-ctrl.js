@@ -36,9 +36,9 @@ const constructLocation = () => {
 }
 
 const renderScreen = (mainText, image, actionText, isInputAreaVisible) => {
-    document.getElementById("screen").innerHTML = `${mainText}<div class="new-paragraph action-ask">${actionText}</div>`;
-    document.getElementById("image").innerHTML = image;
-    document.getElementById("input-area").style.opacity = isInputAreaVisible ? '100' : '0';
+    $("#screen").html(`${mainText}<div class="new-paragraph action-ask">${actionText}</div>`);
+    $("#image").html(image);
+    $("#input-area").css("opacity", isInputAreaVisible ? '100' : '0');
 }
 
 // Формирует экран, который выдаётся пользователю после совершённого им действия

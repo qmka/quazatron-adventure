@@ -107,9 +107,11 @@ import Counters from './classes/counters.js';
 
     log('Application has started.');
 
+    $(document).ready(function () {
     // выводим стартовый экран
     gameState = GAME_STATES.start;
     renderNonGameScreen(gameState);
     resetGameState();
     setupEventListeners();
+    });
 }
