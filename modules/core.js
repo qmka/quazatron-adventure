@@ -76,13 +76,15 @@ const canPlayerMove = (direction, newLocation) => {
 
 // Перемещение игрока из одной локации в другую
 const movePlayer = (verbId) => {
-    const directions = ['n', 'e', 's', 'w', 'u', 'd'];
+    const directions = ['n', 'e', 's', 'w', 'u', 'd', 'ne', 'nw', 'se', 'sw'];
     const direction = directions[verbId];
     const gameDirections = locations[CurrentLocation.get()].dir;
-    const indexOfTransitionLocation = gameDirections[direction];
+    let indexOfTransitionLocation = -1;
     let newLocation = -1;
     let canChangeLocation = false;
 
+    if (gameDirections[direction] >= 0) indexOfTransitionLocation = gameDirections[direction];
+    
     // Проверяем, можно ли туда пройти
     const canMove = canPlayerMove(direction, indexOfTransitionLocation);
 
@@ -181,36 +183,40 @@ const processInput = (userInput) => {
             case 3:
             case 4:
             case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
                 const resultOfMove = movePlayer(verbId);
                 if (resultOfMove.canChangeLocation) {
                     CurrentLocation.set(resultOfMove.newLocation);
                 }
                 answer = resultOfMove.answer;
                 break;
-            case 6:
-                // Глагол "ИНФО" (6)
+            case 10:
+                // Глагол "ИНФО" (10)
                 answer = defaultTexts.info;
                 break;
-            case 7:
+            case 11:
                 // Выход из игры
                 gameFlag = GAME_STATES.gameover;
                 break;
-            case 8:
+            case 12:
                 // Инвентарь
                 answer = Inventory.getItemsTextList();
                 break;
-            case 9:
+            case 13:
                 // Сохранить игру
                 answer = saveGameState();
                 break;
-            case 10:
+            case 14:
                 // Загрузить игру
                 answer = loadGameState();
                 break;
-            case 11:
-            case 12:
-            case 13:
-                // Отдельно обрабатываем глаголы "ВЗЯТЬ" (11), "ПОЛОЖИТЬ" (12), "ОСМОТРЕТЬ" (13)
+            case 15:
+            case 16:
+            case 17:
+                // Отдельно обрабатываем глаголы "ВЗЯТЬ", "ПОЛОЖИТЬ", "ОСМОТРЕТЬ"
                 answer = playerStandardActions[verbs[verbId].method](object1Id);
                 break;
             default:

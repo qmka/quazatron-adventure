@@ -97,7 +97,7 @@ const encounters = {
         // В локации с ведьмой у игрока только один ход, чтобы отразить заклятье, иначе его выбрасывает в предыдущую комнату
         if (CurrentLocation.get() === 27 && !Flags.get("isWitchKilled")) {
             flag = true;
-            if (verbId === 32 && objectIds.includes(25)) {
+            if (verbId === 36 && objectIds.includes(25)) {
                 if (Inventory.includes(10)) {
                     Flags.toggle("isWitchKilled");
                     Inventory.removeItem(10);
