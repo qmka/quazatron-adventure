@@ -18,6 +18,7 @@ import {
 } from './constants.js';
 
 // Сохраняем игровое состояние
+
 const saveGameState = () => {
     localStorage.setItem('currentLocation', CurrentLocation.get());
     localStorage.setItem('inventory', JSON.stringify(Inventory.getAll()));

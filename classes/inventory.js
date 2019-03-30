@@ -9,7 +9,7 @@ const Inventory = {
 
     addItem(itemId) {
         if (isNumber(itemId) && objects[itemId] && objects[itemId].canHold) {
-            this._inventory.push(itemId);
+            this._inventory.push(parseInt(itemId));
         } else {
             log(`Inventory.addItem: передаётся некорректный id предмета: ${itemId}.`);
         }
