@@ -54,7 +54,8 @@ const parseInput = (input) => {
     let verb = -1,
         object1 = -1,
         object2 = -1,
-        message = defaultTexts.okMessage;
+        message = defaultTexts.okMessage,
+        objectsInInput;
 
     // Если игрок не ввёл ничего и нажал Enter
     if (!input.length) {
@@ -67,6 +68,10 @@ const parseInput = (input) => {
     }
     
     const words = input.toLowerCase().split(/[\s,]+/);
+
+    // Если игрок ввёл два слова (глагол + объект), то выставляем objectsInInput = 1
+    // Если меньше, то 0, если больше, то 2.
+    objectsInInput = words.length > 2 ? 2 : words.length - 1;
 
     // Ищем глагол
     verb = findWordId(WORD_TYPES.verb, words[0]);
@@ -160,7 +165,8 @@ const parseInput = (input) => {
         verb,
         object1,
         object2,
-        message
+        message,
+        objectsInInput
     }
 }
 

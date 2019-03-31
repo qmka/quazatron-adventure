@@ -85,7 +85,7 @@ const movePlayer = (verbId) => {
     let canChangeLocation = false;
 
     if (gameDirections[direction] >= 0) indexOfTransitionLocation = gameDirections[direction];
-    
+
     // Проверяем, можно ли туда пройти
     const canMove = canPlayerMove(direction, indexOfTransitionLocation);
 
@@ -103,38 +103,45 @@ const movePlayer = (verbId) => {
 }
 
 const playerStandardActions = {
-    takeItem(itemId) {
+    takeItem(objectIds, objectsInInput) {
         // Особые случаи
-        let answer = encounters.take(itemId);
+        let answer = encounters.take(objectIds);
 
         // Общий случай
-        if (!Inventory.includes(itemId) && ItemPlaces.get(itemId) === CurrentLocation.get()) {
-            Inventory.addItem(itemId);
-            ItemPlaces.set(itemId, -1);
-            answer = defaultTexts.defaultAnswerToTake;
+        // if (objectsInInput === 1 && objectIds[0] !== -1) {
+        if (objectIds[0] !== -1) {
+            const itemId = objectIds[0];
+            if (!Inventory.includes(itemId) && ItemPlaces.get(itemId) === CurrentLocation.get()) {
+                Inventory.addItem(itemId);
+                ItemPlaces.set(itemId, -1);
+                return defaultTexts.defaultAnswerToTake;
+            }
         }
-
         return answer;
     },
 
-    dropItem(itemId) {
-        // Особые случаи
-        let answer = encounters.drop(itemId);
+    dropItem(objectIds, objectsInInput) {
+        // Особые случаи - проверяем энкаунтеры
+        let answer = encounters.drop(objectIds);
 
         // Общий случай
-
-        if (Inventory.includes(itemId)) {
-            Inventory.removeItem(itemId);
-            ItemPlaces.set(itemId, CurrentLocation.get());
-            answer = defaultTexts.defaultAnswerToDrop;
+        // Если игрок указал один предмет, то кладём его
+        if (objectsInInput === 1) {
+            const itemId = objectIds[0];
+            if (Inventory.includes(itemId)) {
+                Inventory.removeItem(itemId);
+                ItemPlaces.set(itemId, CurrentLocation.get());
+                return defaultTexts.playerDropsItem;
+            } else {
+                return defaultTexts.playerHasNoItem;
+            }
         }
-
         return answer;
     },
 
-    examine(objectId) {
+    examine(objectIds) {
         let answer;
-
+        const objectId = objectIds[0];
         // Особый случай наступает, когда в локации есть соотв. функция
         const result = encounters.examine(objectId);
         if (result !== defaultTexts.defaultDescription) answer = result;
@@ -155,6 +162,7 @@ const processInput = (userInput) => {
     const object2Id = userInput.object2;
     const objectIds = [object1Id, object2Id];
     const verbId = userInput.verb;
+    const objectsInInput = userInput.objectsInInput;
     const uniqueEncounter = encounters.getUniqueEncounter(verbId, objectIds);
     let answer = userInput.message;
     let gameFlag = GAME_STATES.game;
@@ -218,11 +226,12 @@ const processInput = (userInput) => {
             case 16:
             case 17:
                 // Отдельно обрабатываем глаголы "ВЗЯТЬ", "ПОЛОЖИТЬ", "ОСМОТРЕТЬ"
-                answer = playerStandardActions[verbs[verbId].method](object1Id);
+                if (objectsInInput === 0) answer = defaultTexts.playerCommandsVerbWithoutObject;
+                else answer = playerStandardActions[verbs[verbId].method](objectIds, objectsInInput);
                 break;
             default:
-                answer = encounters[verbs[verbId].method](objectIds);
-                break            
+                answer = encounters[verbs[verbId].method](objectIds, objectsInInput);
+                break
         }
 
         // Проверяем, победил или проиграл ли игрок?

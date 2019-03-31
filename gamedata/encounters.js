@@ -5,7 +5,9 @@ import ItemPlaces from '../classes/itemplaces.js'
 import Counters from '../classes/counters.js';
 
 import objects from '../gamedata/objects.js';
-import { defaultTexts } from '../gamedata/default-data.js';
+import {
+    defaultTexts
+} from '../gamedata/default-data.js';
 
 const encounters = {
     // Добавляем дополнительную информацию к описанию локации в зависимости от различных условий
@@ -118,9 +120,9 @@ const encounters = {
         }
     },
 
-    take(itemId) {
+    take(objectIds) {
         // Если игрок хочет взять всё
-        if (itemId === 28) {
+        if (objectIds.includes(28)) {
             // Проверяем, есть ли предметы в локации
             const itemsArray = ItemPlaces.getLocationItemsArray(CurrentLocation.get());
             if (itemsArray.length !== 0) {
@@ -134,18 +136,18 @@ const encounters = {
         }
 
         // Если предмет - лестница, и она прислонена к дереву, то можно её забрать в инвентарь
-        if (itemId === 0 && Flags.get("isLadderLeanToTree")) {
+        if (objectIds.includes(0) && Flags.get("isLadderLeanToTree")) {
             Flags.toggle("isLadderLeanToTree");
             Inventory.addItem(0);
             return "Вы забрали лестницу.";
         }
 
-        return "Вы не можете это взять.";
+        return "Вы не можете это сделать.";
     },
 
-    drop(itemId) {
+    drop(objectIds) {
         // Положить всё
-        if (itemId === 28) {
+        if (objectIds.includes(28)) {
             // Проверяем, есть ли предметы в локации
             const itemsArray = Inventory.getAll();
             if (itemsArray.length !== 0) {
@@ -158,16 +160,37 @@ const encounters = {
             return "У меня ничего нет.";
         }
 
-        //
-        if ((itemId === 11 || itemId === 12) && Inventory.includes(itemId) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
-            Inventory.removeItem(itemId);
+        if (objectIds.includes(8) && Inventory.includes(8)) {
+            Inventory.removeItem(8);
+            if (CurrentLocation.get() === 20 && !Flags.get("isMonsterKilled")) {
+                Flags.toggle("isMonsterKilled");
+                return "Вы бросили мешочек с солью в монстра, и как только крупинки соли коснулись его кожи, монстр превратился в лужу воды.";
+            } else {
+                return "Вы рассыпали всю соль. Непонятно, правда, зачем было так делать - вдруг она бы мне пригодилась?";
+            }
+        }
+        if (objectIds.includes(5) && Inventory.includes(5)) {
+            return "Это явно не метательный топорик. Стоит попробовать что-то другое.";
+        }
+        if (objectIds.includes(2) && Inventory.includes(2)) {
+            return "Слишком тяжёлая, чтобы метать. Ей надо бить, желательно промеж глаз.";
+        }
+
+        if ((objectIds.includes(11) && Inventory.includes(11)) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
+            Inventory.removeItem(11);
             return "Вы бросили монетку на землю, и она укатилась в пропасть.";
         }
 
-        return "У меня нет этого.";
+        if ((objectIds.includes(12) && Inventory.includes(12)) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
+            Inventory.removeItem(12);
+            return "Вы бросили монетку на землю, и она укатилась в пропасть.";
+        }
+
+        return "Это делу не поможет.";
     },
 
-    examine(objectId) {
+    examine(objectIds) {
+        const objectId = objectIds[0];
         const currentLocation = CurrentLocation.get();
 
         if (currentLocation === 8 && objectId === 18) {
@@ -231,29 +254,8 @@ const encounters = {
         return "Ничего необычного.";
     },
 
-    throw (objectIds) {
-        if (objectIds.includes(8) && Inventory.includes(8)) {
-            Inventory.removeItem(8);
-            if (CurrentLocation.get() === 20 && !Flags.get("isMonsterKilled")) {
-                Flags.toggle("isMonsterKilled");
-                return "Вы бросили мешочек с солью в монстра, и как только крупинки соли коснулись его кожи, монстр превратился в лужу воды.";
-            } else {
-                return "Вы рассыпали всю соль. Непонятно, правда, зачем было так делать - вдруг она бы мне пригодилась?";
-            }
-        }
-        if (objectIds.includes(5) && Inventory.includes(5)) {
-            return "Это явно не метательный топорик. Стоит попробовать что-то другое.";
-        }
-        if (objectIds.includes(2) && Inventory.includes(2)) {
-            return "Слишком тяжёлая, чтобы метать. Ей надо бить, желательно промеж глаз.";
-        }
-        if (objectIds.includes(7) && Inventory.includes(7)) {
-            Inventory.removeItem(7);
-            return "Вы бросаете лампу, и она разбивается на осколки. И зачем нужно было это делать?";
-        }
-
-        return "Не сработает. А если вы хотите положить предмет на землю, то лучше введите команду ПОЛОЖИТЬ.";
-
+    wait(objectIds) {
+        return "Я немного передохнул. Время двигаться дальше!";
     },
 
     talk(objectIds) {
@@ -412,11 +414,15 @@ const encounters = {
         return "Тут нечего открывать.";
     },
 
-    lean(objectIds) {
-        if (objectIds.includes(0) && !Flags.get("isLadderLeanToTree") && Inventory.includes(0) && CurrentLocation.get() === 8) {
-            Flags.toggle("isLadderLeanToTree");
-            Inventory.removeItem(0);
-            return "Вы приставили лестницу к дереву.";
+    lean(objectIds, objectsInInput) {
+        if (objectIds.includes(0)) {
+            if (objectIds.includes(18) && !Flags.get("isLadderLeanToTree") && Inventory.includes(0) && CurrentLocation.get() === 8) {
+                Flags.toggle("isLadderLeanToTree");
+                Inventory.removeItem(0);
+                return "Вы приставили лестницу к дереву.";
+            } else if (objectsInInput === 1) {
+                return "Уточните, к чему вы хотите приставить лестницу.";
+            }
         }
 
         return "Хм, это делу не поможет.";

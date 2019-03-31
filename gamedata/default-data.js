@@ -15,9 +15,15 @@ const defaultTexts = {
     
     defaultAnswerToTake: 'Ок, взял.',
 
-    defaultAnswerToDrop: 'Ок, положил.',
+    playerDropsItem: 'Ок, положил.',
+
+    playerHasNoItem: 'У меня этого нет.',
 
     playerCantGo: 'Вы не можете туда пройти.',
+
+    playerUselessAction: 'Это делу не поможет.',
+
+    playerCommandsVerbWithoutObject: 'Укажите предмет или игровой объект, к которому должно быть применено это действие.',
 
     itemsInLocation: 'Здесь также есть:',
 
