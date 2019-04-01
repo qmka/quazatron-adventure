@@ -16,10 +16,10 @@ const encounters = {
         let encounter;
         switch (currentLocation) {
             case 7:
-                if (!Flags.get("isTrollKilled")) encounter = 'Путь на восток преграждает толстый <span class="encounter">тролль</span>.';
+                if (!Flags.get("isTrollKilled")) encounter = 'Путь на восток преграждает толстый !*тролль*!.';
                 break;
             case 8:
-                if (Flags.get("isLadderLeanToTree")) encounter = 'К дереву приставлена <span class="encounter">лестница</span>.';
+                if (Flags.get("isLadderLeanToTree")) encounter = 'К дереву приставлена !*лестница*!.';
                 break;
             case 11:
                 if (Flags.get("isDoorOpened")) encounter = 'Дверь открыта.';
@@ -30,16 +30,16 @@ const encounters = {
                 break;
             case 18:
                 if (Flags.get("isTrapdoorOpened")) encounter = 'В полу комнаты дыра, через которую можно спуститься вниз.';
-                else encounter = 'В полу есть закрытый <span class="encounter">люк</span>.';
+                else encounter = 'В полу есть закрытый !*люк*!.';
                 break;
             case 20:
-                if (!Flags.get("isMonsterKilled")) encounter = 'Северный проход охраняет страшный ледяной <span class="encounter">монстр</span>.';
+                if (!Flags.get("isMonsterKilled")) encounter = 'Северный проход охраняет страшный ледяной !*монстр*!.';
                 break;
             case 23:
-                if (!Flags.get("isWormKilled")) encounter = 'Вход в южный тоннель преграждает огромный скальный <span class="encounter">червь</span>.';
+                if (!Flags.get("isWormKilled")) encounter = 'Вход в южный тоннель преграждает огромный скальный !*червь*!.';
                 break;
             case 27:
-                if (!Flags.get("isWitchKilled")) encounter = 'В противоположном конце комнаты вы видите ведьму. Её <span class="encounter">заклятье</span> летит прямо в вашу сторону, нужно быстро что-то делать!';
+                if (!Flags.get("isWitchKilled")) encounter = 'В противоположном конце комнаты вы видите ведьму. Её !*заклятье*! летит прямо в вашу сторону, нужно быстро что-то делать!';
                 break;
         }
         if (encounter) {
@@ -189,8 +189,7 @@ const encounters = {
         return "Это делу не поможет.";
     },
 
-    examine(objectIds) {
-        const objectId = objectIds[0];
+    examine(objectId) {
         const currentLocation = CurrentLocation.get();
 
         if (currentLocation === 8 && objectId === 18) {
@@ -251,10 +250,10 @@ const encounters = {
             return objects[27].desc + ` Они показывают число ${Counters.get('gameTurns')}.`;
         }
 
-        return "Ничего необычного.";
+        return defaultTexts.defaultDescription;
     },
 
-    wait(objectIds) {
+    wait() {
         return "Я немного передохнул. Время двигаться дальше!";
     },
 

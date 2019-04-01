@@ -12,6 +12,8 @@ const defaultTexts = {
     defaultQuestion: 'Что будете делать?',
 
     defaultAnswer: 'Я не понимаю.',
+
+    parserDontUnderstandWord: 'Я не понимаю слово:',
     
     defaultAnswerToTake: 'Ок, взял.',
 

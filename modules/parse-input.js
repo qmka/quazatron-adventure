@@ -1,6 +1,7 @@
 import objects from '../gamedata/objects.js';
 import adjectives from '../gamedata/adjectives.js';
 import verbs from '../gamedata/verbs.js';
+import wordsToIgnore from '../gamedata/words-to-ignore.js';
 
 import {
     defaultTexts
@@ -22,7 +23,7 @@ const findWordId = (type, word) => {
     if (key === 'objects') vocabulary = objects;
     else if (key === 'adjectives') vocabulary = adjectives;
     else vocabulary = verbs;
-    
+
     const result = vocabulary.find((item) => item.forms.includes(word));
     return result ? result.id : -1;
 }
@@ -44,7 +45,7 @@ const findObjectsByWord = (word) => {
 const findAdjectiveProperty = (id) => {
     const object = objects[id];
 
-    return object && isNumber(object.adjective) ? object.adjective : -1; 
+    return object && isNumber(object.adjective) ? object.adjective : -1;
 }
 
 // Основная функция парсера. На входе - строка, введённая игроком.
@@ -55,7 +56,7 @@ const parseInput = (input) => {
         object1 = -1,
         object2 = -1,
         message = defaultTexts.okMessage,
-        objectsInInput;
+        objectsInInput = 0;
 
     // Если игрок не ввёл ничего и нажал Enter
     if (!input.length) {
@@ -63,10 +64,11 @@ const parseInput = (input) => {
             verb,
             object1,
             object2,
-            message: defaultTexts.defaultQuestion
+            message: defaultTexts.defaultQuestion,
+            objectsInInput
         }
     }
-    
+
     const words = input.toLowerCase().split(/[\s,]+/);
 
     // Если игрок ввёл два слова (глагол + объект), то выставляем objectsInInput = 1
@@ -78,11 +80,13 @@ const parseInput = (input) => {
 
     // Если не нашли глагола в словаре, то пишем, что программа не понимает
     if (verb === -1) {
+        const errMessage = `${defaultTexts.parserDontUnderstandWord} "${words[0]}"`;
         return {
             verb,
             object1,
             object2,
-            message: defaultTexts.defaultAnswer
+            message: errMessage,
+            objectsInInput
         }
     }
 
@@ -130,7 +134,8 @@ const parseInput = (input) => {
                                 verb,
                                 object1,
                                 object2,
-                                message: defaultTexts.specifyAdjective
+                                message: defaultTexts.specifyAdjective,
+                                objectsInInput
                             }
                         }
 
@@ -147,17 +152,30 @@ const parseInput = (input) => {
                         verb,
                         object1,
                         object2,
-                        message: defaultTexts.specifyObject
+                        message: defaultTexts.specifyObject,
+                        objectsInInput
                     }
                 }
             }
-            
+
             // Это первый объект, упомянутый в фразе?
             if (isFirstItem) {
                 object1 = currentObjectId;
                 isFirstItem = false;
             } else {
                 object2 = currentObjectId;
+            }
+        } else {
+            // Если парсер не понимает слово
+            if (!wordsToIgnore.includes(words[i])) {
+                const errMessage = `${defaultTexts.parserDontUnderstandWord} "${words[i]}"`;
+                return {
+                    verb,
+                    object1,
+                    object2,
+                    message: errMessage,
+                    objectsInInput
+                }
             }
         }
     }

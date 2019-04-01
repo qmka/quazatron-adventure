@@ -39,8 +39,14 @@ const constructLocation = () => {
     return description;
 }
 
+const convertToHtml = (str) => {
+    return str
+    .split('!*').join('<span class="encounter">')
+    .split('*!').join('</span>');
+}
+
 const renderScreen = (mainText, image, actionText, isInputAreaVisible) => {
-    $("#screen").html(`${mainText}<p class="action-ask">${actionText}</p>`);
+    $("#screen").html(`${convertToHtml(mainText)}<p class="action-ask">${actionText}</p>`);
     $("#image").html(image);
     $("#input-area").css("opacity", isInputAreaVisible ? '100' : '0');
 }
