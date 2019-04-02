@@ -103,7 +103,7 @@ const movePlayer = (verbId) => {
 }
 
 const playerStandardActions = {
-    takeItem(objectIds, objectsInInput) {
+    takeItem(objectIds) {
         // Особые случаи
         let answer = encounters.take(objectIds);
 
@@ -144,12 +144,19 @@ const playerStandardActions = {
         const objectId = objectIds[0];
         // Особый случай наступает, когда в локации есть соотв. функция
         const result = encounters.examine(objectId);
+        console.log(typeof objects[objectId].location);
         if (result !== defaultTexts.defaultDescription) answer = result;
 
         // Общий случай осмотра предмета
-
+        // Если предмет в локации, но не в инвентаре
         else if (ItemPlaces.get(objectId) === CurrentLocation.get()) answer = defaultTexts.itemNotInInventory;
+        // Если предмет в инвентаре
         else if (Inventory.includes(objectId)) answer = getItemDescriptionById(objectId);
+        // Если объект приписан к этой локации
+        else if ("location" in objects[objectId]) {
+            if ((typeof objects[objectId].location === "number" && objects[objectId].location === CurrentLocation.get()) || (typeof objects[objectId].location === "object" && objects[objectId].location.includes(CurrentLocation.get()))) answer = getItemDescriptionById(objectId);
+            else answer = defaultTexts.objectIsNotInLocation;
+        }
         else answer = result;
 
         return answer;
