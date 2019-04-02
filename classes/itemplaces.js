@@ -37,7 +37,7 @@ const ItemPlaces = {
                 return `<span class="location-item">${objects[item].name}</span>`
             }).join(', ').concat('.');
 
-            return `<div class="new-paragraph">${defaultTexts.itemsInLocation} ${itemsInLoc}</div>`;
+            return `<p>${defaultTexts.itemsInLocation} ${itemsInLoc}</p>`;
         } else {
             log(`ItemPlaces.getLocationItemsList: передаётся некорректный ID локации: ${locationId}.`);
         }
