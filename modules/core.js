@@ -108,7 +108,6 @@ const playerStandardActions = {
         let answer = encounters.take(objectIds);
 
         // Общий случай
-        // if (objectsInInput === 1 && objectIds[0] !== -1) {
         if (objectIds[0] !== -1) {
             const itemId = objectIds[0];
             if (!Inventory.includes(itemId) && ItemPlaces.get(itemId) === CurrentLocation.get()) {
@@ -161,6 +160,18 @@ const playerStandardActions = {
 
         return answer;
     },
+
+    go(objectIds) {
+        const objectId = objectIds[0];
+        const result = encounters.go(objectId);
+        if (result !== defaultTexts.playerCantGo) return result;
+        const resultOfMove = movePlayer(objectId - 29); // Магическое число 29 жёстко привязано к номеру объекта "Север".
+        // В дальнейшем нужно создать объект с направлениями, и уже отталкиваться от него
+        if (resultOfMove.canChangeLocation) {
+            CurrentLocation.set(resultOfMove.newLocation);
+        }
+        return resultOfMove.answer;
+    }
 };
 
 const processInput = (userInput) => {
@@ -210,28 +221,33 @@ const processInput = (userInput) => {
                 answer = resultOfMove.answer;
                 break;
             case 10:
+                // Прорабатываем глагол ИДИ
+                if (objectsInInput === 0) answer = defaultTexts.specifyDirection;
+                else answer = playerStandardActions.go(objectIds);
+                break;
+            case 11:
                 // Глагол "ИНФО" (10)
                 answer = defaultTexts.info;
                 break;
-            case 11:
+            case 12:
                 // Выход из игры
                 gameFlag = GAME_STATES.gameover;
                 break;
-            case 12:
+            case 13:
                 // Инвентарь
                 answer = Inventory.getItemsTextList();
                 break;
-            case 13:
+            case 14:
                 // Сохранить игру
                 answer = saveGameState();
                 break;
-            case 14:
+            case 15:
                 // Загрузить игру
                 answer = loadGameState();
                 break;
-            case 15:
             case 16:
             case 17:
+            case 18:
                 // Отдельно обрабатываем глаголы "ВЗЯТЬ", "ПОЛОЖИТЬ", "ОСМОТРЕТЬ"
                 if (objectsInInput === 0) answer = defaultTexts.playerCommandsVerbWithoutObject;
                 else answer = playerStandardActions[verbs[verbId].method](objectIds, objectsInInput);

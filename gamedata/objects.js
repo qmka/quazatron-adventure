@@ -189,6 +189,36 @@ const objects = [{
     forms: ["все", "всё"],
     canHold: false,
     adjective: -1
+}, {
+    id: 29,
+    forms: ["север"],
+    canHold: false,
+    adjective: -1
+}, {
+    id: 30,
+    forms: ["восток"],
+    canHold: false,
+    adjective: -1
+}, {
+    id: 31,
+    forms: ["юг"],
+    canHold: false,
+    adjective: -1
+}, {
+    id: 32,
+    forms: ["запад"],
+    canHold: false,
+    adjective: -1
+}, {
+    id: 33,
+    forms: ["вверх", "наверх"],
+    canHold: false,
+    adjective: -1
+}, {
+    id: 34,
+    forms: ["вниз"],
+    canHold: false,
+    adjective: -1
 }]
 
 export default objects

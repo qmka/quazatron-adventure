@@ -469,7 +469,7 @@ const encounters = {
     },
 
     go() {
-        return defaultTexts.helpMessage;
+        return defaultTexts.playerCantGo;
     },
 
     eat(objectIds) {
