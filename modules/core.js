@@ -182,7 +182,8 @@ const processInput = (userInput) => {
     const verbId = userInput.verb;
     const objectsInInput = userInput.objectsInInput;
     const uniqueEncounter = encounters.getUniqueEncounter(verbId, objectIds);
-    let answer = userInput.message;
+    let answer;
+    if (userInput.message) answer = userInput.message;
     let gameFlag = GAME_STATES.game;
 
     // Обрабатываем особые игровые ситуации. Так, в комнате с ведьмой игрок может только отразить заклятье, и если не делает этого, то его выкидывает в предыдущую комнату
@@ -193,7 +194,7 @@ const processInput = (userInput) => {
         };
     } else {
         // Выдаём игроку сообщение об ошибке, если парсер выдал сообщение об ошибке
-        if (answer !== defaultTexts.okMessage) return {
+        if (answer) return {
             answer,
             gameFlag
         };
@@ -223,7 +224,7 @@ const processInput = (userInput) => {
             case 10:
                 // Прорабатываем глагол ИДИ
                 if (objectsInInput === 0) answer = defaultTexts.specifyDirection;
-                else answer = playerStandardActions.go(objectIds);
+                else answer = encounters.go(objectIds);
                 break;
             case 11:
                 // Глагол "ИНФО" (10)

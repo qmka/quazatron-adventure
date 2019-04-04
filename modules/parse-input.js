@@ -2,6 +2,7 @@ import objects from '../gamedata/objects.js';
 import adjectives from '../gamedata/adjectives.js';
 import verbs from '../gamedata/verbs.js';
 import wordsToIgnore from '../gamedata/words-to-ignore.js';
+import phrases from '../gamedata/phrases.js';
 
 import {
     defaultTexts
@@ -55,7 +56,7 @@ const parseInput = (input) => {
     let verb = -1,
         object1 = -1,
         object2 = -1,
-        message = defaultTexts.okMessage,
+        // message = defaultTexts.okMessage,
         objectsInInput = 0;
 
     // Если игрок не ввёл ничего и нажал Enter
@@ -68,6 +69,12 @@ const parseInput = (input) => {
             objectsInInput
         }
     }
+
+    // Если игрок ввёл одну из предзаготовленных фраз из phrases.js
+    // Берем phases, ищем, в каком из объектов в свойстве forms встречается ввод игрока
+    // Если находим, то возвращаем свойство parsedData этого объекта
+    const [obj] = phrases.filter(n => n.forms.includes(input));
+    if (obj) return obj.parsedData;
 
     const words = input.toLowerCase().split(/[\s,]+/);
 
@@ -183,7 +190,7 @@ const parseInput = (input) => {
         verb,
         object1,
         object2,
-        message,
+        // message,
         objectsInInput
     }
 }
