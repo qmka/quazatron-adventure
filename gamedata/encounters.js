@@ -512,7 +512,10 @@ const encounters = {
         return "Вы не можете туда залезть.";
     },
 
-    go() {
+    go(objectIds) {
+        if (objectIds.includes(13) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
+            return this.cross(objectIds);
+        }
         return defaultTexts.playerCantGo;
     },
 
