@@ -31,6 +31,14 @@ const initialFlags = {
     isLeverOiled: false,
     isWitchKilled: false,
     isDiedFromFish: false,
+    isDiedFromTrollWithAxe: false,
+    isDiedFromTrollWithoutWeapon: false,
+    isDiedFromTrollWithStick: false,
+    isDiedFromMonster: false,
+    isDiedFromWorm: false,
+    isDiedFromLady: false,
+    isKilledPrincess: false,
+    isFellIntoAbyss: false,
     isVictory: false,
     isGameOver: false
 }

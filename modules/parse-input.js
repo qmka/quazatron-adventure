@@ -46,8 +46,16 @@ const findObjectsByWord = (word) => {
 const findAdjectiveProperty = (id) => {
     const object = objects[id];
 
-    return object && isNumber(object.adjective) ? object.adjective : -1;
+    return object && 'adjective' in object && isNumber(object.adjective) ? object.adjective : -1;
 }
+
+const isAdjective = (word) => {
+    let result = false;
+    adjectives.forEach(e => {
+        if (e.forms.includes(word)) result = true;
+    })
+    return result;
+};
 
 // Основная функция парсера. На входе - строка, введённая игроком.
 // На выходе объект, содержащий id глагола и двух существительных, которые ввёл игрок, и сервисное сообщение
@@ -78,10 +86,27 @@ const parseInput = (input) => {
 
     const words = input.toLowerCase().split(/[\s,]+/);
 
+    // Определяем количество объектов, упомянутых игроком
     // Если игрок ввёл два слова (глагол + объект), то выставляем objectsInInput = 1
     // Если меньше, то 0, если больше, то 2.
-    objectsInInput = words.length > 2 ? 2 : words.length - 1;
+    // Если слова три, но одно из них прилагательное, то objectsInInput = 1
+    switch(words.length) {
+        case 1:
+        case 2:
+            objectsInInput = words.length - 1;
+            break;
+        case 3:
+            objectsInInput = 2;
+            words.forEach(e => {
+                if (isAdjective(e)) objectsInInput = 1;
+            });
+            break;
+        default:
+            objectsInInput = 2;
+            break;
+    }
 
+    // Для каждого слова в массиве words
     // Ищем глагол
     verb = findWordId(WORD_TYPES.verb, words[0]);
 
@@ -174,7 +199,8 @@ const parseInput = (input) => {
             }
         } else {
             // Если парсер не понимает слово
-            if (!wordsToIgnore.includes(words[i])) {
+            //const [isAdjective] = adjectives.filter(n => n.forms.includes(words[i]));
+            if (!wordsToIgnore.includes(words[i]) && !isAdjective(words[i])) {
                 const errMessage = `${defaultTexts.parserDontUnderstandWord} "${words[i]}"`;
                 return {
                     verb,

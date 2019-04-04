@@ -125,7 +125,7 @@ const playerStandardActions = {
 
         // Общий случай
         // Если игрок указал один предмет, то кладём его
-        if (objectsInInput === 1) {
+        if (answer === defaultTexts.playerUselessAction && objectsInInput === 1) {
             const itemId = objectIds[0];
             if (Inventory.includes(itemId)) {
                 Inventory.removeItem(itemId);
@@ -143,7 +143,6 @@ const playerStandardActions = {
         const objectId = objectIds[0];
         // Особый случай наступает, когда в локации есть соотв. функция
         const result = encounters.examine(objectId);
-        console.log(typeof objects[objectId].location);
         if (result !== defaultTexts.defaultDescription) answer = result;
 
         // Общий случай осмотра предмета

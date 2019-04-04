@@ -86,7 +86,31 @@ const encounters = {
     // Функция возвращает текст для вывода на экран окончания игры
     getGameOverText() {
         if (Flags.get("isDiedFromFish")) {
-            return 'Вы почувствовали острую боль в животе и умерли. Глупо, конечно, заканчивать это приключение, отравившись протухшей рыбой.';
+            return 'Вы почувствовали острую боль в животе и умерли. Глупо, конечно, заканчивать это приключение, отравившись протухшей рыбой...';
+        }
+        if (Flags.get("isDiedFromTrollWithAxe")) {
+            return 'Да, не стоило с маленьким топориком лезть на большого тролля. Вы успели нанести всего несколько ударов перед тем, как тролль разорвал вас на куски...';
+        }
+        if (Flags.get("isDiedFromTrollWithStick")) {
+            return 'Вы прыгнули на тролля, словно черепашка-ниндзя, размахивая шестом, и даже умудрились заехать ему по голове. Взревев от боли, тролль бросился на вас и разорвал на куски...';
+        }
+        if (Flags.get("isDiedFromTrollWithoutWeapon")) {
+            return 'Нападать на тролля с голыми руками - верная смерть. Впрочем, подумать об этом вы успели лишь за секунду до того, как тяжёлая лапа тролля раскрошила ваш череп...';
+        }
+        if (Flags.get("isDiedFromWorm")) {
+            return 'Шкура скального червя настолько твёрдая, что было бы глупо надеяться повредить её любым из имеющихся в вашем распоряжении предметов, ну а тем более голыми руками. Разозлённый червь заглатывает вас целиком и, похоже, это конец вашего приключения...';
+        }
+        if (Flags.get("isDiedFromMonster")) {
+            return 'На такого монстра идти разве что с боевым ледорубом. Об этом вы успеваете подумать за секунду до того, как разъярённый монстр одним касанием превращает вас в глыбу льда, добавив прохлады этой и так не самой тёплой комнате замка...';
+        }
+        if (Flags.get("isDiedFromLady")) {
+            return 'Увидев злой блеск в ваших глазах, старушка  вскакивает и вскидывает руку в вашу сторону, произнося короткое слово на неизвестном вам языке. С её пальцев срывается огненный шар, который превращает вас в кучку углей...';
+        }
+        if (Flags.get("isKilledPrincess")) {
+            return 'Решив, что незачем вам делить власть с какой-то незнакомкой, вы решаете убить принцессу.<br><br>Спустя несколько месяцев вы отремонтируете замок и очистите окрестные леса от монстров. Люди, конечно, потянутся в освобождённые от колдовства земли, да только злой и лихой это будет люд.<br><br>Однажды вы не проснётесь с утра, не узнав, что вас убило: то ли яд в вине, то ли кинжал ночного убийцы. Но память о вас останется, и ещё долго будет ходить из уст в уста легенда о Кровавом Короле.';
+        }
+        if (Flags.get("isFellIntoAbyss")) {
+            return 'Балансировать над пропастью с шестом в руках и тяжёлой вязанкой дров за спиной, наверное, весело, будь вы профессиональным акробатом. Но, не успев сделать и пары шагов, вы срываетесь в пропасть...';
         }
 
         return defaultTexts.defaultGameOverText;
@@ -162,7 +186,7 @@ const encounters = {
 
         if (objectIds.includes(8) && Inventory.includes(8)) {
             Inventory.removeItem(8);
-            if (CurrentLocation.get() === 20 && !Flags.get("isMonsterKilled")) {
+            if (CurrentLocation.get() === 20 && !Flags.get("isMonsterKilled") && objectIds.includes(23)) {
                 Flags.toggle("isMonsterKilled");
                 return "Вы бросили мешочек с солью в монстра, и как только крупинки соли коснулись его кожи, монстр превратился в лужу воды.";
             } else {
@@ -186,7 +210,7 @@ const encounters = {
             return "Вы бросили монетку на землю, и она укатилась в пропасть.";
         }
 
-        return "Это делу не поможет.";
+        return defaultTexts.playerUselessAction;
     },
 
     examine(objectId) {
@@ -299,36 +323,50 @@ const encounters = {
 
     hit(objectIds) {
         if (CurrentLocation.get() === 7 && !Flags.get("isTrollKilled") && objectIds.includes(17)) {
-            if (Inventory.includes(2)) {
+            if (Inventory.includes(2) && objectIds.includes(2)) {
                 Flags.toggle("isTrollKilled");
                 Inventory.removeItem(2);
                 return "Вы бросились на тролля и вломили ему булавой прямо по макушке! Дико заревев, искалеченный тролль с торчащей в черепе булавой убежал в лес. Теперь путь на восток свободен.";
             }
             if (Inventory.includes(5) && objectIds.includes(5)) {
-                return "Не стоит с маленьким топориком лезть на большого тролля. Нужно что-то посерьёзнее.";
+                Flags.toggle("isGameOver");
+                Flags.toggle("isDiedFromTrollWithAxe");
+                return "";
             }
             if (Inventory.includes(3) && objectIds.includes(3)) {
-                return "Вы похожи на черепашку-ниндзя, чтобы нападать с деревянным шестом на толстого тролля?";
+                Flags.toggle("isGameOver");
+                Flags.toggle("isDiedFromTrollWithStick");
+                return "";
             }
             if (!Inventory.includes(3) && !Inventory.includes(5)) {
-                return "Нападать на тролля с голыми руками? Это верная смерть.";
+                Flags.toggle("isGameOver");
+                Flags.toggle("isDiedFromTrollWithoutWeapon");
+                return "";
             }
             return "Уточните, чем это вы собираетесь убивать тролля?";
         }
         if (CurrentLocation.get() === 5 && objectIds.includes(21)) {
-            if (Inventory.includes(5)) {
-                return "Вам не кажется, что эта ситуация со старушкой и топором - из другого произведения?";
+            if (Inventory.includes(5) && objectIds.includes(5)) {
+                return "Вам не кажется, что эта ситуация со старушкой и топором - из другого произведения? ;)";
             }
-            return "Ваш кодекс чести не разрешает вам нападать на добрых и беззащитных людей.";
+            Flags.toggle("isGameOver");
+            Flags.toggle("isDiedFromLady");
+            return "";
         }
         if (CurrentLocation.get() === 23 && !Flags.get("isWormKilled") && objectIds.includes(22)) {
-            return "Шкура скального червя настолько твёрдая, что вы не сможете повредить её никаким оружием.";
+            Flags.toggle("isGameOver");
+            Flags.toggle("isDiedFromWorm");
+            return "";
         }
         if (CurrentLocation.get() === 28 && objectIds.includes(26)) {
-            return "Эта прекрасная девушка - цель вашего приключения. Вы же не хотите, чтобы это приключение закончилось плачевно?";
+            Flags.toggle("isGameOver");
+            Flags.toggle("isKilledPrincess");
+            return "";
         }
         if (CurrentLocation.get() === 20 && !Flags.get("isMonsterKilled") && objectIds.includes(23)) {
-            return "На такого монстра идти разве что с боевым ледорубом. Но такого у вас точно нет, придётся искать какую-нибудь хитрость.";
+            Flags.toggle("isGameOver");
+            Flags.toggle("isDiedFromMonster");
+            return "";
         }
         if (Inventory.includes(5) && objectIds.includes(5)) {
             return "Ничего не произошло. Подсказка: если хотите что-то порубить топором, то лучше введите РУБИТЬ или РАЗРУБИТЬ... или ПОРУБИТЬ, ну, в общем, вы поняли."
@@ -440,11 +478,17 @@ const encounters = {
         if (objectIds.includes(13) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
             let answer;
             if (Inventory.includes(3)) {
-                answer = "Балансируя с помощью шеста, вы пересекли расщелину по верёвке.";
-                if (CurrentLocation.get() === 6) {
-                    CurrentLocation.set(12);
+                if (Inventory.includes(4)) {
+                    Flags.toggle("isGameOver");
+                    Flags.toggle("isFellIntoAbyss");
+                    return "";
                 } else {
-                    CurrentLocation.set(6);
+                    answer = "Балансируя с помощью шеста, вы пересекли расщелину по верёвке.";
+                    if (CurrentLocation.get() === 6) {
+                        CurrentLocation.set(12);
+                    } else {
+                        CurrentLocation.set(6);
+                    }
                 }
             } else {
                 answer = "Вы упадёте с верёвки, нужно что-то для балланса.";
@@ -523,15 +567,19 @@ const encounters = {
 
     fuel(objectIds) {
         if (objectIds.includes(7) && Inventory.includes(7)) {
-            if (Inventory.includes(9)) {
-                if (Flags.get("isLampEmpty")) {
-                    Flags.toggle("isLampEmpty");
-                    return "Вы залили немного масла в лампу.";
+            if (objectIds.includes(9)) {
+                if (Inventory.includes(9)) {
+                    if (Flags.get("isLampEmpty")) {
+                        Flags.toggle("isLampEmpty");
+                        return "Вы залили немного масла в лампу.";
+                    } else {
+                        return "В лампе достаточно масла, чтобы её включить.";
+                    }
                 } else {
-                    return "В лампе достаточно масла, чтобы её включить.";
+                    return "У вас нет ничего, чем вы можете заправить лампу";
                 }
             } else {
-                return "У вас нет ничего, чем вы можете заправить лампу";
+                return "Уточните, чем вы хотите заправить лампу?";
             }
         } else {
             return "Здесь нечего зарядить или заправить.";
@@ -541,12 +589,16 @@ const encounters = {
     oil(objectIds) {
         if (Inventory.includes(9)) {
             if (objectIds.includes(24) && CurrentLocation.get() === 25) {
-                if (Flags.get("isLeverOiled")) {
-                    return "Рычаг уже смазан.";
+                if (objectIds.includes(9)) {
+                    if (Flags.get("isLeverOiled")) {
+                        return "Рычаг уже смазан.";
+                    } else {
+                        Flags.toggle("isLeverOiled");
+                        Inventory.removeItem(9);
+                        return "Вы аккуратно смазали рычаг и детали управляемого им механизма, потратив всё масло.";
+                    }
                 } else {
-                    Flags.toggle("isLeverOiled");
-                    Inventory.removeItem(9);
-                    return "Вы аккуратно смазали рычаг и детали управляемого им механизма, потратив всё масло.";
+                    return "Уточните, чем вы хотите смазать рычаг?";
                 }
             }
             return "Здесь смазка не нужна.";
