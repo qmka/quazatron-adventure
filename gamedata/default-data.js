@@ -13,7 +13,7 @@ const defaultTexts = {
 
     defaultAnswer: 'Я не понимаю.',
 
-    parserDontUnderstandWord: 'Я не понимаю слово:',
+    parserDontUnderstandWord: 'Я не понимаю слово ',
     
     defaultAnswerToTake: 'Ок, взял.',
 
