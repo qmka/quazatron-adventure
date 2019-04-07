@@ -24,7 +24,6 @@ const GameTurns = {
 	},
 
 	restore() {
-		console.log(this._state);
 		if (this._state.length > 0) {
 			const { curI, curL, curF, curC, curP } = this._state.pop();
 			this._lastMove = Object.assign({}, { curI, curL, curF, curC, curP	});

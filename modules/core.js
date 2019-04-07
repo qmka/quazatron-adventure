@@ -180,8 +180,7 @@ const playerStandardActions = {
 const processInput = (userInput) => {
     // Разбираем полученный из парсера объект на object1Id, object2Id, verbId
     let verbId, object1Id, object2Id, objectsInInput, message;
-    console.log(Command.get());
-    console.log(userInput);
+    
     // Если это глагол "ПОВТОРИТЬ" (17), то вставляем предыдущую команду
     if (userInput.verb === 17) {
         if (Command.get() === -1) {
@@ -284,11 +283,6 @@ const processInput = (userInput) => {
                     }
                 }
                 break;
-                /*case 17:
-                    // Повторить предыдущую команду
-                    console.log(Command.get());
-                    processInput(Command.get());
-                    break;*/
             case 18:
             case 19:
             case 20:
@@ -298,7 +292,6 @@ const processInput = (userInput) => {
                 GameTurns.save();
                 break;
             default:
-                console.log(verbId);
                 answer = encounters[verbs[verbId].method](objectIds, objectsInInput);
                 GameTurns.save();
                 break
