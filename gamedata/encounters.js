@@ -149,14 +149,15 @@ const encounters = {
         if (objectIds.includes(28)) {
             // Проверяем, есть ли предметы в локации
             const itemsArray = ItemPlaces.getLocationItemsArray(CurrentLocation.get());
+            const answer = Inventory.getItemsString(itemsArray, defaultTexts.playerTakeItems, defaultTexts.thereIsNoItems);
             if (itemsArray.length !== 0) {
+                
                 itemsArray.forEach((item) => {
                     Inventory.addItem(item);
                     ItemPlaces.set(item, -1);
                 });
-                return "Я всё взял.";
             };
-            return "Здесь ничего нет.";
+            return answer;
         }
 
         // Если предмет - лестница, и она прислонена к дереву, то можно её забрать в инвентарь
@@ -174,14 +175,14 @@ const encounters = {
         if (objectIds.includes(28)) {
             // Проверяем, есть ли предметы в локации
             const itemsArray = Inventory.getAll();
+            const answer = Inventory.getItemsString(itemsArray, defaultTexts.playerDropItems, defaultTexts.playerHasNoItems);
             if (itemsArray.length !== 0) {
                 itemsArray.forEach((item) => {
                     Inventory.removeItem(item);
                     ItemPlaces.set(item, CurrentLocation.get());
                 });
-                return "Я всё положил.";
             };
-            return "У меня ничего нет.";
+            return answer;
         }
 
         if (objectIds.includes(8) && Inventory.includes(8)) {

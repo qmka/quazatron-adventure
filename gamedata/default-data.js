@@ -21,6 +21,16 @@ const defaultTexts = {
 
     playerHasNoItem: 'У меня этого нет.',
 
+    playerHasItems: 'У меня есть:',
+
+    playerHasNoItems: 'У меня ничего нет.',
+
+    playerTakeItems: 'Я взял следующие предметы:',
+
+    playerDropItems: 'Я положил следующие предметы:',
+
+    thereIsNoItems: 'Здесь ничего нет.',
+
     objectIsNotInLocation: 'Здесь этого нет.',
 
     playerCantGo: 'Вы не можете туда пройти.',

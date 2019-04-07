@@ -261,7 +261,7 @@ const processInput = (userInput) => {
                 break;
             case 13:
                 // Инвентарь
-                answer = Inventory.getItemsTextList();
+                answer = Inventory.getItemsString(Inventory.getAll(), defaultTexts.playerHasItems, defaultTexts.playerHasNoItems);
                 break;
             case 14:
                 // Сохранить игру

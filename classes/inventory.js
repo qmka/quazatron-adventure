@@ -31,12 +31,12 @@ const Inventory = {
         return this._inventory;
     },
 
-    getItemsTextList() {
-        if (!this._inventory.length) return "У меня ничего нет."; 
-        const list = this._inventory.map((item) => {
+    getItemsString(itemsArray, foreword, noItemsText) {
+        if (!itemsArray.length) return noItemsText; 
+        const list = itemsArray.map((item) => {
             return `<span class="inventory-item">${objects[item].name}</span>`
         }).join(', ').concat('.');
-        return `У меня есть: ${list}`;
+        return `${foreword} ${list}`;
     },
 
     clear() {
