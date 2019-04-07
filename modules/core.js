@@ -12,7 +12,7 @@ import CurrentLocation from '../classes/location.js';
 import Flags from '../classes/flags.js';
 import ItemPlaces from '../classes/itemplaces.js';
 import Counters from '../classes/counters.js';
-import GameState from '../classes/gamestate.js';
+import GameTurns from '../classes/turns.js';
 
 import {
     GAME_STATES
@@ -31,11 +31,13 @@ const saveGameState = () => {
 // Загружаем игровое состояние
 const loadGameState = () => {
     if (localStorage.length !== 0) {
-        GameState.clear();
         CurrentLocation.set(parseInt(localStorage.getItem('currentLocation')));
         Inventory.init(JSON.parse(localStorage.getItem('inventory')));
         Flags.init(JSON.parse(localStorage.getItem('flags')));
         ItemPlaces.init(JSON.parse(localStorage.getItem('itemPlaces')));
+        // GameTurns.clear();
+        // Можно раскомментировать, чтобы не давать возможность отменять ходы после загрузки игры
+        GameTurns.save();
         return defaultTexts.loadGame;
     } else {
         return defaultTexts.cantLoadGame;
@@ -218,15 +220,15 @@ const processInput = (userInput) => {
                 const resultOfMove = movePlayer(verbId);
                 if (resultOfMove.canChangeLocation) {
                     CurrentLocation.set(resultOfMove.newLocation);
+                    GameTurns.save();
                 }
                 answer = resultOfMove.answer;
-                GameState.save();
                 break;
             case 10:
                 // Прорабатываем глагол ИДИ
                 if (objectsInInput === 0) answer = defaultTexts.specifyDirection;
                 else answer = encounters.go(objectIds);
-                GameState.save();
+                GameTurns.save();
                 break;
             case 11:
                 // Глагол "ИНФО" (10)
@@ -249,30 +251,33 @@ const processInput = (userInput) => {
                 answer = loadGameState();
                 break;
             case 16:
-            case 17:
-            case 18:
-                // Отдельно обрабатываем глаголы "ВЗЯТЬ", "ПОЛОЖИТЬ", "ОСМОТРЕТЬ"
-                if (objectsInInput === 0) answer = defaultTexts.playerCommandsVerbWithoutObject;
-                else answer = playerStandardActions[verbs[verbId].method](objectIds, objectsInInput);
-                GameState.save();
-                break;
-            case 39:
                 // Отменить действие
-                if (GameState._state.length <= 1) {
-                    answer = 'Нечего отменять, вы в самом начале игры.';
+                if (GameTurns._state.length <= 1) {
+                    answer = defaultTexts.cannotCancelMove;
                 } else {
-                    answer = 'Вы вернулись на один ход назад';
-                    GameState.restore();
+                    answer = defaultTexts.cancelMove;
+                    GameTurns.restore();
                     return {
                         answer,
                         gameFlag
                     }
                 }
-
+                break;
+            case 17:
+                // Повторить предыдущую команду
+                answer = "Пока я этого не умею.";
+                break;
+            case 18:
+            case 19:
+            case 20:
+                // Отдельно обрабатываем глаголы "ВЗЯТЬ", "ПОЛОЖИТЬ", "ОСМОТРЕТЬ"
+                if (objectsInInput === 0) answer = defaultTexts.playerCommandsVerbWithoutObject;
+                else answer = playerStandardActions[verbs[verbId].method](objectIds, objectsInInput);
+                GameTurns.save();
                 break;
             default:
                 answer = encounters[verbs[verbId].method](objectIds, objectsInInput);
-                GameState.save();
+                GameTurns.save();
                 break
         }
 

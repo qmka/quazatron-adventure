@@ -4,28 +4,7 @@ import Inventory from './inventory.js';
 import ItemPlaces from './itemplaces.js';
 import CurrentLocation from './location.js';
 
-/*
-
-const state = [{state1}, {state2}, {state3}]
-
-state1 = {
-	inventory: [],
-	currentLocation: число,
-	flags: {},
-	counters: {},
-	itemPlaces: {}
-}
-
-save - добавляем в массив состояний объект state (это происходит каждый ход)
-restore - восстанавливаем предыдущее состояние во все классы
-
-+++1. Прописать всем классам метод getAll()
-+++2. Прописать логику Restore
-3. Включить это в основной игровой цикл и привязать к команде ОТМЕНА
-
-*/
-
-const GameState = {
+const GameTurns = {
 	_state: [],
 	_lastMove: {},
 
@@ -42,8 +21,6 @@ const GameState = {
 		const curP = Object.assign({}, ItemPlaces.getAll());
 		this._state.push(this._lastMove);
 		this._lastMove = Object.assign({}, { curI, curL, curF, curC, curP	});
-		console.log('SAVED:');
-		console.log(this._state);
 	},
 
 	restore() {
@@ -60,4 +37,4 @@ const GameState = {
 	},
 };
 
-export default GameState;
+export default GameTurns;
