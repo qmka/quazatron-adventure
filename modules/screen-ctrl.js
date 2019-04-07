@@ -9,7 +9,7 @@ import CurrentLocation from '../classes/location.js';
 import ItemPlaces from '../classes/itemplaces.js';
 
 import {
-    GAME_STATES
+    GAME_STATES, TEXT_ONLY_MODE
 } from './constants.js';
 
 const getUserInput = () => {
@@ -47,7 +47,7 @@ const convertToHtml = (str) => {
 
 const renderScreen = (mainText, image, actionText, isInputAreaVisible) => {
     $("#screen").html(`${convertToHtml(mainText)}<p class="action-ask">${actionText}</p>`);
-    $("#image").html(image);
+    if (!TEXT_ONLY_MODE) $("#image").html(image);
     $("#input-area").css("opacity", isInputAreaVisible ? '100' : '0');
 }
 
