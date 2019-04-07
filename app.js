@@ -34,6 +34,7 @@ import CurrentLocation from './classes/location.js'
 import Flags from './classes/flags.js'
 import ItemPlaces from './classes/itemplaces.js'
 import Counters from './classes/counters.js';
+import GameState from './classes/gamestate.js';
 
 {
     let gameState;
@@ -45,6 +46,8 @@ import Counters from './classes/counters.js';
         ItemPlaces.init(initialItemPlaces);
         Counters.init(initialCounters);
         Inventory.init(initialInventory);
+        GameState.clear();
+        GameState.save();
     }
 
     // Реакция программы на ввод игрока

@@ -12,6 +12,7 @@ import CurrentLocation from '../classes/location.js';
 import Flags from '../classes/flags.js';
 import ItemPlaces from '../classes/itemplaces.js';
 import Counters from '../classes/counters.js';
+import GameState from '../classes/gamestate.js';
 
 import {
     GAME_STATES
@@ -30,6 +31,7 @@ const saveGameState = () => {
 // Загружаем игровое состояние
 const loadGameState = () => {
     if (localStorage.length !== 0) {
+        GameState.clear();
         CurrentLocation.set(parseInt(localStorage.getItem('currentLocation')));
         Inventory.init(JSON.parse(localStorage.getItem('inventory')));
         Flags.init(JSON.parse(localStorage.getItem('flags')));
@@ -154,8 +156,7 @@ const playerStandardActions = {
         else if ("location" in objects[objectId]) {
             if ((typeof objects[objectId].location === "number" && objects[objectId].location === CurrentLocation.get()) || (typeof objects[objectId].location === "object" && objects[objectId].location.includes(CurrentLocation.get()))) answer = getItemDescriptionById(objectId);
             else answer = defaultTexts.objectIsNotInLocation;
-        }
-        else answer = result;
+        } else answer = result;
 
         return answer;
     },
@@ -219,11 +220,13 @@ const processInput = (userInput) => {
                     CurrentLocation.set(resultOfMove.newLocation);
                 }
                 answer = resultOfMove.answer;
+                GameState.save();
                 break;
             case 10:
                 // Прорабатываем глагол ИДИ
                 if (objectsInInput === 0) answer = defaultTexts.specifyDirection;
                 else answer = encounters.go(objectIds);
+                GameState.save();
                 break;
             case 11:
                 // Глагол "ИНФО" (10)
@@ -251,9 +254,25 @@ const processInput = (userInput) => {
                 // Отдельно обрабатываем глаголы "ВЗЯТЬ", "ПОЛОЖИТЬ", "ОСМОТРЕТЬ"
                 if (objectsInInput === 0) answer = defaultTexts.playerCommandsVerbWithoutObject;
                 else answer = playerStandardActions[verbs[verbId].method](objectIds, objectsInInput);
+                GameState.save();
+                break;
+            case 39:
+                // Отменить действие
+                if (GameState._state.length <= 1) {
+                    answer = 'Нечего отменять, вы в самом начале игры.';
+                } else {
+                    answer = 'Вы вернулись на один ход назад';
+                    GameState.restore();
+                    return {
+                        answer,
+                        gameFlag
+                    }
+                }
+
                 break;
             default:
                 answer = encounters[verbs[verbId].method](objectIds, objectsInInput);
+                GameState.save();
                 break
         }
 
@@ -264,6 +283,7 @@ const processInput = (userInput) => {
         if (Flags.get("isGameOver")) {
             gameFlag = GAME_STATES.gameover;
         }
+
         // Возвращаем реакцию программы на действие игрока
         return {
             answer,

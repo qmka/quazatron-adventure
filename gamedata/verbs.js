@@ -139,6 +139,9 @@ const verbs = [{
     id: 38,
     forms: ["разбуди", "буди", "разбудить", "будить"],
     method: "wake"
+}, {
+    id: 39,
+    forms: ["отмена", "отменить"],
 }]
 
 export default verbs
