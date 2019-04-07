@@ -112,7 +112,7 @@ const parseInput = (input) => {
 
     // Если не нашли глагола в словаре, то пишем, что программа не понимает
     if (verb === -1) {
-        const errMessage = `${defaultTexts.parserDontUnderstandWord} "${words[0]}"`;
+        const errMessage = `${defaultTexts.parserDontUnderstandWord} "${words[0]}".`;
         return {
             verb,
             object1,
@@ -201,7 +201,7 @@ const parseInput = (input) => {
             // Если парсер не понимает слово
             //const [isAdjective] = adjectives.filter(n => n.forms.includes(words[i]));
             if (!wordsToIgnore.includes(words[i]) && !isAdjective(words[i])) {
-                const errMessage = `${defaultTexts.parserDontUnderstandWord} "${words[i]}"`;
+                const errMessage = `${defaultTexts.parserDontUnderstandWord} "${words[i]}".`;
                 return {
                     verb,
                     object1,

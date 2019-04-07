@@ -35,6 +35,7 @@ import Flags from './classes/flags.js'
 import ItemPlaces from './classes/itemplaces.js'
 import Counters from './classes/counters.js';
 import GameTurns from './classes/turns.js';
+import Command from './classes/command.js';
 
 {
     let gameState;
@@ -48,6 +49,7 @@ import GameTurns from './classes/turns.js';
         Inventory.init(initialInventory);
         GameTurns.clear();
         GameTurns.save();
+        Command.clear();
     }
 
     // Реакция программы на ввод игрока

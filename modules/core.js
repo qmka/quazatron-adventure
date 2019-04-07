@@ -13,6 +13,7 @@ import Flags from '../classes/flags.js';
 import ItemPlaces from '../classes/itemplaces.js';
 import Counters from '../classes/counters.js';
 import GameTurns from '../classes/turns.js';
+import Command from '../classes/command.js';
 
 import {
     GAME_STATES
@@ -162,30 +163,50 @@ const playerStandardActions = {
 
         return answer;
     },
-
-    go(objectIds) {
-        const objectId = objectIds[0];
-        const result = encounters.go(objectId);
-        if (result !== defaultTexts.playerCantGo) return result;
-        const resultOfMove = movePlayer(objectId - 29); // Магическое число 29 жёстко привязано к номеру объекта "Север".
-        // В дальнейшем нужно создать объект с направлениями, и уже отталкиваться от него
-        if (resultOfMove.canChangeLocation) {
-            CurrentLocation.set(resultOfMove.newLocation);
-        }
-        return resultOfMove.answer;
-    }
+    /*
+        go(objectIds) {
+            const objectId = objectIds[0];
+            const result = encounters.go(objectId);
+            if (result !== defaultTexts.playerCantGo) return result;
+            const resultOfMove = movePlayer(objectId - 29); // Магическое число 29 жёстко привязано к номеру объекта "Север".
+            // В дальнейшем нужно создать объект с направлениями, и уже отталкиваться от него
+            if (resultOfMove.canChangeLocation) {
+                CurrentLocation.set(resultOfMove.newLocation);
+            }
+            return resultOfMove.answer;
+        }*/
 };
 
 const processInput = (userInput) => {
     // Разбираем полученный из парсера объект на object1Id, object2Id, verbId
-    const object1Id = userInput.object1;
-    const object2Id = userInput.object2;
+    let verbId, object1Id, object2Id, objectsInInput, message;
+    console.log(Command.get());
+    console.log(userInput);
+    // Если это глагол "ПОВТОРИТЬ" (17), то вставляем предыдущую команду
+    if (userInput.verb === 17) {
+        if (Command.get() === -1) {
+            message = defaultTexts.cannotRepeatMove;
+        } else {
+            const lastInput = Command.get();
+            verbId = lastInput.verb;
+            object1Id = lastInput.object1;
+            object2Id = lastInput.object2;
+            message = lastInput.message || '';
+            objectsInInput = lastInput.objectsInInput;
+        }
+
+    } else {
+        verbId = userInput.verb;
+        object1Id = userInput.object1;
+        object2Id = userInput.object2;
+        message = userInput.message || '';
+        objectsInInput = userInput.objectsInInput;
+    }
     const objectIds = [object1Id, object2Id];
-    const verbId = userInput.verb;
-    const objectsInInput = userInput.objectsInInput;
+
     const uniqueEncounter = encounters.getUniqueEncounter(verbId, objectIds);
     let answer;
-    if (userInput.message) answer = userInput.message;
+    if (message !== '') answer = message;
     let gameFlag = GAME_STATES.game;
 
     // Обрабатываем особые игровые ситуации. Так, в комнате с ведьмой игрок может только отразить заклятье, и если не делает этого, то его выкидывает в предыдущую комнату
@@ -263,10 +284,11 @@ const processInput = (userInput) => {
                     }
                 }
                 break;
-            case 17:
-                // Повторить предыдущую команду
-                answer = "Пока я этого не умею.";
-                break;
+                /*case 17:
+                    // Повторить предыдущую команду
+                    console.log(Command.get());
+                    processInput(Command.get());
+                    break;*/
             case 18:
             case 19:
             case 20:
@@ -276,6 +298,7 @@ const processInput = (userInput) => {
                 GameTurns.save();
                 break;
             default:
+                console.log(verbId);
                 answer = encounters[verbs[verbId].method](objectIds, objectsInInput);
                 GameTurns.save();
                 break
@@ -289,6 +312,7 @@ const processInput = (userInput) => {
             gameFlag = GAME_STATES.gameover;
         }
 
+        Command.set(userInput);
         // Возвращаем реакцию программы на действие игрока
         return {
             answer,
