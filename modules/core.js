@@ -21,25 +21,45 @@ import {
 
 // Сохраняем игровое состояние
 
-const saveGameState = () => {
+const saveGameState = (slotNumber) => {
+    /*
     localStorage.setItem('currentLocation', CurrentLocation.get());
     localStorage.setItem('inventory', JSON.stringify(Inventory.getAll()));
     localStorage.setItem('flags', JSON.stringify(Flags.getAll()));
     localStorage.setItem('itemPlaces', JSON.stringify(ItemPlaces.getAll()));
-    return defaultTexts.saveGame;
+    */
+    const slotName = (slotNumber === -1 || !slotNumber) ? '1' : String(slotNumber);
+    localStorage.setItem(slotName, JSON.stringify({
+        'currentLocation': CurrentLocation.get(),
+        'inventory': Inventory.getAll(),
+        'flags': Flags.getAll(),
+        'itemPlaces': ItemPlaces.getAll(),
+    }));
+    return `${defaultTexts.saveGame} ${slotName}.`;
 }
 
 // Загружаем игровое состояние
-const loadGameState = () => {
+const loadGameState = (slotNumber) => {
+    
     if (localStorage.length !== 0) {
+        const slotName = (slotNumber === -1 || !slotNumber) ? '1' : String(slotNumber);
+        if (localStorage.getItem(slotName) === null) return defaultTexts.cantLoadGame;
+
+        const slot = JSON.parse(localStorage.getItem(slotName));
+        CurrentLocation.set(slot.currentLocation);
+        Inventory.init(slot.inventory);
+        Flags.init(slot.flags);
+        ItemPlaces.init(slot.itemPlaces);
+        /*
         CurrentLocation.set(parseInt(localStorage.getItem('currentLocation')));
         Inventory.init(JSON.parse(localStorage.getItem('inventory')));
         Flags.init(JSON.parse(localStorage.getItem('flags')));
         ItemPlaces.init(JSON.parse(localStorage.getItem('itemPlaces')));
+        */
         // GameTurns.clear();
         // Можно раскомментировать, чтобы не давать возможность отменять ходы после загрузки игры
         GameTurns.save();
-        return defaultTexts.loadGame;
+        return `${defaultTexts.loadGame} ${slotName}.`;
     } else {
         return defaultTexts.cantLoadGame;
     }
@@ -179,8 +199,8 @@ const playerStandardActions = {
 
 const processInput = (userInput) => {
     // Разбираем полученный из парсера объект на object1Id, object2Id, verbId
-    let verbId, object1Id, object2Id, objectsInInput, message;
-    
+    let verbId, object1Id, object2Id, objectsInInput, message, number;
+
     // Если это глагол "ПОВТОРИТЬ" (17), то вставляем предыдущую команду
     if (userInput.verb === 17) {
         if (Command.get() === -1) {
@@ -192,6 +212,7 @@ const processInput = (userInput) => {
             object2Id = lastInput.object2;
             message = lastInput.message || '';
             objectsInInput = lastInput.objectsInInput;
+            number = lastInput.number;
         }
 
     } else {
@@ -200,13 +221,25 @@ const processInput = (userInput) => {
         object2Id = userInput.object2;
         message = userInput.message || '';
         objectsInInput = userInput.objectsInInput;
+        number = userInput.number;
     }
+
     const objectIds = [object1Id, object2Id];
 
     const uniqueEncounter = encounters.getUniqueEncounter(verbId, objectIds);
     let answer;
     if (message !== '') answer = message;
     let gameFlag = GAME_STATES.game;
+
+    // Если это глагол "СОХРАНИТЬ" или "ЗАГРУЗИТЬ"
+    if (verbId === 14) return {
+        answer: saveGameState(number),
+        gameFlag
+    };
+    if (verbId === 15) return {
+        answer: loadGameState(number),
+        gameFlag
+    };
 
     // Обрабатываем особые игровые ситуации. Так, в комнате с ведьмой игрок может только отразить заклятье, и если не делает этого, то его выкидывает в предыдущую комнату
     if (uniqueEncounter.flag) {
@@ -261,14 +294,6 @@ const processInput = (userInput) => {
             case 13:
                 // Инвентарь
                 answer = Inventory.getItemsString(Inventory.getAll(), defaultTexts.playerHasItems, defaultTexts.playerHasNoItems);
-                break;
-            case 14:
-                // Сохранить игру
-                answer = saveGameState();
-                break;
-            case 15:
-                // Загрузить игру
-                answer = loadGameState();
                 break;
             case 16:
                 // Отменить действие

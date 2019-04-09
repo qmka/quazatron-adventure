@@ -199,7 +199,10 @@ const parseInput = (input) => {
             }
         } else {
             // Если парсер не понимает слово
-            //const [isAdjective] = adjectives.filter(n => n.forms.includes(words[i]));
+            
+            // Если это цифра, то записываем её в number (для последующего использования)
+            const number = isNaN(words[i]) ? -1 : parseInt(words[i]);
+
             if (!wordsToIgnore.includes(words[i]) && !isAdjective(words[i])) {
                 const errMessage = `${defaultTexts.parserDontUnderstandWord} "${words[i]}".`;
                 return {
@@ -207,7 +210,8 @@ const parseInput = (input) => {
                     object1,
                     object2,
                     message: errMessage,
-                    objectsInInput
+                    objectsInInput,
+                    number
                 }
             }
         }
