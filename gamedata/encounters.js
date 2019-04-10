@@ -112,6 +112,9 @@ const encounters = {
         if (Flags.get("isFellIntoAbyss")) {
             return 'Балансировать над пропастью с шестом в руках и тяжёлой вязанкой дров за спиной, наверное, весело, будь вы профессиональным акробатом. Но, не успев сделать и пары шагов, вы срываетесь в пропасть...';
         }
+        if (Flags.get("isDiedByCutRope")) {
+            return 'Вы подходите к краю обрыва и наклоняетесь, чтобы обрезать верёвку. Одно неловкое движение, и вы срываетесь в пропасть... '
+        }
 
         return defaultTexts.defaultGameOverText;
     },
@@ -151,7 +154,7 @@ const encounters = {
             const itemsArray = ItemPlaces.getLocationItemsArray(CurrentLocation.get());
             const answer = Inventory.getItemsString(itemsArray, defaultTexts.playerTakeItems, defaultTexts.thereIsNoItems);
             if (itemsArray.length !== 0) {
-                
+
                 itemsArray.forEach((item) => {
                     Inventory.addItem(item);
                     ItemPlaces.set(item, -1);
@@ -426,7 +429,7 @@ const encounters = {
             if (Inventory.includes(6) && !Flags.get("isDoorOpened")) {
                 Flags.toggle("isDoorOpened");
                 Inventory.removeItem(6);
-                return "Вы открыли дверь ключом и теперь можете пройти в замок. Правда, ключ намертво застрял в замочной скважине, ну и фиг с ним.";
+                return "Вы открываете дверь ключом, и дверь услужливо распахивается. Теперь можете пройти в замок. Правда, ключ намертво застрял в замочной скважине, ну и фиг с ним.";
             } else if (!Flags.get("isDoorOpened")) {
                 return "Кажется, дверь заперта. Вам нужен ключ.";
             } else {
@@ -647,6 +650,153 @@ const encounters = {
         }
 
         return "Непонятно, кого вы тут хотите разбудить.";
+    },
+
+    turnOff(objectIds) {
+        return "Я не могу это выключить.";
+    },
+
+    leave(objectIds) {
+        return "Не понимаю, что вы хотите сделать.";
+    },
+
+    close(objectIds) {
+        if (objectIds.includes(16) && Flags.get("isDoorOpened") && CurrentLocation.get() === 11) {
+            return "Вы пытаетесь закрыть дверь, но она не двигается с места. Будто заколдованная!"
+        }
+        return "Здесь нечего закрывать.";
+    },
+
+    dress(objectIds) {
+        return "Среди вещей у меня нет ничего, что я бы мог надеть. Впрочем, моя обычная одежда мне и так нравится.";
+    },
+
+    undress(objectIds) {
+        return "Я могу снять с себя только мою одежду. Но сейчас не та ситуация, когда имеет смысл раздеваться.";
+    },
+
+    drink(objectIds) {
+        return "Я не могу это выпить.";
+    },
+
+    pull(objectIds) {
+        return "Здесь нет ничего такого, что я мог бы потянуть или вытащить, и это произвело бы хоть какой-то эффект.";
+    },
+
+    rotate(objectIds) {
+        return "Здесь нет ничего такого, что бы можно было покрутить, и это произвело бы хоть какой-то эффект.";
+    },
+
+    rub(objectIds) {
+        return "Тереть это бесполезно.";
+    },
+
+    sing(objectIds) {
+        return "Волшебники-гномы! В минувшие дни<br>Искусно металлы ковали они.<br>Сапфиры, алмазы, рубины, топазы<br>Хранили они и гранили они!";
+    },
+
+    give(objectIds) {
+        if (objectIds.includes(21) && CurrentLocation.get() === 5) {
+            if (objectIds.includes(11) && Inventory.includes(11)) {
+                Inventory.removeItem(11);
+                Inventory.addItem(7);
+                return "Вы протянули старушке монету, она попробовала её на зуб, довольно кивнула и протянула вам лампу.";
+            }
+            return "Ей это не нужно."
+        }
+        return "Не получится.";
+    },
+
+    burn(objectIds) {
+        return "У вас нет ни огнива, ни спичек.";
+    },
+
+    sniff(objectIds) {
+        return "Вы принюхиваетесь, но не улавливаете никаких необычных запахов.";
+    },
+
+    hear(objectIds) {
+        return "Вы прислушиваетесь, но не слышите ничего необычного.";
+    },
+
+    dig(objectIds) {
+        return "У вас нет лопаты, а руками копать бессмысленно. И негигиенично!";
+    },
+
+    cut(objectIds) {
+        if (objectIds.includes(13) && (Inventory.includes(10) || Inventory.includes(5)) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
+            Flags.toggle("isDiedByCutRope");
+            Flags.toggle("isGameOver");
+            return "";
+        }
+        return defaultTexts.playerUselessAction;
+    },
+
+    tear(objectIds) {
+        return defaultTexts.playerUselessAction;
+    },
+
+    tie(objectIds) {
+        return "У вас нет ни верёвки, ни ниток.";
+    },
+
+    blow(objectIds) {
+        return defaultTexts.playerUselessAction;
+    },
+
+    sleep(objectIds) {
+        return "Не время спать, пока зло не дремлет!";
+    },
+
+    wakeUp(objectIds) {
+        return "Вы просыпаетесь и понимаете, что это был всего лишь сон. Пора завтракать, а потом бежать на работу... Шучу, конечно же, вы не спите. Время спасать принцессу!";
+    },
+
+    swim(objectIds) {
+        return "Здесь негде плавать.";
+    },
+
+    read(objectIds) {
+        return "Здесь нечего читать.";
+    },
+
+    fill(objectIds) {
+        if (objectIds.includes(7) && Inventory.includes(7)) {
+            if (objectIds.includes(9)) {
+                if (Inventory.includes(9)) {
+                    if (Flags.get("isLampEmpty")) {
+                        Flags.toggle("isLampEmpty");
+                        return "Вы залили немного масла в лампу.";
+                    } else {
+                        return "В лампе достаточно масла, чтобы её включить.";
+                    }
+                } else {
+                    return "У вас нет ничего, чем вы можете заправить лампу";
+                }
+            } else {
+                return "Уточните, что вы хотите залить в лампу?";
+            }
+        }
+        return defaultTexts.playerUselessAction;
+    },
+    
+    jump(objectIds) {
+        if (objectIds.includes(13) && (CurrentLocation.get() === 6 || CurrentLocation.get() === 12)) {
+            return "Если вы прыгните, то разобьётесь.";
+        }
+        return defaultTexts.playerUselessAction;
+    },
+
+    untie(objectIds) {
+        return defaultTexts.playerUselessAction;
+    },
+
+    help(objectIds) {
+        return "Это достаточно простая игра, чтобы пройти её без подсказок. Обязательно осматривайте все предметы, это поможет вам продвинуться вперёд.";
+    },
+
+    score(objectIds) {
+        return "В этой игре не встроена возможность подсчёта очков.";
     }
 }
 

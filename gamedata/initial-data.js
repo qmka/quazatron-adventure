@@ -37,6 +37,7 @@ const initialFlags = {
     isDiedFromMonster: false,
     isDiedFromWorm: false,
     isDiedFromLady: false,
+    isDiedByCutRope: false,
     isKilledPrincess: false,
     isFellIntoAbyss: false,
     isVictory: false,
